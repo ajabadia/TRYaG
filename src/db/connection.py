@@ -75,6 +75,8 @@ def get_client() -> MongoClient:
     mongodb_uri = os.getenv("MONGODB_URI")
     
     if not mongodb_uri:
+        raise ValueError(
+            "MONGODB_URI no encontrado en variables de entorno. "
             "Asegúrate de tener un archivo .env con la configuración correcta."
         )
     
