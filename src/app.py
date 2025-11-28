@@ -32,69 +32,6 @@ st.set_page_config(
     page_icon=get_icon_path("logo"),
     layout="wide",
 )
-
-# PWA Support and UI Transition Improvements
-st.markdown(
-    """
-    <script>
-        // Inject Manifest
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = 'app/static/manifest.json';
-        document.head.appendChild(link);
-
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('app/static/service-worker.js').then(function(registration) {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
-            });
-        }
-
-        // UI Transition Handler
-        document.addEventListener('DOMContentLoaded', function() {
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.addedNodes.length) {
-                        const buttons = document.querySelectorAll('button');
-                        buttons.forEach(btn => {
-                            if (!btn.dataset.listenerAttached) {
-                                btn.addEventListener('click', function() {
-                                    const appContainer = document.querySelector('.stApp');
-                                    if (appContainer) {
-                                        appContainer.classList.add('app-transitioning');
-                                    }
-                                });
-                                btn.dataset.listenerAttached = 'true';
-                            }
-                        });
-                    }
-                });
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-        });
-    </script>
-    <style>
-        /* Transition effect */
-        .app-transitioning {
-            opacity: 0.6;
-            pointer-events: none;
-            transition: opacity 0.2s ease-out;
-            filter: blur(1px);
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# ---------------------------------------------------------------------------
 # Gemini client configuration
 # ---------------------------------------------------------------------------
 try:
