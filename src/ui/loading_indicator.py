@@ -142,7 +142,9 @@ def loading_data(message: str = "Recuperando datos de la base de datos..."):
             indicator_shown[0] = True
     
     # Iniciar thread para mostrar el indicador con delay
+    from streamlit.runtime.scriptrunner import add_script_run_ctx
     show_thread = threading.Thread(target=delayed_show, daemon=True)
+    add_script_run_ctx(show_thread)
     show_thread.start()
     
     try:
