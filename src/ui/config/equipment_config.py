@@ -57,3 +57,5 @@ def render_equipment_config():
                 "video_quality": selected_quality
             }
             st.success("✅ Configuración de equipo guardada correctamente.")
+
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/equipment_config.py</div>', unsafe_allow_html=True)

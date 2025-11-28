@@ -171,3 +171,5 @@ def render_datos_generales():
                 help="Vuelve a cargar los valores guardados en la base de datos"
             ):
                 st.rerun()
+
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/datos_generales.py</div>', unsafe_allow_html=True)

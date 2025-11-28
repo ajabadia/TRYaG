@@ -346,3 +346,5 @@ def render_notification_config_panel():
         )
         ```
         """)
+
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/notification_config_ui.py</div>', unsafe_allow_html=True)

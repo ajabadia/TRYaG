@@ -20,7 +20,7 @@ from ui.connection_status import check_database_connection
 from ui.config_panel import load_centro_config
 from ui.loading_indicator import render_loading_container
 from components.common.user_selector import render_user_selector
-import ui.main_view
+from ui.main_view import mostrar_asistente_triaje
 from ui.config_panel import mostrar_panel_configuracion
 from utils.icons import get_icon_path, render_icon
 
@@ -158,7 +158,7 @@ def mostrar_app_principal():
     render_user_selector()
     
     available_tabs_labels = get_available_tabs()
-    
+
     if not available_tabs_labels:
         st.error("⛔ Acceso denegado. No tienes permisos asignados para ver ninguna sección.")
         st.stop()
@@ -172,7 +172,7 @@ def mostrar_app_principal():
                 from ui.admission_view import mostrar_admision
                 mostrar_admision()
             elif "Triaje" in tab_label:
-                ui.main_view.mostrar_asistente_triaje()
+                mostrar_asistente_triaje()
             elif "Atención Box" in tab_label:
                 from ui.boxes_view import render_boxes_view
                 render_boxes_view()
@@ -191,7 +191,7 @@ def mostrar_app_principal():
     # Footer with centre information and branding
     from components.common.footer import render_footer
     render_footer(centro_config)
-
+    
 # ---------------------------------------------------------------------------
 # Disclaimer modal handling
 # ---------------------------------------------------------------------------

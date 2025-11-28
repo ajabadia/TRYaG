@@ -120,3 +120,5 @@ def render_salas_manager(existing_salas: list = None):
         salas_tipo = [s for s in all_salas if s.get('tipo') == tipo]
         for sala in salas_tipo:
             render_sala_card(sala)
+
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/salas_manager.py</div>', unsafe_allow_html=True)
