@@ -264,5 +264,12 @@ if not disclaimer_accepted:
     from components.common.footer import render_footer
     render_footer(centro_config)
 else:
-    # If disclaimer already accepted, show the main app
-    mostrar_app_principal()
+    # If disclaimer already accepted, check if we need to show splash screen
+    if "splash_shown" not in st.session_state:
+        from ui.splash_screen import render_splash_screen
+        render_splash_screen()
+        st.session_state.splash_shown = True
+        st.rerun()
+    else:
+        # Show the main app
+        mostrar_app_principal()
