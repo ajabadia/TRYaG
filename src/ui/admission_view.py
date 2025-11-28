@@ -26,6 +26,8 @@ def mostrar_admision():
     """
     Orquesta el flujo completo de admisión con stepper vertical.
     """
+    st.title("📋 Gestión de Admisión")
+
     # Inicializar paso actual
     if 'admission_step' not in st.session_state:
         st.session_state.admission_step = 0

@@ -16,6 +16,8 @@ def mostrar_asistente_triaje():
     """
     Dibuja y gestiona la lógica de la pestaña "Asistente de Triaje" con stepper.
     """
+    st.title("🏥 Asistente de Triaje")
+
     # Inicializar paso actual
     if 'triage_step' not in st.session_state:
         st.session_state.triage_step = 0
