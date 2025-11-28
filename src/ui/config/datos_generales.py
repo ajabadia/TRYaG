@@ -154,6 +154,11 @@ def render_datos_generales():
                     )
                     
                     st.success("✅ Configuración guardada correctamente")
+                    
+                    # Invalidar caché de sesión para forzar recarga
+                    if 'centro_config' in st.session_state:
+                        del st.session_state.centro_config
+                        
                     st.rerun()
                     
                 except Exception as e:

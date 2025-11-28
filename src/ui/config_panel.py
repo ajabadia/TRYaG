@@ -283,12 +283,6 @@ def mostrar_panel_configuracion():
             with subtab_datos:
                 from ui.config.datos_generales import render_datos_generales
                 render_datos_generales()
-                # Guardar configuración del centro solo aquí (Datos Generales)
-                if st.button(":material/save: Guardar Configuración del Centro", type="primary"):
-                    if save_centro_config(centro_config):
-                        st.success(":material/check_circle: Configuración del centro guardada")
-                    else:
-                        st.error(":material/error: No se pudo guardar la configuración del centro")
             
             with subtab_salas:
                 st.info("Gestión integral de salas, asignaciones y control.")
