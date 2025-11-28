@@ -31,7 +31,6 @@ def mostrar_registro_auditoria_v2():
 
     try:
         # Importar loading indicator
-        from ui.loading_indicator import loading_data
         from services.feedback_service import get_feedback_reports
         
         # Cargar repositorios y datos con indicador de carga
@@ -49,8 +48,7 @@ def mostrar_registro_auditoria_v2():
                 get_feedback_reports(limit=1000)
             )
 
-        with loading_data("Cargando datos de auditoría desde la base de datos..."):
-            audit_records, files_records, trans_records, feedback_records = load_audit_data_v2()
+        audit_records, files_records, trans_records, feedback_records = load_audit_data_v2()
 
         # Convertir a DataFrames
         df_audit_base = pd.DataFrame(audit_records)

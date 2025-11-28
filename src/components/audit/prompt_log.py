@@ -12,14 +12,11 @@ def load_prompts_dataframe():
     """
     Carga los prompts y los aplana en un DataFrame para visualización.
     """
-    from ui.loading_indicator import loading_data
-    
     pm = PromptManager()
     
     # Obtener todos los prompts usando el repositorio
     try:
-        with loading_data("Cargando historial de prompts..."):
-            all_prompts = pm.repo.get_all_prompts() if pm.repo else []
+        all_prompts = pm.repo.get_all_prompts() if pm.repo else []
     except:
         all_prompts = []
     

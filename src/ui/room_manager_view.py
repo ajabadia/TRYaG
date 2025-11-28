@@ -261,8 +261,6 @@ def render_management_panel():
 
 def mostrar_gestor_salas():
     """Renderiza la vista principal del gestor de salas."""
-    from ui.loading_indicator import loading_data
-    
     # Header con botón de refresco
     col_title, col_refresh = st.columns([4, 1])
     with col_title:
@@ -274,11 +272,10 @@ def mostrar_gestor_salas():
     st.markdown("Visión global del estado del centro y herramientas de corrección.")
 
     # Cargar datos primero
-    with loading_data("Cargando estado de las salas..."):
-        vista_global = obtener_vista_global_salas()
-        config = load_centro_config()
-        all_rooms = config.get('salas', [])
-        errores = detectar_errores_salas()
+    vista_global = obtener_vista_global_salas()
+    config = load_centro_config()
+    all_rooms = config.get('salas', [])
+    errores = detectar_errores_salas()
     
     # Métricas rápidas
     total_pacientes = sum(len(pacientes) for pacientes in vista_global.values())

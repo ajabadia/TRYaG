@@ -15,14 +15,11 @@ from utils.icon_utils import get_icon_html
 
 def load_prompts_data():
     """Carga y procesa los datos de los prompts para análisis."""
-    from ui.loading_indicator import loading_data
-    
     pm = PromptManager()
     
     # Obtener todos los prompts usando el repositorio
     try:
-        with loading_data("Cargando datos de prompts para análisis..."):
-            all_prompts = pm.repo.get_all_prompts() if pm.repo else []
+        all_prompts = pm.repo.get_all_prompts() if pm.repo else []
     except:
         all_prompts = []
     

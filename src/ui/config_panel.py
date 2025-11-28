@@ -89,8 +89,7 @@ def mostrar_panel_configuracion():
     if 'general_config' not in st.session_state:
         st.session_state.general_config = load_general_config()
     if 'centro_config' not in st.session_state:
-        with loading_data("Cargando configuración del centro..."):
-            st.session_state.centro_config = load_centro_config()
+        st.session_state.centro_config = load_centro_config()
 
     general_config = st.session_state.general_config
     centro_config = st.session_state.centro_config
