@@ -132,10 +132,23 @@ def mostrar_app_principal():
             try:
                 if logo_path.startswith("http"):
                     st.image(logo_path, width=120)
-                elif os.path.exists(logo_path):
-                    st.image(logo_path, width=120)
                 else:
-                    render_icon("logo", size=80, color="#28a745")
+                    # Try direct path
+                    if os.path.exists(logo_path):
+                        st.image(logo_path, width=120)
+                    else:
+                        # Try relative to root_dir
+                        abs_path = os.path.join(root_dir, logo_path)
+                        if os.path.exists(abs_path):
+                            st.image(abs_path, width=120)
+                        else:
+                            # Try fixing slashes for Linux/Windows compatibility
+                            fixed_path = logo_path.replace("\\", "/")
+                            abs_path_fixed = os.path.join(root_dir, fixed_path)
+                            if os.path.exists(abs_path_fixed):
+                                st.image(abs_path_fixed, width=120)
+                            else:
+                                render_icon("logo", size=80, color="#28a745")
             except Exception:
                 render_icon("logo", size=80, color="#28a745")
     with col_title:
@@ -191,7 +204,7 @@ def mostrar_app_principal():
     # Footer with centre information and branding
     from components.common.footer import render_footer
     render_footer(centro_config)
-    
+
 # ---------------------------------------------------------------------------
 # Disclaimer modal handling
 # ---------------------------------------------------------------------------
