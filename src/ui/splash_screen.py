@@ -123,17 +123,28 @@ def render_splash_screen():
             if center_logo_path.startswith("http"):
                 center_src = center_logo_path
             else:
+                # Lógica robusta de resolución de rutas (igual que en app.py)
+                resolved_path = None
+                
+                # 1. Intentar ruta directa
                 if os.path.exists(center_logo_path):
-                    b64 = get_image_base64(center_logo_path)
-                    if b64:
-                        center_src = f"data:image/png;base64,{b64}"
+                    resolved_path = center_logo_path
                 else:
-                    # Intentar ruta relativa al root
+                    # 2. Intentar relativa al root
                     abs_path = os.path.join(root_dir, center_logo_path)
                     if os.path.exists(abs_path):
-                        b64 = get_image_base64(abs_path)
-                        if b64:
-                            center_src = f"data:image/png;base64,{b64}"
+                        resolved_path = abs_path
+                    else:
+                        # 3. Intentar corregir barras (Windows vs Linux)
+                        fixed_path = center_logo_path.replace("\\", "/")
+                        abs_path_fixed = os.path.join(root_dir, fixed_path)
+                        if os.path.exists(abs_path_fixed):
+                            resolved_path = abs_path_fixed
+                
+                if resolved_path:
+                    b64 = get_image_base64(resolved_path)
+                    if b64:
+                        center_src = f"data:image/png;base64,{b64}"
 
         center_logo_html = f'<img src="{center_src}" class="center-logo">'
         
