@@ -1,0 +1,157 @@
+# path: src/components/triage/step_disposition.py
+# Creado: 2025-11-24
+"""
+Paso 3 del Asistente de Triaje: Derivación / Destino.
+Permite asignar sala de espera, rechazar o devolver a admisión.
+"""
+import streamlit as st
+from services.patient_flow_service import completar_triaje, rechazar_paciente, reassign_patient_flow
+from services.room_service import obtener_salas_por_tipo
+
+def render_step_disposition():
+    """Renderiza las opciones de destino post-triaje."""
+    st.markdown("### 4. Derivación y Destino")
+    
+    p = st.session_state.get('triage_patient')
+    if not p:
+        st.error("No hay paciente activo.")
+        return False
+        
+    st.info(f"Triaje completado para: **{p.get('nombre')} {p.get('apellido1')}**")
+    
+    tab_espera, tab_consulta, tab_rechazo, tab_admision = st.tabs([
+        "🏥 Boxes (Urgencias)", 
+        "👨‍⚕️ Consulta / Ingreso",
+        "🚫 Alta / Rechazo", 
+        "🔙 Devolver a Admisión"
+    ])
+    
+    # --- Opción 1: Boxes (Urgencias) ---
+    # --- Opción 1: Boxes (Urgencias) ---
+    with tab_espera:
+        st.markdown("Asignar a una sala de espera de Boxes.")
+        from components.common.room_card import render_room_grid
+        
+        current_selection = st.session_state.get('selected_espera_code')
+        
+        # Si hay selección, mostrar confirmación arriba
+        if current_selection:
+            col_info, col_change = st.columns([3, 1])
+            with col_info:
+                st.info(f"📍 Destino seleccionado: **{current_selection}**")
+            with col_change:
+                if st.button("🔄 Cambiar Sala", key="change_box_dest"):
+                    st.session_state.selected_espera_code = None
+                    st.rerun()
+            
+            if st.button("Confirmar Derivación a Box", type="primary", use_container_width=True):
+                if completar_triaje(p['patient_code'], current_selection):
+                    st.success(f"Paciente derivado a {current_selection}")
+                    st.session_state.triage_step = 1 # Volver a lista
+                    st.session_state.triage_patient = None
+                    st.session_state.selected_espera_code = None
+                    st.session_state.validation_complete = False
+                    st.session_state.analysis_complete = False
+                    st.session_state.resultado = None
+                    st.rerun()
+                else:
+                    st.error("Error al derivar paciente.")
+        else:
+            # Mostrar Grid
+            # Obtener salas de espera de boxes (tipo box, subtipo espera)
+            salas_box = obtener_salas_por_tipo("box")
+            salas_espera = [s for s in salas_box if s.get('subtipo') == 'espera']
+            
+            if not salas_espera:
+                st.warning("No hay salas de espera de boxes configuradas.")
+            else:
+                selected_espera = render_room_grid(
+                    salas=salas_espera,
+                    selected_code=st.session_state.get('selected_espera_code'),
+                    button_key_prefix="disp_espera",
+                    cols_per_row=3
+                )
+                
+                if selected_espera:
+                    st.session_state.selected_espera_code = selected_espera
+                    st.rerun()
+
+    # --- Opción 2: Consulta / Ingreso ---
+    with tab_consulta:
+        st.markdown("Derivar a Consulta Externa o Ingreso.")
+        from components.common.room_card import render_room_grid
+        
+        current_cons = st.session_state.get('selected_consulta_code')
+        
+        if current_cons:
+            col_info, col_change = st.columns([3, 1])
+            with col_info:
+                st.info(f"📍 Destino seleccionado: **{current_cons}**")
+            with col_change:
+                if st.button("🔄 Cambiar Sala", key="change_cons_dest"):
+                    st.session_state.selected_consulta_code = None
+                    st.rerun()
+            
+            if st.button("Confirmar Derivación a Consulta", type="primary", use_container_width=True):
+                if completar_triaje(p['patient_code'], current_cons):
+                    st.success(f"Paciente derivado a {current_cons}")
+                    st.session_state.triage_step = 1
+                    st.session_state.triage_patient = None
+                    st.session_state.selected_consulta_code = None
+                    st.session_state.validation_complete = False
+                    st.session_state.analysis_complete = False
+                    st.session_state.resultado = None
+                    st.rerun()
+                else:
+                    st.error("Error al derivar paciente.")
+        else:
+            # Obtener salas de consulta/ingreso
+            salas_consulta = obtener_salas_por_tipo("consulta_ingreso")
+            # Filtrar por espera si existe, sino mostrar todas (o atención directa)
+            salas_consulta_espera = [s for s in salas_consulta if s.get('subtipo') == 'espera']
+            if not salas_consulta_espera:
+                 # Si no hay espera específica, mostrar las de atención (derivación directa)
+                 salas_consulta_espera = [s for s in salas_consulta if s.get('subtipo') == 'atencion']
+    
+            if not salas_consulta_espera:
+                st.warning("No hay salas de consulta/ingreso configuradas.")
+            else:
+                selected_consulta = render_room_grid(
+                    salas=salas_consulta_espera,
+                    selected_code=st.session_state.get('selected_consulta_code'),
+                    button_key_prefix="disp_consulta",
+                    cols_per_row=3
+                )
+                
+                if selected_consulta:
+                    st.session_state.selected_consulta_code = selected_consulta
+                    st.rerun()
+
+    # --- Opción 3: Rechazar / Alta ---
+    with tab_rechazo:
+        motivo = st.text_area("Motivo de rechazo o alta directa", placeholder="Ej: No requiere atención urgente, derivado a AP.")
+        if st.button("Confirmar Rechazo/Alta", type="primary", disabled=not motivo):
+            if rechazar_paciente(p['patient_code'], motivo):
+                st.success("Paciente rechazado/dado de alta.")
+                st.session_state.triage_step = 1
+                st.session_state.triage_patient = None
+                st.rerun()
+            else:
+                st.error("Error al rechazar paciente.")
+
+    # --- Opción 4: Devolver a Admisión ---
+    with tab_admision:
+        st.warning("Devolver paciente a la cola de admisión (ej. datos incorrectos).")
+        salas_adm = obtener_salas_por_tipo("admision")
+        sala_adm_code = st.selectbox("Sala de Admisión Destino", [s['codigo'] for s in salas_adm], format_func=lambda x: next((s['nombre'] for s in salas_adm if s['codigo'] == x), x))
+        
+        if st.button("Devolver a Admisión"):
+            if reassign_patient_flow(p['patient_code'], new_sala_admision_code=sala_adm_code):
+                st.success(f"Paciente devuelto a admisión {sala_adm_code}")
+                st.session_state.triage_step = 1
+                st.session_state.triage_patient = None
+                st.rerun()
+            else:
+                st.error("Error al reasignar.")
+
+    return True

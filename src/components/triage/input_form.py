@@ -1,0 +1,282 @@
+# path: src/components/triage/input_form.py
+# Creado: 2025-11-21
+# Última modificación: 2025-11-28
+import io
+import os
+import streamlit as st
+from PIL import Image
+from datetime import datetime
+
+from services.triage_service import llamar_modelo_gemini
+from services.simulated_ia import simulacion_ia
+from utils.icons import render_icon
+from utils.file_handler import save_file_to_temp, cleanup_temp_files, calculate_md5, TempFileWrapper
+from src.core.transcription_handler import get_transcription
+from config import get_min_chars_motivo
+from components.triage.media_cards import render_media_card
+from components.common.webcam_manager import render_webcam_manager
+from components.common.audio_recorder import render_audio_recorder
+from components.common.file_importer import render_file_importer
+
+def procesar_respuesta_ia(resultado_ia):
+    """
+    Procesa la respuesta de la IA y la guarda en el estado de la sesión.
+    """
+    if resultado_ia and "nivel_sugerido" in resultado_ia:
+        niveles_info = {
+            1: {"color": "red", "text": "NIVEL I - RESUCITACIÓN"},
+            2: {"color": "orange", "text": "NIVEL II - EMERGENCIA"},
+            3: {"color": "#FFD700", "text": "NIVEL III - URGENCIA"},
+            4: {"color": "green", "text": "NIVEL IV - MENOS URGENTE"},
+            5: {"color": "blue", "text": "NIVEL V - NO URGENTE"}
+        }
+        nivel_num = resultado_ia['nivel_sugerido']
+        st.session_state.resultado = {
+            "status": "SUCCESS",
+            "nivel": niveles_info.get(nivel_num, niveles_info[4]),
+            "razones": resultado_ia.get("razonamiento", ["No se proporcionó razonamiento."])
+        }
+    else:
+        # Si no tiene nivel_sugerido, verificar si tiene la estructura correcta
+        if isinstance(resultado_ia, dict) and "nivel" in resultado_ia:
+            # Ya tiene la estructura correcta
+            st.session_state.resultado = resultado_ia
+        else:
+            # Error o formato inesperado - crear estructura por defecto
+            st.session_state.resultado = {
+                "status": resultado_ia.get("status", "ERROR") if isinstance(resultado_ia, dict) else "ERROR",
+                "msg": resultado_ia.get("msg", "Error procesando respuesta de IA") if isinstance(resultado_ia, dict) else str(resultado_ia)
+            }
+
+def render_input_form():
+    """
+    Renderiza el formulario de entrada de datos del paciente.
+    """
+    # --- CALLBACKS DE INTEGRACIÓN ---
+    
+    def on_audio_confirmed(audio_wrapper):
+        if 'imagenes' not in st.session_state.datos_paciente:
+            st.session_state.datos_paciente['imagenes'] = []
+        st.session_state.datos_paciente['imagenes'].append(audio_wrapper)
+        st.session_state.triage_input_type = "" # Resetear selector
+
+    def on_webcam_close(photos):
+        if photos:
+            if 'imagenes' not in st.session_state.datos_paciente:
+                st.session_state.datos_paciente['imagenes'] = []
+            st.session_state.datos_paciente['imagenes'].extend(photos)
+        st.session_state.triage_input_type = "" # Resetear selector
+
+    def on_files_confirmed(files_list):
+        if files_list:
+            if 'imagenes' not in st.session_state.datos_paciente:
+                st.session_state.datos_paciente['imagenes'] = []
+            
+            # Evitar duplicados por nombre
+            current_names = {f.name for f in st.session_state.datos_paciente['imagenes']}
+            for f in files_list:
+                if f.name not in current_names:
+                    st.session_state.datos_paciente['imagenes'].append(f)
+            
+            st.session_state.triage_input_type = "" # Resetear selector
+
+    def import_callback():
+        import time
+        time.sleep(1.5)
+        st.session_state.datos_paciente['texto_medico'] += "\n\n[IMPORTADO HCE]: Paciente con antecedentes de hipertensión. Última visita por dolor lumbar crónico."
+        st.session_state.triage_input_type = "" # Resetear selector
+
+    # --- END CALLBACKS ---
+
+    with st.container(border=True):
+        # Cabecera de sección con icono
+        c_head_icon, c_head_text = st.columns([1, 20])
+        with c_head_icon:
+             render_icon("user", size=24) 
+        with c_head_text:
+            st.header("1. Datos del Paciente")
+
+        is_step1_disabled = st.session_state.analysis_complete
+        is_editing = st.session_state.is_editing_text
+        
+        # --- SECCIÓN 1: ENTRADA DE DATOS MULTIMODAL ---
+        
+        # Selector de Tipo de Entrada
+        input_type = st.selectbox(
+            "Seleccione método de entrada:",
+            ["", "🎤 Audio", "📷 Foto / Cámara", "📁 Archivo", "🏥 Importar Expediente"],
+            index=0,
+            key="triage_input_type",
+            label_visibility="collapsed"
+        )
+
+        # Contenedor Dinámico (Solo si hay selección)
+        if input_type:
+            with st.container(border=True):
+                
+                # 1. AUDIO (MODULARIZADO)
+                if "Audio" in input_type:
+                    render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed)
+
+                # 2. FOTO / CÁMARA (MODULARIZADO)
+                elif "Foto" in input_type:
+                    render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close)
+
+                # 3. ARCHIVO (MODULARIZADO)
+                elif "Archivo" in input_type:
+                    render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed)
+
+                # 4. IMPORTAR EXPEDIENTE
+                elif "Importar" in input_type:
+                    st.markdown("##### 🏥 Importación de Historia Clínica")
+                    st.info("Simulación de conexión con HCE (Historia Clínica Electrónica).")
+                    st.button("⬇️ Importar Últimos Informes", key="sim_import_btn", on_click=import_callback)
+
+        # Obtener contador de reset
+        reset_count = st.session_state.get('reset_counter', 0)
+
+        texto_medico = st.text_area(
+            "Motivo de Consulta", st.session_state.datos_paciente.get('texto_medico', ''),
+            height=100, placeholder="Ej: Varón de 45 años...",
+            disabled=not is_editing or is_step1_disabled, key=f"texto_medico_input_{reset_count}",
+            label_visibility="collapsed"
+        )
+        st.session_state.datos_paciente['texto_medico'] = texto_medico
+        is_text_valid = len(texto_medico) >= get_min_chars_motivo()
+
+        # --- EDAD Y DOLOR (Movido aquí) ---
+        c1, c2 = st.columns(2)
+        with c1:
+            default_age = st.session_state.datos_paciente.get('edad', 40)
+            st.session_state.datos_paciente['edad'] = st.number_input("Edad", 0, 120, default_age, disabled=is_step1_disabled, key=f"edad_input_{reset_count}")
+        with c2:
+            st.session_state.datos_paciente['dolor'] = st.slider("Escala EVA (Dolor)", 0, 10, 5, disabled=is_step1_disabled, key=f"dolor_input_{reset_count}")
+
+
+        if is_editing:
+            if st.button("Confirmar Motivo", type="primary", disabled=is_step1_disabled, use_container_width=True):
+                if is_text_valid:
+                    st.session_state.is_editing_text = False
+                    st.session_state.show_text_error = False
+                    st.rerun()
+                else:
+                    st.session_state.show_text_error = True
+                    st.rerun()
+            if st.session_state.show_text_error:
+                c_err_icon, c_err_text = st.columns([1, 20])
+                with c_err_icon:
+                    render_icon("edit", size=20, color="red")
+                with c_err_text:
+                    st.caption(f"Por favor, ingrese al menos {get_min_chars_motivo()} caracteres.")
+        else:
+            # Botón para volver a editar si no se ha finalizado el análisis
+            if not is_step1_disabled:
+                if st.button("Editar datos", icon=":material/edit:", key=f"edit_patient_data_{reset_count}", use_container_width=True):
+                    st.session_state.is_editing_text = True
+                    st.rerun()
+
+
+
+        if st.session_state.datos_paciente.get('imagenes'):
+            with st.container(border=True):
+                c_info_icon, c_info_text = st.columns([1, 20])
+                with c_info_icon:
+                    render_icon("info", size=20, color="#17a2b8")
+                with c_info_text:
+                    st.info("Marca 'Analizar con IA' en los archivos que deseas enviar.")
+                
+                num_cols = 4
+                # Inicializar set de eliminados si no existe
+                if 'deleted_filenames' not in st.session_state:
+                    st.session_state.deleted_filenames = set()
+
+                cols = st.columns(num_cols)
+                for i, file_obj in enumerate(st.session_state.datos_paciente['imagenes']):
+                    with cols[i % num_cols]:
+                        # Contenedor para la card
+                        render_media_card(file_obj, i)
+
+        total_imagenes = len(st.session_state.datos_paciente.get('imagenes', []))
+        imagenes_seleccionadas = sum(st.session_state.modal_image_selection.values()) if total_imagenes > 0 else 0
+        button_label = f"Analizar con IA ({imagenes_seleccionadas} de {total_imagenes} archivos)" if total_imagenes > 0 else "Analizar con IA"
+        is_button_disabled = not is_text_valid or st.session_state.is_editing_text or is_step1_disabled
+
+        if total_imagenes > 0:
+            c_lock_icon, c_lock_text = st.columns([1, 20])
+            with c_lock_icon:
+                render_icon("lock", size=16, color="gray")
+            with c_lock_text:
+                st.caption("**Aviso de Privacidad:** Al hacer clic, consiente el envío de los archivos a Google Gemini.")
+
+        col_analisis_1, col_analisis_2 = st.columns(2)
+        with col_analisis_1:
+            if st.button("Analizar sin IA", disabled=is_button_disabled, use_container_width=True):
+                with st.spinner("Ejecutando simulación..."):
+                    st.session_state.datos_paciente['imagenes_confirmadas_ia'] = []
+                    resultado_simulado = simulacion_ia(st.session_state.datos_paciente['texto_medico'], st.session_state.datos_paciente['edad'], st.session_state.datos_paciente['dolor'])
+                    st.session_state.resultado = resultado_simulado
+                    if resultado_simulado and resultado_simulado.get("status") == "SUCCESS":
+                        st.session_state.analysis_complete = True
+                    st.rerun()
+        
+        with col_analisis_2:
+            # Botón principal con icono (simulado en texto o label si es posible, pero st.button no soporta markdown/html en label facilmente, se deja texto limpio)
+            if st.button(button_label, type="primary", disabled=is_button_disabled, use_container_width=True):
+                with st.spinner("Contactando con la IA..."):
+                    imagenes_a_enviar = [f for f in st.session_state.datos_paciente.get('imagenes', []) if st.session_state.modal_image_selection.get(f.name)]
+                    st.session_state.datos_paciente['imagenes_confirmadas_ia'] = imagenes_a_enviar
+                    
+                    # Preparar texto enriquecido con transcripciones
+                    texto_completo = st.session_state.datos_paciente['texto_medico']
+                    
+                    # Buscar transcripciones de audios seleccionados
+                    transcripciones_extra = []
+                    for f in imagenes_a_enviar:
+                        # Verificar si es audio
+                        is_audio_file = False
+                        if isinstance(f, TempFileWrapper):
+                             is_audio_file = f.name.startswith("audio_") or f.name.endswith(('.wav', '.mp3', '.ogg'))
+                        elif hasattr(f, 'name'):
+                             is_audio_file = f.name.endswith(('.wav', '.mp3', '.ogg'))
+                        
+                        if is_audio_file:
+                            md5 = calculate_md5(f)
+                            trans = get_transcription(md5)
+                            if trans:
+                                # Usar sended_text si existe, sino fallback
+                                text_to_send = trans.get('sended_text', '')
+                                if not text_to_send:
+                                     user_text = trans.get('spanish_user_text', '')
+                                     ia_text = trans.get('translated_ia_text', trans.get('spanish_text', ''))
+                                     text_to_send = user_text if user_text else ia_text
+                                
+                                if text_to_send:
+                                    # Formatear con metadatos extra si existen
+                                    extra_info = []
+                                    prosody = trans.get('emotional_prosody')
+                                    relevance = trans.get('relevance')
+                                    
+                                    if prosody and prosody != "No aplicable":
+                                        extra_info.append(f"Prosodia: {prosody}")
+                                    if relevance is not None:
+                                        extra_info.append(f"Relevancia: {relevance}/9")
+                                    
+                                    info_str = f" [{', '.join(extra_info)}]" if extra_info else ""
+                                    transcripciones_extra.append(f"Transcripción Audio ({f.name}): {text_to_send}{info_str}")
+
+                    if transcripciones_extra:
+                        texto_completo += "\n\n" + "\n".join(transcripciones_extra)
+
+                    # Filtrar imágenes reales para la preview/envío legacy
+                    imagenes_reales = [f for f in imagenes_a_enviar if not isinstance(f, TempFileWrapper) or (not f.name.startswith("audio_") and not f.name.endswith(('.wav', '.mp3')))]
+                    imagen_pil = Image.open(imagenes_reales[0]) if imagenes_reales else None
+                    
+                    resultado_ia, _ = llamar_modelo_gemini(texto_completo, st.session_state.datos_paciente['edad'], st.session_state.datos_paciente['dolor'], imagen=imagen_pil)
+                    procesar_respuesta_ia(resultado_ia)
+                    if st.session_state.resultado and st.session_state.resultado.get("status") != "ERROR":
+                        st.session_state.analysis_complete = True
+                    st.rerun()
+
+
+
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/input_form.py</div>', unsafe_allow_html=True)

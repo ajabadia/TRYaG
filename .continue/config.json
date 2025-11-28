@@ -1,0 +1,38 @@
+{
+  "models": [
+    {
+      "title": "🧠 Llama 3.3 70B (MODERNO + POTENTE)",
+      "provider": "ollama",
+      "model": "llama3.3:70b-instruct-q4_0"
+    },
+    {
+      "title": "💻 CodeLlama 70B (ESPECIALIZADO CÓDIGO)",
+      "provider": "ollama",
+      "model": "codellama:70b-instruct-q4_0"
+    },
+    {
+      "title": "🚀 Llama 3.1 70B (TU DESCARGANDO)",
+      "provider": "ollama",
+      "model": "llama3.1:70b-instruct-q4_0"
+    },
+    {
+      "title": "⚡ Llama 3.1 8B (RÁPIDO + ESTABLE)",
+      "provider": "ollama",
+      "model": "llama3.1:8b-instruct-q4_0"
+    },
+    {
+      "title": "📚 Llama 3 8B (BACKUP FAMILIAR)",
+      "provider": "ollama",
+      "model": "llama3:8b"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "💨 Qwen2.5 Coder 1.5B (AUTOCOMPLETE INSTANTÁNEO)",
+    "provider": "ollama",
+    "model": "qwen2.5-coder:1.5b-base"
+  },
+  "systemMessage": "Eres un experto desarrollador senior Python especializado en Streamlit, MongoDB, APIs REST, desarrollo fullstack y mejores prácticas. Responde con código limpio, bien documentado y explicaciones pedagógicas.",
+  "contextLength": 128000,
+  "disableIndexing": false,
+  "allowAnonymousTelemetry": false
+}

@@ -1,0 +1,16 @@
+streamlit
+pandas
+streamlit-cookies-manager
+filelock
+matplotlib
+seaborn
+plotly
+google-generativeai
+Pillow
+openpyxl
+pymongo[srv]>=4.6.0
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+requests>=2.31.0
+schedule
+fpdf
