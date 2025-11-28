@@ -75,10 +75,12 @@ def get_client() -> MongoClient:
     mongodb_uri = os.getenv("MONGODB_URI")
     
     if not mongodb_uri:
-        raise ValueError(
-            "MONGODB_URI no encontrado en variables de entorno. "
             "Asegúrate de tener un archivo .env con la configuración correcta."
         )
+    
+    # Debug: Mostrar URI enmascarada para verificar que se carga correctamente
+    masked_uri = mongodb_uri.replace(mongodb_uri.split("@")[0].split("//")[1].split(":")[1], "****") if "@" in mongodb_uri else "URI_SIN_CREDENCIALES"
+    print(f"🔌 Intentando conectar a MongoDB con URI: {masked_uri}")
     
     # Crear cliente con configuración optimizada
     _client = MongoClient(

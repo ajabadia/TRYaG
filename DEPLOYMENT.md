@@ -16,8 +16,8 @@ Asegúrate de que tu código está actualizado en tu repositorio de GitHub.
 1.  En el panel principal de Streamlit, haz clic en el botón azul **"New app"**.
 2.  Selecciona **"Use existing repo"**.
 3.  Rellena los campos:
-    *   **Repository:** Selecciona tu repositorio (ej: `tu-usuario/piloto-traumatologia`).
-    *   **Branch:** `master` (o la rama donde esté tu código).
+    *   **Repository:** `ajabadia/TRYaG`
+    *   **Branch:** `main`
     *   **Main file path:** `src/app.py` (¡Importante! No es `app.py` a secas, está dentro de `src`).
     *   **App URL:** Puedes personalizar el subdominio si está disponible (ej: `triaje-trauma-piloto.streamlit.app`).
 

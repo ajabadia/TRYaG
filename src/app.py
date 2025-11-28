@@ -143,25 +143,6 @@ def init_background_services():
     from services.scheduled_reports import start_scheduler
     start_scheduler()
     return True
-
-# ---------------------------------------------------------------------------
-# UI construction
-# ---------------------------------------------------------------------------
-def mostrar_app_principal():
-    """Render the main Streamlit interface."""
-    # Initialize background services
-    init_background_services()
-
-    # Verify DB connection before loading anything
-    if not check_database_connection():
-        st.stop()
-
-    centro_config = load_centro_config()
-
-    # Custom CSS to tighten spacing
-    st.markdown(
-        """
-        <style>
         /* Reduce top spacing of the app */
         .main > div {
             padding-top: 1rem;
