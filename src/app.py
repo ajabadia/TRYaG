@@ -143,6 +143,26 @@ def init_background_services():
     from services.scheduled_reports import start_scheduler
     start_scheduler()
     return True
+
+# ---------------------------------------------------------------------------
+# UI construction
+# ---------------------------------------------------------------------------
+def mostrar_app_principal():
+    """Render the main Streamlit interface."""
+    
+    # Verify DB connection before loading anything
+    if not check_database_connection():
+        st.stop()
+
+    # Initialize background services (after DB check)
+    init_background_services()
+
+    centro_config = load_centro_config()
+
+    # Custom CSS to tighten spacing
+    st.markdown(
+        """
+        <style>
         /* Reduce top spacing of the app */
         .main > div {
             padding-top: 1rem;
@@ -181,8 +201,6 @@ def init_background_services():
                     render_icon("logo", size=80, color="#28a745")
             except Exception:
                 render_icon("logo", size=80, color="#28a745")
-        else:
-            render_icon("logo", size=80, color="#28a745")
     with col_title:
         nombre_centro = centro_config.get(
             "denominacion", "Asistente de Triaje IA (Piloto Traumatología)"
