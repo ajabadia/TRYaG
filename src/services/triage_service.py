@@ -9,7 +9,7 @@ from src.config import get_model_triage
 
 
 
-def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None):
+def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None, triage_result=None, antecedentes=None, alergias=None):
     """
     Llama al modelo Gemini de Google para obtener una sugerencia de triaje.
  
@@ -25,6 +25,9 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
         vital_signs (dict, optional): Diccionario con signos vitales (fc, pas, spo2, etc.).
         imagen (PIL.Image, optional): Una imagen de la lesión. Por defecto es None.
         prompt_content (str, optional): Contenido del prompt a usar (para pruebas). Si es None, usa el activo.
+        triage_result (dict, optional): Resultado del cálculo de triaje (Worst Case).
+        antecedentes (str, optional): Antecedentes médicos del paciente.
+        alergias (str, optional): Información sobre alergias.
  
     Returns:
         dict: Un diccionario con la respuesta del modelo ya parseada. En caso
@@ -67,14 +70,36 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
         for k, v in vital_signs.items():
             if v is not None:
                 vs_list.append(f"{k.upper()}: {v}")
+        
+        # Añadir análisis detallado si existe
+        if triage_result:
+            vs_list.append("\n--- ANÁLISIS AUTOMÁTICO DE SIGNOS VITALES ---")
+            vs_list.append(f"Clasificación Global: {triage_result.get('label', 'N/A')} (Prioridad {triage_result.get('final_priority', 'N/A')})")
+            vs_list.append(f"Tiempo Máximo Sugerido: {triage_result.get('wait_time', 'N/A')}")
+            
+            if 'details' in triage_result:
+                vs_list.append("Detalles:")
+                for det in triage_result['details']:
+                    # Formato: FC: 120 -> 🔴 Taquicardia Leve
+                    icon = {"green": "🟢", "yellow": "🟡", "orange": "🟠", "red": "🔴", "black": "⚫", "gray": "⚪"}.get(det.get('color'), "")
+                    vs_list.append(f"- {det.get('metric', '').upper()}: {det.get('value')} -> {icon} {det.get('label', '')}")
+        
         if vs_list:
-            vs_str = ", ".join(vs_list)
+            vs_str = "\n".join(vs_list)
 
     # Inyectar variables en el prompt
     # El prompt almacenado espera {motivo}, {edad}, {dolor}
     # Inyectar variables en el prompt
     # Usamos replace en lugar de format para evitar conflictos con las llaves de los ejemplos JSON
-    final_prompt = base_prompt.replace("{motivo}", str(motivo))\
+    
+    # Preparar motivo enriquecido con antecedentes y alergias
+    motivo_completo = str(motivo)
+    if antecedentes:
+        motivo_completo += f"\n\n[ANTECEDENTES]: {antecedentes}"
+    if alergias:
+        motivo_completo += f"\n\n[ALERGIAS]: {alergias}"
+        
+    final_prompt = base_prompt.replace("{motivo}", motivo_completo)\
                               .replace("{edad}", str(edad))\
                               .replace("{dolor}", str(dolor))\
                               .replace("{signos_vitales}", vs_str)

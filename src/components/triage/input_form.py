@@ -153,7 +153,51 @@ def render_input_form():
         if 'edad' not in st.session_state.datos_paciente or st.session_state.datos_paciente['edad'] is None:
              st.session_state.datos_paciente['edad'] = st.number_input("Edad", 0, 120, default_age, disabled=is_step1_disabled, key=f"edad_input_{reset_count}")
         
-        # --- SIGNOS VITALES (Incluye Dolor) ---
+        # --- ANTECEDENTES CLAVE ---
+        st.subheader("Antecedentes Clave")
+        
+        # 1. Antecedentes Generales
+        antecedentes = st.text_area(
+            "Antecedentes Médicos / Quirúrgicos",
+            st.session_state.datos_paciente.get('antecedentes', ''),
+            placeholder="Ej: Hipertensión, Diabetes, Cirugía previa...",
+            height=68,
+            disabled=is_step1_disabled,
+            key=f"antecedentes_input_{reset_count}"
+        )
+        st.session_state.datos_paciente['antecedentes'] = antecedentes
+        
+        # 2. Alergias
+        col_alergia_sel, col_alergia_txt = st.columns([1, 2])
+        with col_alergia_sel:
+            alergias_opts = ["No", "Sí", "Sí a medicación"]
+            current_alergia = st.session_state.datos_paciente.get('alergias_selector', "No")
+            alergia_val = st.selectbox(
+                "¿Alergias?", 
+                alergias_opts, 
+                index=alergias_opts.index(current_alergia) if current_alergia in alergias_opts else 0,
+                disabled=is_step1_disabled,
+                key=f"alergias_sel_{reset_count}"
+            )
+            st.session_state.datos_paciente['alergias_selector'] = alergia_val
+            
+        with col_alergia_txt:
+            if alergia_val != "No":
+                # Mostrar alerta visual si es medicación
+                if alergia_val == "Sí a medicación":
+                    st.warning("⚠️ ALERTA: Alergia a Medicación")
+                
+                alergias_txt = st.text_input(
+                    "Especificar Alergias",
+                    st.session_state.datos_paciente.get('alergias_txt', ''),
+                    placeholder="Ej: Penicilina, Látex...",
+                    disabled=is_step1_disabled,
+                    key=f"alergias_txt_{reset_count}"
+                )
+                st.session_state.datos_paciente['alergias_txt'] = alergias_txt
+            else:
+                st.session_state.datos_paciente['alergias_txt'] = ""
+                st.info("Sin alergias conocidas")
         if not is_step1_disabled:
             # Pasamos la edad explícitamente para que vital_signs_form pueda cargar la config correcta
             render_vital_signs_form(age=st.session_state.datos_paciente.get('edad'))
@@ -304,12 +348,29 @@ def render_input_form():
                     imagenes_reales = [f for f in imagenes_a_enviar if not isinstance(f, TempFileWrapper) or (not f.name.startswith("audio_") and not f.name.endswith(('.wav', '.mp3')))]
                     imagen_pil = Image.open(imagenes_reales[0]) if imagenes_reales else None
                     
+                    # --- CÁLCULO DE TRIAJE AUTOMÁTICO (WORST CASE) ---
+                    from components.triage.vital_signs_form import get_all_configs
+                    from components.triage.triage_logic import calculate_worst_case
+                    
+                    configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))
+                    triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
+                    
+                    # Preparar datos de alergias
+                    alergias_info = st.session_state.datos_paciente.get('alergias_selector', 'No')
+                    if alergias_info != "No":
+                        detalles = st.session_state.datos_paciente.get('alergias_txt', '')
+                        if detalles:
+                            alergias_info += f": {detalles}"
+                    
                     resultado_ia, _ = llamar_modelo_gemini(
                         texto_completo, 
                         st.session_state.datos_paciente['edad'], 
                         st.session_state.datos_paciente['dolor'], 
                         vital_signs=st.session_state.datos_paciente.get('vital_signs'),
-                        imagen=imagen_pil
+                        imagen=imagen_pil,
+                        triage_result=triage_result,
+                        antecedentes=st.session_state.datos_paciente.get('antecedentes'),
+                        alergias=alergias_info
                     )
                     procesar_respuesta_ia(resultado_ia)
                     if st.session_state.resultado and st.session_state.resultado.get("status") != "ERROR":
