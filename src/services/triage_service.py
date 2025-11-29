@@ -9,7 +9,7 @@ from src.config import get_model_triage
 
 
 
-def llamar_modelo_gemini(motivo, edad, dolor, imagen=None, prompt_content=None):
+def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None):
     """
     Llama al modelo Gemini de Google para obtener una sugerencia de triaje.
  
@@ -22,6 +22,7 @@ def llamar_modelo_gemini(motivo, edad, dolor, imagen=None, prompt_content=None):
         motivo (str): Descripción en texto libre del motivo de la consulta.
         edad (int): Edad del paciente.
         dolor (int): Nivel de dolor del paciente en una escala de 0 a 10.
+        vital_signs (dict, optional): Diccionario con signos vitales (fc, pas, spo2, etc.).
         imagen (PIL.Image, optional): Una imagen de la lesión. Por defecto es None.
         prompt_content (str, optional): Contenido del prompt a usar (para pruebas). Si es None, usa el activo.
  
@@ -59,13 +60,24 @@ def llamar_modelo_gemini(motivo, edad, dolor, imagen=None, prompt_content=None):
             
         base_prompt = prompt_data.get("content", "")
     
+    # Formatear signos vitales para el prompt
+    vs_str = "No registrados"
+    if vital_signs:
+        vs_list = []
+        for k, v in vital_signs.items():
+            if v is not None:
+                vs_list.append(f"{k.upper()}: {v}")
+        if vs_list:
+            vs_str = ", ".join(vs_list)
+
     # Inyectar variables en el prompt
     # El prompt almacenado espera {motivo}, {edad}, {dolor}
     # Inyectar variables en el prompt
     # Usamos replace en lugar de format para evitar conflictos con las llaves de los ejemplos JSON
     final_prompt = base_prompt.replace("{motivo}", str(motivo))\
                               .replace("{edad}", str(edad))\
-                              .replace("{dolor}", str(dolor))
+                              .replace("{dolor}", str(dolor))\
+                              .replace("{signos_vitales}", vs_str)
 
     prompt_parts = [final_prompt]
 

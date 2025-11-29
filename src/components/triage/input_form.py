@@ -16,7 +16,9 @@ from config import get_min_chars_motivo
 from components.triage.media_cards import render_media_card
 from components.common.webcam_manager import render_webcam_manager
 from components.common.audio_recorder import render_audio_recorder
+from components.common.audio_recorder import render_audio_recorder
 from components.common.file_importer import render_file_importer
+from components.triage.vital_signs_form import render_vital_signs_form, render_vital_sign_input
 
 def procesar_respuesta_ia(resultado_ia):
     """
@@ -107,7 +109,8 @@ def render_input_form():
             ["", "🎤 Audio", "📷 Foto / Cámara", "📁 Archivo", "🏥 Importar Expediente"],
             index=0,
             key="triage_input_type",
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            disabled=not is_editing or is_step1_disabled
         )
 
         # Contenedor Dinámico (Solo si hay selección)
@@ -116,21 +119,21 @@ def render_input_form():
                 
                 # 1. AUDIO (MODULARIZADO)
                 if "Audio" in input_type:
-                    render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed)
+                    render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed, disabled=is_step1_disabled)
 
                 # 2. FOTO / CÁMARA (MODULARIZADO)
                 elif "Foto" in input_type:
-                    render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close)
+                    render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close, disabled=is_step1_disabled)
 
                 # 3. ARCHIVO (MODULARIZADO)
                 elif "Archivo" in input_type:
-                    render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed)
+                    render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed, disabled=is_step1_disabled)
 
                 # 4. IMPORTAR EXPEDIENTE
                 elif "Importar" in input_type:
                     st.markdown("##### 🏥 Importación de Historia Clínica")
                     st.info("Simulación de conexión con HCE (Historia Clínica Electrónica).")
-                    st.button("⬇️ Importar Últimos Informes", key="sim_import_btn", on_click=import_callback)
+                    st.button("⬇️ Importar Últimos Informes", key="sim_import_btn", on_click=import_callback, disabled=is_step1_disabled)
 
         # Obtener contador de reset
         reset_count = st.session_state.get('reset_counter', 0)
@@ -144,17 +147,68 @@ def render_input_form():
         st.session_state.datos_paciente['texto_medico'] = texto_medico
         is_text_valid = len(texto_medico) >= get_min_chars_motivo()
 
-        # --- EDAD Y DOLOR (Movido aquí) ---
-        c1, c2 = st.columns(2)
-        with c1:
-            default_age = st.session_state.datos_paciente.get('edad', 40)
-            st.session_state.datos_paciente['edad'] = st.number_input("Edad", 0, 120, default_age, disabled=is_step1_disabled, key=f"edad_input_{reset_count}")
-        with c2:
-            st.session_state.datos_paciente['dolor'] = st.slider("Escala EVA (Dolor)", 0, 10, 5, disabled=is_step1_disabled, key=f"dolor_input_{reset_count}")
+        # --- EDAD (Oculto si existe) ---
+        default_age = st.session_state.datos_paciente.get('edad', 40)
+        # Si no hay edad en datos_paciente (ej: paciente nuevo sin seleccionar), mostrar input
+        if 'edad' not in st.session_state.datos_paciente or st.session_state.datos_paciente['edad'] is None:
+             st.session_state.datos_paciente['edad'] = st.number_input("Edad", 0, 120, default_age, disabled=is_step1_disabled, key=f"edad_input_{reset_count}")
+        
+        # --- SIGNOS VITALES (Incluye Dolor) ---
+        if not is_step1_disabled:
+            # Pasamos la edad explícitamente para que vital_signs_form pueda cargar la config correcta
+            render_vital_signs_form(age=st.session_state.datos_paciente.get('edad'))
+        elif 'vital_signs' in st.session_state.datos_paciente:
+             st.info("Signos vitales registrados.")
 
 
+
+
+
+        if st.session_state.datos_paciente.get('imagenes'):
+            with st.container(border=True):
+                c_info_icon, c_info_text = st.columns([1, 20])
+                with c_info_icon:
+                    render_icon("info", size=20, color="#17a2b8")
+                with c_info_text:
+                    st.info("Marca 'Analizar con IA' en los archivos que deseas enviar.")
+                
+                # CSS para Grid Responsivo (Scoped)
+                st.markdown("""
+                    <style>
+                    /* Target container with border (wrapper) or standard block */
+                    div[data-testid="stVerticalBlockBorderWrapper"]:has(.media-cards-grid) [data-testid="stHorizontalBlock"],
+                    div[data-testid="stVerticalBlock"]:has(.media-cards-grid) [data-testid="stHorizontalBlock"] {
+                        flex-wrap: wrap !important;
+                        flex-direction: row !important;
+                        gap: 10px !important;
+                    }
+                    
+                    /* Target columns */
+                    div[data-testid="stVerticalBlockBorderWrapper"]:has(.media-cards-grid) [data-testid="column"],
+                    div[data-testid="stVerticalBlock"]:has(.media-cards-grid) [data-testid="column"] {
+                        flex: 1 1 300px !important;
+                        min-width: 300px !important;
+                        max-width: 33% !important;
+                        width: auto !important;
+                    }
+                    </style>
+                """, unsafe_allow_html=True)
+                
+                # Marcador para CSS Scoped
+                st.markdown('<span class="media-cards-grid" style="display:none"></span>', unsafe_allow_html=True)
+
+                num_files = len(st.session_state.datos_paciente['imagenes'])
+                # Crear una columna por archivo para permitir wrapping
+                cols = st.columns(num_files)
+                
+                for i, file_obj in enumerate(st.session_state.datos_paciente['imagenes']):
+                    with cols[i]:
+                        # Contenedor para la card
+                        render_media_card(file_obj, i, disabled=is_step1_disabled)
+
+        # --- BOTONES DE CONFIRMACIÓN (MOVIDO) ---
         if is_editing:
-            if st.button("Confirmar Motivo", type="primary", disabled=is_step1_disabled, use_container_width=True):
+            if st.button("Confirmar Datos", type="primary", disabled=is_step1_disabled, use_container_width=True):
                 if is_text_valid:
                     st.session_state.is_editing_text = False
                     st.session_state.show_text_error = False
@@ -174,27 +228,6 @@ def render_input_form():
                 if st.button("Editar datos", icon=":material/edit:", key=f"edit_patient_data_{reset_count}", use_container_width=True):
                     st.session_state.is_editing_text = True
                     st.rerun()
-
-
-
-        if st.session_state.datos_paciente.get('imagenes'):
-            with st.container(border=True):
-                c_info_icon, c_info_text = st.columns([1, 20])
-                with c_info_icon:
-                    render_icon("info", size=20, color="#17a2b8")
-                with c_info_text:
-                    st.info("Marca 'Analizar con IA' en los archivos que deseas enviar.")
-                
-                num_cols = 4
-                # Inicializar set de eliminados si no existe
-                if 'deleted_filenames' not in st.session_state:
-                    st.session_state.deleted_filenames = set()
-
-                cols = st.columns(num_cols)
-                for i, file_obj in enumerate(st.session_state.datos_paciente['imagenes']):
-                    with cols[i % num_cols]:
-                        # Contenedor para la card
-                        render_media_card(file_obj, i)
 
         total_imagenes = len(st.session_state.datos_paciente.get('imagenes', []))
         imagenes_seleccionadas = sum(st.session_state.modal_image_selection.values()) if total_imagenes > 0 else 0
@@ -271,7 +304,13 @@ def render_input_form():
                     imagenes_reales = [f for f in imagenes_a_enviar if not isinstance(f, TempFileWrapper) or (not f.name.startswith("audio_") and not f.name.endswith(('.wav', '.mp3')))]
                     imagen_pil = Image.open(imagenes_reales[0]) if imagenes_reales else None
                     
-                    resultado_ia, _ = llamar_modelo_gemini(texto_completo, st.session_state.datos_paciente['edad'], st.session_state.datos_paciente['dolor'], imagen=imagen_pil)
+                    resultado_ia, _ = llamar_modelo_gemini(
+                        texto_completo, 
+                        st.session_state.datos_paciente['edad'], 
+                        st.session_state.datos_paciente['dolor'], 
+                        vital_signs=st.session_state.datos_paciente.get('vital_signs'),
+                        imagen=imagen_pil
+                    )
                     procesar_respuesta_ia(resultado_ia)
                     if st.session_state.resultado and st.session_state.resultado.get("status") != "ERROR":
                         st.session_state.analysis_complete = True

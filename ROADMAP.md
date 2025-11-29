@@ -323,6 +323,29 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - Corregir `NameError` (cookies) y orden de inicialización.
     - Restaurar estructura de archivo corrupta.
 
+## 🚀 TRYaGE 2.0: Advanced Triage System Implementation
+**Objetivo:** Implementación del nuevo sistema de triaje clínico avanzado (Signos vitales, Reevaluación, IA).
+
+- [x] **Fase 1: Base de Datos y Modelos:**
+    - [x] Crear modelos Pydantic (`VitalSigns`, `TriageRangeConfig`).
+    - [x] Actualizar `TriageRecord`.
+    - [x] Actualizar repositorios y crear `TriageConfigRepository`.
+- [x] **Fase 2: Interfaz de Triaje (Entrada):**
+    - [x] Formulario de signos vitales.
+    - [x] Feedback visual (colores).
+- [ ] **Fase 3: Lógica de Clasificación:**
+    - [ ] Algoritmo "Peor Caso".
+    - [ ] Cálculo de prioridad.
+- [ ] **Fase 4: Gestión de Cola y Reevaluación:**
+    - [ ] Panel de espera dinámico.
+    - [ ] Flujo de re-triaje.
+- [ ] **Fase 5: Roles y Configuración:**
+    - [ ] Pantalla de configuración de rangos.
+- [ ] **Fase 6: Integración IA:**
+    - [ ] Alertas predictivas.
+- [ ] **Fase 7: Informes:**
+    - [ ] Hoja de triaje.
+
 ## 🚀 FASE 8: Preparación para Producción (Futuro)
 **Objetivo:** Reemplazar simulaciones con implementaciones reales y robustecer el sistema.
 

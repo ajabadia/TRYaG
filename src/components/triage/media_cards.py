@@ -17,6 +17,7 @@ def render_media_card(file_obj, index):
     Args:
         file_obj: Objeto del archivo (UploadedFile, TempFileWrapper, etc.)
         index (int): Índice del archivo en la lista (para claves únicas).
+        disabled (bool): Si es True, deshabilita las interacciones.
     """
     # Calcular MD5 único para el archivo
     file_md5 = calculate_md5(file_obj)
@@ -88,7 +89,7 @@ def _get_file_content(file_obj):
             
     return None
 
-def render_media_card(file_obj, index):
+def render_media_card(file_obj, index, disabled=False):
     """
     Renderiza una tarjeta para un archivo multimedia específico.
     Detecta el tipo de archivo y delega en el renderizador específico.
@@ -102,11 +103,11 @@ def render_media_card(file_obj, index):
         file_name = file_obj.name.lower() if hasattr(file_obj, 'name') else ""
         
         if file_name.endswith(('.wav', '.mp3', '.ogg')) or file_name.startswith("audio_"):
-            _render_audio_card(file_obj, index, file_md5)
+            _render_audio_card(file_obj, index, file_md5, disabled)
         elif file_name.endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp')):
             _render_image_card(file_obj, index, file_md5)
         elif file_name.endswith(('.mp4', '.mov', '.avi', '.mkv')):
-            _render_video_card(file_obj, index, file_md5)
+            _render_video_card(file_obj, index, file_md5, disabled)
         elif file_name.endswith(('.pdf')):
             _render_pdf_card(file_obj, index, file_md5)
         else:
@@ -119,9 +120,9 @@ def render_media_card(file_obj, index):
         # Imágenes también, pero la lógica actual de 'is_audio' controlaba transcripción.
         # Ajustaremos para que 'is_audio' signifique 'tiene transcripción'.
         is_transcribable = file_name.endswith(('.wav', '.mp3', '.ogg', '.mp4', '.mov', '.avi')) or file_name.startswith("audio_")
-        _render_card_footer(file_obj, index, file_md5, is_transcribable)
+        _render_card_footer(file_obj, index, file_md5, is_transcribable, disabled)
 
-def _render_audio_card(file_obj, index, file_md5):
+def _render_audio_card(file_obj, index, file_md5, disabled=False):
     """Renderiza tarjeta de Audio."""
     transcription = get_transcription(file_md5)
     audio_source = _get_file_content(file_obj)
@@ -141,7 +142,7 @@ def _render_audio_card(file_obj, index, file_md5):
     else:
         _render_transcription_actions(file_obj, index, file_md5)
 
-def _render_video_card(file_obj, index, file_md5):
+def _render_video_card(file_obj, index, file_md5, disabled=False):
     """Renderiza tarjeta de Video."""
     transcription = get_transcription(file_md5)
     video_source = _get_file_content(file_obj)
@@ -158,9 +159,9 @@ def _render_video_card(file_obj, index, file_md5):
     
     # Videos también pueden tener transcripción
     if transcription:
-        _render_transcription_details(transcription, index, file_md5)
+        _render_transcription_details(transcription, index, file_md5, disabled)
     else:
-        _render_transcription_actions(file_obj, index, file_md5)
+        _render_transcription_actions(file_obj, index, file_md5, disabled)
 
 def _render_image_card(file_obj, index, file_md5):
     """Renderiza tarjeta de Imagen."""
@@ -186,7 +187,7 @@ def _render_pdf_card(file_obj, index, file_md5):
     # Podríamos intentar mostrar primera página como imagen si tuviéramos pdf2image, 
     # pero por ahora mantenemos simple.
 
-def _render_transcription_details(transcription, index, file_md5):
+def _render_transcription_details(transcription, index, file_md5, disabled=False):
     """Muestra los detalles de una transcripción existente y permite edición."""
     source = transcription.get('source', 'AI')
     
@@ -223,9 +224,9 @@ def _render_transcription_details(transcription, index, file_md5):
         current_text = transcription.get('translated_text', transcription.get('translated_ia_text', transcription.get('spanish_text', '')))
 
     edit_key = f"edit_text_{index}_{file_md5}"
-    new_text = st.text_area("Texto:", value=current_text, height=100, key=edit_key)
+    new_text = st.text_area("Texto:", value=current_text, height=100, key=edit_key, disabled=disabled)
     
-    if st.button("Guardar Cambios", key=f"save_{index}_{file_md5}", use_container_width=True):
+    if st.button("Guardar Cambios", key=f"save_{index}_{file_md5}", use_container_width=True, disabled=disabled):
         if new_text.strip():
             new_source = 'AI_MODIFIED' if source in ['AI', 'AI_MODIFIED', 'AI_ERROR'] else 'MANUAL'
             save_transcription(file_md5, transcription, source=new_source, spanish_user_text=new_text)
@@ -238,13 +239,13 @@ def _render_transcription_details(transcription, index, file_md5):
         with st.expander("Ver original"):
             st.markdown(f"_{transcription.get('original_text')}_")
 
-def _render_transcription_actions(file_obj, index, file_md5):
+def _render_transcription_actions(file_obj, index, file_md5, disabled=False):
     """Muestra las acciones disponibles cuando no hay transcripción (IA vs Manual)."""
     mode_key = f"mode_{index}_{file_md5}"
-    mode = st.radio("Modo:", ["IA", "Manual"], horizontal=True, key=mode_key, label_visibility="collapsed")
+    mode = st.radio("Modo:", ["IA", "Manual"], horizontal=True, key=mode_key, label_visibility="collapsed", disabled=disabled)
     
     if mode == "IA":
-        if st.button("Transcribir con IA", key=f"btn_ai_{index}_{file_md5}", use_container_width=True):
+        if st.button("Transcribir con IA", key=f"btn_ai_{index}_{file_md5}", use_container_width=True, disabled=disabled):
             with st.spinner("Transcribiendo..."):
                 result, _ = transcribir_audio(file_obj)
                 if result.get("status") != "ERROR":
@@ -255,10 +256,10 @@ def _render_transcription_actions(file_obj, index, file_md5):
                     save_transcription(file_md5, err_data, source="AI_ERROR", error_msg=result.get('msg'))
                     st.rerun()
     else:
-        man_text = st.text_area("Texto manual:", key=f"man_txt_{index}_{file_md5}")
-        man_rel = st.number_input("Relevancia (0-9):", 0, 9, 5, key=f"man_rel_{index}_{file_md5}")
+        man_text = st.text_area("Texto manual:", key=f"man_txt_{index}_{file_md5}", disabled=disabled)
+        man_rel = st.number_input("Relevancia (0-9):", 0, 9, 5, key=f"man_rel_{index}_{file_md5}", disabled=disabled)
         
-        if st.button("Guardar Manual", key=f"btn_man_{index}_{file_md5}", use_container_width=True):
+        if st.button("Guardar Manual", key=f"btn_man_{index}_{file_md5}", use_container_width=True, disabled=disabled):
             if man_text.strip():
                 data = {
                     "original_text": man_text,
@@ -271,7 +272,7 @@ def _render_transcription_actions(file_obj, index, file_md5):
                 save_transcription(file_md5, data, source="MANUAL", spanish_user_text=man_text)
                 st.rerun()
 
-def _render_card_footer(file_obj, index, file_md5, is_transcribable):
+def _render_card_footer(file_obj, index, file_md5, is_transcribable, disabled=False):
     """
     Renderiza el pie de la tarjeta con:
     - Checkbox 'Analizar' (si aplica)
@@ -298,7 +299,7 @@ def _render_card_footer(file_obj, index, file_md5, is_transcribable):
         new_val = st.checkbox(
             "Analizar",
             value=is_selected,
-            disabled=not can_analyze,
+            disabled=not can_analyze or disabled,
             key=f"chk_{index}_{file_md5}"
         )
         
@@ -306,7 +307,7 @@ def _render_card_footer(file_obj, index, file_md5, is_transcribable):
             st.session_state.modal_image_selection[file_obj.name] = new_val
 
     with c_del:
-        if st.button("🗑️", key=f"del_{index}_{file_md5}"):
+        if st.button("🗑️", key=f"del_{index}_{file_md5}", disabled=disabled):
             if 'deleted_filenames' not in st.session_state:
                 st.session_state.deleted_filenames = set()
             st.session_state.deleted_filenames.add(file_obj.name)

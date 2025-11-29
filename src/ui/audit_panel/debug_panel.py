@@ -119,6 +119,8 @@ def render_debug_panel(key_prefix="debug_panel"):
                         elif collection_name == 'centros':
                             salas_count = len(doc.get('salas', []))
                             return f"{doc.get('denominacion', 'Unknown')} ({doc.get('codigo', 'N/A')}) - {salas_count} salas"
+                        elif collection_name == 'vital_sign_references':
+                            return f"{doc.get('name', 'Unknown')} ({doc.get('unit', '')})"
                         else:
                             return str(doc.get('_id', ''))
 

@@ -65,6 +65,22 @@ def mostrar_asistente_triaje():
                 if patient_selected:
                     if st.button("Iniciar Triaje →", type="primary"):
                         st.session_state.triage_step = 2
+                        # Resetear datos del paciente para asegurar un formulario limpio
+                        st.session_state.datos_paciente = {
+                            "texto_medico": "",
+                            "edad": st.session_state.triage_patient.get('edad', 40) if st.session_state.triage_patient else 40,
+                            "dolor": 5,
+                            "imagenes": [],
+                            "imagenes_confirmadas_ia": [],
+                            "vital_signs": {}
+                        }
+                        st.session_state.resultado = None
+                        st.session_state.calificacion_humana = None
+                        st.session_state.validation_complete = False
+                        st.session_state.analysis_complete = False
+                        st.session_state.is_editing_text = True
+                        st.session_state.show_text_error = False
+                        st.session_state.modal_image_selection = {}
                         st.rerun()
 
         # --- PASO 2: REALIZAR TRIAJE ---

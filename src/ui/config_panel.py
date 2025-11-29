@@ -128,7 +128,7 @@ def mostrar_panel_configuracion():
         st.markdown("### :material/tune: Configuración General")
         
         # Sub-tabs de General
-        gen_tabs = ["📱 Aplicación", "📷 Equipamiento"]
+        gen_tabs = ["📱 Aplicación", "📷 Equipamiento", "💓 Signos Vitales"]
         
         if has_permission("configuracion", "prompts"):
             gen_tabs.append("📝 Prompts IA")
@@ -151,12 +151,17 @@ def mostrar_panel_configuracion():
 
         subtab_app = get_tab("📱 Aplicación")
         subtab_equip = get_tab("📷 Equipamiento")
+        subtab_vitals = get_tab("💓 Signos Vitales")
         subtab_prompts = get_tab("📝 Prompts IA")
         subtab_notif = get_tab("🔔 Notificaciones")
         
         with subtab_equip:
             from ui.config.equipment_config import render_equipment_config
             render_equipment_config()
+
+        with subtab_vitals:
+            from ui.config.vital_signs_config import render_vital_signs_config
+            render_vital_signs_config()
             
         if subtab_prompts:
             with subtab_prompts:

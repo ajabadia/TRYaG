@@ -48,7 +48,7 @@ def render_validation_form():
         st.caption("Debe validar o corregir la decisión de la IA.")
         
         # Opciones de Decisión
-        opciones = ["Confirmar Nivel Sugerido", "Modificar Nivel", "No es Traumatología (Rechazar/Derivar)"]
+        opciones = ["Confirmar Nivel Sugerido", "Modificar Nivel", "No aplica (Rechazar/Derivar)"]
         decision = st.radio("Decisión Clínica", opciones, key=f"decision_clinica_{reset_count}")
         
         datos_auditoria = {
@@ -115,7 +115,7 @@ def render_validation_form():
                     st.session_state.validation_msg_type = "warning"
                     st.rerun()
 
-        elif decision == "No es Traumatología (Rechazar/Derivar)":
+        elif decision == "No aplica (Rechazar/Derivar)":
             st.warning("El paciente no cumple criterios para Traumatología.")
             col_rej, col_der = st.columns(2)
             

@@ -72,6 +72,85 @@ class Prompt(BaseModel):
 
 
 # ============================================================================
+# TRIAGE MODELS
+# ============================================================================
+
+class VitalSignSeverityRange(BaseModel):
+    """Rango de gravedad para un signo vital."""
+    min_val: float = Field(..., description="Valor mínimo del rango (inclusive)")
+    max_val: float = Field(..., description="Valor máximo del rango (inclusive)")
+    color: str = Field(..., description="Color asociado (green, yellow, orange, red, black)")
+    priority: int = Field(..., description="Prioridad numérica (0=Baja, 4=Extrema)")
+    label: str = Field(..., description="Etiqueta (ej: Normal, Taquicardia Leve)")
+
+class VitalSignAgeConfig(BaseModel):
+    """Configuración de rangos para un grupo de edad específico."""
+    min_age: int = Field(..., description="Edad mínima (años)")
+    max_age: int = Field(..., description="Edad máxima (años)")
+    
+    # Límites absolutos (Validación de entrada)
+    val_min: float = Field(..., description="Valor mínimo posible (para detectar errores)")
+    val_max: float = Field(..., description="Valor máximo posible (para detectar errores)")
+    
+    # Rango Normal (Clínico - Verde) - Redundante con ranges pero útil para referencia rápida
+    normal_min: float = Field(..., description="Mínimo considerado normal")
+    normal_max: float = Field(..., description="Máximo considerado normal")
+    
+    # Valor por defecto (Media)
+    default_value: float = Field(..., description="Valor medio por defecto")
+    
+    # Rangos de Gravedad Detallados
+    ranges: List[VitalSignSeverityRange] = Field(default_factory=list, description="Lista de rangos de gravedad")
+
+class VitalSignReference(BaseModel):
+    """Referencia completa para un signo vital."""
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    name: str = Field(..., description="Nombre del signo vital (ej: FC)")
+    key: str = Field(..., description="Clave interna (ej: fc)")
+    unit: str = Field(..., description="Unidad de medida (ej: ppm)")
+    configs: List[VitalSignAgeConfig] = Field(default_factory=list, description="Configuraciones por edad")
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+
+class VitalSigns(BaseModel):
+    """Signos vitales del paciente."""
+    fc: Optional[int] = Field(default=None, description="Frecuencia Cardíaca (ppm)")
+    pas: Optional[int] = Field(default=None, description="Presión Arterial Sistólica (mmHg)")
+    pad: Optional[int] = Field(default=None, description="Presión Arterial Diastólica (mmHg)")
+    spo2: Optional[int] = Field(default=None, description="Saturación de Oxígeno (%)")
+    temp: Optional[float] = Field(default=None, description="Temperatura (°C)")
+    fr: Optional[int] = Field(default=None, description="Frecuencia Respiratoria (rpm)")
+    gcs: Optional[int] = Field(default=None, description="Escala de Coma de Glasgow (3-15)")
+    eva: Optional[int] = Field(default=None, description="Escala Visual Analógica de Dolor (0-10)")
+    pupilas: Optional[Literal["Normal", "Lenta", "Fijas", "Anisocoria", "Puntiformes"]] = Field(default=None)
+    oxigeno_suplementario: bool = Field(default=False, description="¿Usa oxígeno suplementario?")
+    
+    # Metadata adicional
+    notas: Optional[str] = Field(default=None)
+    timestamp: datetime = Field(default_factory=datetime.now)
+
+class TriageRangeConfig(BaseModel):
+    """Configuración de rangos para un signo vital."""
+    metric: str = Field(..., description="Nombre de la métrica (fc, pas, spo2, etc.)")
+    red_min: Optional[float] = None
+    red_max: Optional[float] = None
+    orange_min: Optional[float] = None
+    orange_max: Optional[float] = None
+    yellow_min: Optional[float] = None
+    yellow_max: Optional[float] = None
+    green_min: Optional[float] = None
+    green_max: Optional[float] = None
+    
+    # Para valores discretos (ej: pupilas)
+    red_values: List[str] = Field(default_factory=list)
+    orange_values: List[str] = Field(default_factory=list)
+    yellow_values: List[str] = Field(default_factory=list)
+
+
+# ============================================================================
 # TRIAGE RECORDS (antes audit_records)
 # ============================================================================
 
@@ -80,14 +159,40 @@ class TriageRecord(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     audit_id: str = Field(..., description="ID único del registro (ej: AUD-20251123-001)")
     timestamp: datetime = Field(default_factory=datetime.now)
+    
+    # Datos del Paciente (Snapshot)
+    patient_id: Optional[str] = Field(default=None, description="ID del paciente (si existe)")
+    patient_age: Optional[int] = Field(default=None)
+    
+    # Datos Clínicos
+    vital_signs: Optional[VitalSigns] = Field(default=None, description="Signos vitales registrados")
+    sintomas_detectados: List[str] = Field(default_factory=list)
+    
+    # Resultado Triaje
     sugerencia_ia: Dict[str, Any] = Field(..., description="Respuesta completa de la IA")
-    nivel_corregido: Optional[int] = Field(default=None, ge=0, le=5)
-    decision_humana: Optional[str] = Field(default=None)
+    nivel_sugerido: Optional[int] = Field(default=None, ge=1, le=5, description="Nivel sugerido por IA (1-5)")
+    color_sugerido: Optional[str] = Field(default=None, description="Color sugerido (Rojo, Naranja, etc.)")
+    
+    # Decisión Final
+    nivel_final: Optional[int] = Field(default=None, ge=1, le=5)
+    color_final: Optional[str] = Field(default=None)
+    motivo_urgencia: Optional[str] = Field(default=None, description="Motivo principal de la clasificación")
+    
+    # Auditoría y Control
+    decision_humana: Optional[str] = Field(default=None, description="Si hubo cambio manual")
     justificacion: Optional[str] = Field(default=None)
+    evaluator_id: Optional[str] = Field(default=None, description="ID del usuario que realiza el triaje")
+    
+    # Reevaluación
+    is_reevaluation: bool = Field(default=False)
+    parent_triage_id: Optional[str] = Field(default=None, description="ID del triaje anterior si es reevaluación")
+    
+    # Metadata IA
     prompt_type: str = Field(default="triage_gemini")
     prompt_version: Optional[str] = None
     model_name: Optional[str] = None
     model_version: Optional[str] = None
+    
     created_at: datetime = Field(default_factory=datetime.now)
     
     class Config:

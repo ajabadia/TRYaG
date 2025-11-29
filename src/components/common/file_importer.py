@@ -2,7 +2,7 @@
 import streamlit as st
 from utils.file_handler import save_file_to_temp, TempFileWrapper
 
-def render_file_importer(key_prefix="files", on_files_ready=None):
+def render_file_importer(key_prefix="files", on_files_ready=None, disabled=False):
     """
     Renderiza un componente reutilizable para subir archivos.
     
@@ -10,6 +10,7 @@ def render_file_importer(key_prefix="files", on_files_ready=None):
         key_prefix (str): Prefijo para las claves de los widgets.
         on_files_ready (callable): Función a llamar cuando se confirman los archivos.
                                    Recibe una lista de objetos TempFileWrapper.
+        disabled (bool): Si es True, deshabilita las interacciones.
     """
     st.markdown("##### 📁 Subir Archivos")
     
@@ -20,7 +21,8 @@ def render_file_importer(key_prefix="files", on_files_ready=None):
         "Seleccione archivos (Imágenes, Audio, Video, Docs)", 
         type=["png", "jpg", "jpeg", "wav", "mp3", "ogg", "mp4", "mov", "avi", "pdf", "txt", "md", "doc", "docx", "xls", "xlsx"],
         accept_multiple_files=True,
-        key=f"{key_prefix}_upload_{st.session_state[f'{key_prefix}_reset_counter']}"
+        key=f"{key_prefix}_upload_{st.session_state[f'{key_prefix}_reset_counter']}",
+        disabled=disabled
     )
     
     if uploaded_files:
@@ -45,6 +47,6 @@ def render_file_importer(key_prefix="files", on_files_ready=None):
             # Reiniciar uploader
             st.session_state[f"{key_prefix}_reset_counter"] += 1
 
-        st.button("✅ Añadir Archivos", key=f"{key_prefix}_add_btn", on_click=handle_add_files)
+        st.button("✅ Añadir Archivos", key=f"{key_prefix}_add_btn", on_click=handle_add_files, disabled=disabled)
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/common/file_importer.py</div>', unsafe_allow_html=True)

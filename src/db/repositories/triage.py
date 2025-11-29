@@ -32,6 +32,11 @@ class TriageRepository(BaseRepository[TriageRecord]):
         self.create_index([("prompt_type", 1)])
         # Índice compuesto para filtros comunes
         self.create_index([("timestamp", pymongo.DESCENDING), ("prompt_type", 1)])
+        
+        # Nuevos índices para TRYaGE 2.0
+        self.create_index([("patient_id", 1)])
+        self.create_index([("evaluator_id", 1)])
+        self.create_index([("is_reevaluation", 1)])
     
     def get_by_audit_id(self, audit_id: str) -> Optional[Dict[str, Any]]:
         """
