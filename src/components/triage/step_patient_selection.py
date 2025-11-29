@@ -172,7 +172,7 @@ def render_step_patient_selection() -> bool:
     selected_patient = st.session_state.triage_patient
     
     # Renderizar lista
-    from components.common.patient_selection_card import render_patient_selection_card
+    from ui.components.common.patient_card import render_patient_card
     
     for p in lista_pacientes:
         is_in_room = p.get('is_in_room', False)
@@ -183,24 +183,16 @@ def render_step_patient_selection() -> bool:
         is_selected = bool(selected_patient and 
                      selected_patient.get('patient_code') == p.get('patient_code'))
         
-        action = render_patient_selection_card(
-            p, 
-            is_selected=is_selected, 
-            key_prefix="triage",
-            is_in_room=is_in_room,
-            disable_attend=disable_attend,
-            show_actions=True
-        )
-        
-        if action == 'attend':
-            if is_in_room:
+        # Definir callbacks
+        def on_attend(patient):
+            if patient.get('is_in_room', False):
                 # Ya está en sala, solo seleccionamos
-                st.session_state.triage_patient = p
+                st.session_state.triage_patient = patient
             else:
                 # Mover a sala
                 try:
                     mover_paciente_a_sala(
-                        patient_code=p.get('patient_code'),
+                        patient_code=patient.get('patient_code'),
                         sala_destino_code=room_code,
                         sala_destino_tipo="triaje",
                         sala_destino_subtipo="atencion",
@@ -208,30 +200,74 @@ def render_step_patient_selection() -> bool:
                         notas=f"Atendido en {room_code}",
                         usuario=_get_username()
                     )
-                    st.session_state.triage_patient = p
+                    st.session_state.triage_patient = patient
                 except Exception as e:
                     st.error(f"Error al mover paciente: {e}")
-                    continue
+                    return
 
             # Pre-rellenar edad
-            if 'fecha_nacimiento' in p:
-                fn = p['fecha_nacimiento']
+            if 'fecha_nacimiento' in patient:
+                fn = patient['fecha_nacimiento']
                 if isinstance(fn, str):
                     try: fn = datetime.fromisoformat(fn)
                     except: pass
                 st.session_state.datos_paciente['edad'] = calcular_edad(fn)
             
             st.rerun()
-            
-        elif action == 'reject':
-            st.session_state.triage_action_target = p
+
+        def on_reject(patient):
+            st.session_state.triage_action_target = patient
             st.session_state.triage_action_type = 'reject'
             st.rerun()
-            
-        elif action == 'reassign':
-            st.session_state.triage_action_target = p
+
+        def on_reassign(patient):
+            st.session_state.triage_action_target = patient
             st.session_state.triage_action_type = 'reassign'
             st.rerun()
+
+        # Construir acciones
+        actions = []
+        
+        # Botón Principal (Atender/Continuar)
+        btn_label = "Continuar" if is_in_room else ("Atendiendo" if is_selected else "Atender")
+        btn_type = "primary" if (is_selected or is_in_room) else "secondary"
+        
+        # Solo mostrar botón de atender si no está bloqueado o si es el paciente en sala
+        # O si queremos mostrarlo deshabilitado, pasamos disabled=True
+        
+        actions.append({
+            "label": btn_label,
+            "key": "attend",
+            "type": btn_type,
+            "on_click": on_attend,
+            "disabled": disable_attend and not is_in_room
+        })
+
+        # Botones Extra (Rechazar/Reasignar) - Solo si show_actions=True (que era hardcoded True antes)
+        actions.append({
+            "label": "❌",
+            "key": "reject",
+            "type": "secondary",
+            "on_click": on_reject,
+            "help": "Rechazar"
+        })
+        actions.append({
+            "label": "➡️",
+            "key": "reassign",
+            "type": "secondary",
+            "on_click": on_reassign,
+            "help": "Reasignar"
+        })
+
+        render_patient_card(
+            patient=p,
+            actions=actions,
+            show_triage_level=False, # En selección de triaje aún no tienen nivel (o sí, si vienen re-evaluados, pero asumimos que no para simplificar visualmente o lo mostramos si existe)
+            show_wait_time=True,
+            show_location=True,
+            is_in_room=is_in_room,
+            key_prefix="triage_sel"
+        )
 
     # Mostrar paciente seleccionado y permitir avanzar
     if selected_patient:

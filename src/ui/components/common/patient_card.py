@@ -8,7 +8,7 @@ def render_patient_card(
     show_triage_level: bool = True,
     show_wait_time: bool = True,
     show_location: bool = False,
-    highlight_alert: bool = True,
+    is_in_room: bool = False,
     key_prefix: str = ""
 ):
     """
@@ -17,11 +17,12 @@ def render_patient_card(
     Args:
         patient (dict): Datos del paciente.
         actions (list): Lista de dicts con configuración de botones:
-                        [{'label': 'Llamar', 'key': 'call', 'on_click': func, 'type': 'primary'}]
+                        [{'label': 'Llamar', 'key': 'call', 'on_click': func, 'type': 'primary', 'disabled': bool}]
         show_triage_level (bool): Mostrar badge de nivel de triaje.
         show_wait_time (bool): Mostrar tiempo de espera.
         show_location (bool): Mostrar sala actual/origen.
         highlight_alert (bool): Cambiar borde/color según alertas de espera.
+        is_in_room (bool): Destacar si el paciente está en sala (estilo azul).
         key_prefix (str): Prefijo para keys de Streamlit.
     """
     # 1. Preparar Datos Visuales
@@ -65,20 +66,20 @@ def render_patient_card(
                     elif mins > 60: alert_level = 'warning'
 
     # 2. Renderizar
-    # Borde coloreado si es crítico/warning
-    border_color = None # Default streamlit gray
-    if highlight_alert:
-        if alert_level == 'critical': 
-            # Streamlit no permite color de borde en container nativo directamente, 
-            # pero podemos usar markdown o emoji.
-            pass 
+    # Contenedor con estilo diferente si está en sala
+    if is_in_room:
+        context = st.info("🔵 Paciente en Sala")
+    else:
+        context = st.container(border=True)
 
-    with st.container(border=True):
+    with context:
         c_info, c_meta = st.columns([3, 1])
         
         with c_info:
             # Header: Badge + Nombre
-            if show_triage_level and nivel_str != 'N/A':
+            if is_in_room:
+                 st.markdown(f"**{nombre}**")
+            elif show_triage_level and nivel_str != 'N/A':
                 st.markdown(f":{badge_color}[**{nivel_str}**] **{nombre}**")
             else:
                 st.markdown(f"**{nombre}**")
@@ -92,7 +93,7 @@ def render_patient_card(
         with c_meta:
             if show_wait_time:
                 st.markdown(f"⏱️ **{wait_str}**")
-                if highlight_alert:
+                if highlight_alert and not is_in_room:
                     if alert_level == 'critical':
                         st.markdown(":red[**CRITICAL**]")
                     elif alert_level == 'warning':
@@ -108,14 +109,48 @@ def render_patient_card(
                         key=f"{key_prefix}_{action['key']}_{pid}",
                         type=action.get('type', 'secondary'),
                         use_container_width=True,
-                        help=action.get('help')
+                        help=action.get('help'),
+                        disabled=action.get('disabled', False)
                     ):
                         if action.get('on_click'):
                             action['on_click'](patient)
 
+def render_patient_header(patient, triage_result=None):
+    """
+    Renderiza una cabecera con estilo de tarjeta para el paciente en proceso.
+    Incluye datos del triaje si están disponibles.
+    """
+    with st.container(border=True):
+        col_info, col_extra = st.columns([3, 1])
+        
+        with col_info:
+            nombre_completo = patient.get('nombre_completo', f"{patient.get('nombre', '')} {patient.get('apellido1', '')}").strip()
+            st.markdown(f"### 👤 {nombre_completo}")
+            
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.caption(f"**ID:** {patient.get('patient_code')}")
+            with c2:
+                edad = patient.get('edad', 'N/A')
+                st.caption(f"**Edad:** {edad} años")
+            with c3:
+                # Mostrar sala de origen si existe
+                sala = patient.get('sala_espera_origen')
+                if sala:
+                    st.caption(f"**Origen:** {sala}")
+
+        with col_extra:
+            if triage_result and triage_result.get('nivel'):
+                nivel = triage_result.get('nivel')
+                # Si es un dict (color, text), extraer
+                if isinstance(nivel, dict):
+                    color = nivel.get('color', 'grey')
+                    text = nivel.get('text', 'N/A')
+                    st.markdown(f"<div style='background-color:{color}; color:white; padding:10px; border-radius:5px; text-align:center;'><b>{text}</b></div>", unsafe_allow_html=True)
+                else:
+                    st.info(f"Nivel: {nivel}")
+            else:
+                st.caption("Triaje en curso...")
     # Nota: Este componente es pequeño y se usa repetidamente, quizás no queramos el footer en cada tarjeta individual
     # pero si el usuario lo pide explícitamente en "todos los archivos", lo ponemos.
-    # st.caption("src/ui/components/common/patient_card.py") 
-    # Comentado porque ensuciaría mucho la UI si aparece en cada tarjeta.
-    # Si el usuario insiste, lo descomentamos.
-    pass
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)

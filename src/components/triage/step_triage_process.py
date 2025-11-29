@@ -26,7 +26,7 @@ def render_step_triage_process() -> bool:
         return False
     
     # Mostrar información del paciente (Unificada)
-    from components.common.patient_selection_card import render_patient_header
+    from ui.components.common.patient_card import render_patient_header
     render_patient_header(p, st.session_state.get('resultado'))
     
     st.divider()

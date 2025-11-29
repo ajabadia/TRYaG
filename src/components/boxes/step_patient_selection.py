@@ -77,14 +77,28 @@ def render_step_patient_selection() -> bool:
     st.markdown(f"**Pacientes pendientes:** {len(pacientes_en_espera)}")
     
     # Mostrar lista de pacientes
-    from components.common.patient_selection_card import render_patient_selection_card
+    from ui.components.common.patient_card import render_patient_card
     
     for p in pacientes_en_espera:
-        # Renderizar tarjeta y capturar acción
-        # Nota: En boxes no hay concepto de "seleccionado" persistente en este paso, 
-        # se llama directamente.
-        if render_patient_selection_card(p, is_selected=False, key_prefix="boxes"):
-            _llamar_paciente(p, room_code)
+        # Definir callback para llamar al paciente
+        def on_call(patient):
+            _llamar_paciente(patient, room_code)
+
+        actions = [{
+            "label": "Llamar",
+            "key": "call",
+            "type": "primary",
+            "on_click": on_call
+        }]
+
+        render_patient_card(
+            patient=p,
+            actions=actions,
+            show_triage_level=True,
+            show_wait_time=True,
+            show_location=True,
+            key_prefix="boxes_sel"
+        )
             
     return False
 
