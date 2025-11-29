@@ -363,3 +363,5 @@ def mostrar_gestor_salas():
     render_zone("triaje", tab_tri)
     render_zone("box", tab_box)
     render_zone("consulta_ingreso", tab_ing)
+
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/room_manager_view.py</div>', unsafe_allow_html=True)

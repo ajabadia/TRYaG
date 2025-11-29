@@ -97,3 +97,5 @@ def render_clinical_options_manager():
                     repo.delete(opt_to_delete.id)
                     st.success("Opción eliminada.")
                     st.rerun()
+
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/clinical_options_manager.py</div>', unsafe_allow_html=True)

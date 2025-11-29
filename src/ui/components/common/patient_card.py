@@ -112,3 +112,10 @@ def render_patient_card(
                     ):
                         if action.get('on_click'):
                             action['on_click'](patient)
+
+    # Nota: Este componente es pequeño y se usa repetidamente, quizás no queramos el footer en cada tarjeta individual
+    # pero si el usuario lo pide explícitamente en "todos los archivos", lo ponemos.
+    # st.caption("src/ui/components/common/patient_card.py") 
+    # Comentado porque ensuciaría mucho la UI si aparece en cada tarjeta.
+    # Si el usuario insiste, lo descomentamos.
+    pass
