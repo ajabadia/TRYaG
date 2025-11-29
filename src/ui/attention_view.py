@@ -15,6 +15,8 @@ from services.patient_flow_service import (
 from services.room_service import obtener_salas_por_tipo
 from ui.config_panel import load_centro_config
 
+from ui.components.waiting_list import render_waiting_list_component
+
 def render_waiting_list(selected_box_code):
     """Muestra la lista de pacientes en salas de espera para ser llamados."""
     st.markdown("### 📋 Pacientes en Espera")
@@ -36,35 +38,8 @@ def render_waiting_list(selected_box_code):
         st.info("No hay pacientes en salas de espera.")
         return
 
-    # Mostrar en tabla o tarjetas
-    for p in pacientes_espera:
-        with st.container(border=True):
-            c1, c2, c3 = st.columns([3, 2, 2])
-            with c1:
-                st.markdown(f"**{p['nombre_completo']}**")
-                st.caption(f"ID: {p['patient_code']}")
-            with c2:
-                # Calcular espera
-                wait_start = p.get('wait_start')
-                wait_min = 0
-                if wait_start:
-                    wait_min = int((datetime.now() - wait_start).total_seconds() / 60)
-                
-                color = "green"
-                if wait_min > 60: color = "red"
-                elif wait_min > 30: color = "orange"
-                
-                st.markdown(f"⏱️ :{color}[{wait_min} min]")
-                st.caption(f"Desde: {wait_start.strftime('%H:%M') if wait_start else '?'}")
-            
-            with c3:
-                if st.button("📢 LLAMAR A BOX", key=f"call_{p['patient_code']}", type="primary", use_container_width=True):
-                    if iniciar_atencion_box(p['patient_code'], selected_box_code):
-                        st.success(f"Llamando a {p['nombre_completo']}...")
-                        st.session_state.active_patient_code = p['patient_code']
-                        st.rerun()
-                    else:
-                        st.error("Error al asignar paciente.")
+    # Usar componente reutilizable
+    render_waiting_list_component(pacientes_espera, context="attention", box_code=selected_box_code)
 
 def render_active_patient(patient_code, box_code):
     """Muestra la ficha del paciente que está siendo atendido."""

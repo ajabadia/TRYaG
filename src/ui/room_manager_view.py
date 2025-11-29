@@ -32,24 +32,31 @@ def calculate_wait_time(start_time):
     delta = datetime.now() - start_time
     return int(delta.total_seconds() / 60)
 
-def render_patient_card(patient, room_code, key_suffix=""):
-    """Tarjeta de paciente con botón de gestión.
-    Se muestra el nombre, ID y tiempo de espera.
-    """
-    wait_minutes = calculate_wait_time(patient.get('wait_start'))
-    with st.container(border=True):
-        c1, c2 = st.columns([3, 1])
-        with c1:
-            st.markdown(f"**{patient.get('nombre_completo')}**")
-            st.caption(f"ID: {patient.get('patient_code')}")
-        with c2:
-            st.markdown(f"⏱️ **{wait_minutes}** min")
-        st.markdown(f"Estado: `{patient.get('estado_flujo')}`")
-        # Añadimos key_suffix para evitar duplicados si la misma sala se renderiza en múltiples tabs
-        if st.button("⚙️ Gestionar", key=f"manage_{patient['patient_code']}_{room_code}_{key_suffix}"):
-            st.session_state.managing_patient = patient
-            st.session_state.managing_origin_room = room_code
-            st.rerun()
+from ui.components.common.patient_card import render_patient_card
+
+def render_patient_card_wrapper(patient, room_code, key_suffix=""):
+    """Wrapper para adaptar el componente unificado a la vista de gestión."""
+    
+    def on_manage(p):
+        st.session_state.managing_patient = p
+        st.session_state.managing_origin_room = room_code
+        st.rerun()
+
+    actions = [{
+        'label': '⚙️ Gestionar',
+        'key': 'manage',
+        'type': 'secondary',
+        'on_click': on_manage
+    }]
+
+    render_patient_card(
+        patient=patient,
+        actions=actions,
+        show_triage_level=False, # En control tower quizás no es lo más relevante o no está disponible siempre
+        show_wait_time=True,
+        highlight_alert=True,
+        key_prefix=f"rm_{room_code}_{key_suffix}"
+    )
 
 def render_error_alerts():
     """Muestra alertas de pacientes en salas inexistentes o inactivas."""
@@ -349,7 +356,7 @@ def mostrar_gestor_salas():
                         show_select_button=False,
                         pacientes=patients,
                         # Pasamos key_suffix para evitar duplicados
-                        render_patient_func=lambda p, c: render_patient_card(p, c, key_suffix=zone_type),
+                        render_patient_func=lambda p, c: render_patient_card_wrapper(p, c, key_suffix=zone_type),
                     )
 
     render_zone("admision", tab_adm)

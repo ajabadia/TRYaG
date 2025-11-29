@@ -189,6 +189,9 @@ def mostrar_app_principal():
             elif "Atención Box" in tab_label:
                 from ui.boxes_view import render_boxes_view
                 render_boxes_view()
+            elif "Sala de Espera" in tab_label:
+                from ui.waiting_room_dashboard import render_waiting_room_dashboard
+                render_waiting_room_dashboard()
             elif "Consulta" in tab_label:
                 from ui.admission_management_view import render_admission_management_view
                 render_admission_management_view()
@@ -244,6 +247,7 @@ if not disclaimer_accepted:
             color: white;
             border: none;
             cursor: pointer;
+            st.rerun()
         }
         div[data-testid="stButton"] > button:hover {
             background-color: #218838;

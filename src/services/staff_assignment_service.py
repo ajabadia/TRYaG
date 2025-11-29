@@ -12,8 +12,8 @@ Regla de Prioridad:
 
 from datetime import datetime, date
 from typing import List, Dict, Optional, Any
-from db.repositories.users import get_users_repository
-from db.repositories.turnos import get_turnos_repository
+from src.db.repositories.users import get_users_repository
+from src.db.repositories.turnos import get_turnos_repository
 
 
 def _convert_to_time(time_value):
