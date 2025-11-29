@@ -166,38 +166,8 @@ def mostrar_panel_configuracion():
             
         if subtab_prompts:
             with subtab_prompts:
-                from components.config.prompt_editor import render_prompt_editor
-                st.info("Gestión de Prompts y Reglas de IA.")
-                tab_gemini, tab_sim, tab_transcription, tab_predictive = st.tabs([
-                    "Gemini (IA Generativa)",
-                    "Simulación (Reglas)",
-                    "Transcripción",
-                    "Alertas Predictivas"
-                ])
-                with tab_gemini:
-                    render_prompt_editor(
-                        "triage_gemini",
-                        "Prompt de Triaje (Gemini)",
-                        "Define las instrucciones, rol y ejemplos (few-shot) para el modelo Gemini.",
-                    )
-                with tab_sim:
-                    render_prompt_editor(
-                        "triage_sim",
-                        "Configuración de Simulación",
-                        "Define palabras clave, reglas y umbrales para el modo de simulación (JSON).",
-                    )
-                with tab_transcription:
-                    render_prompt_editor(
-                        "transcription",
-                        "Prompt de Transcripción",
-                        "Instrucciones para la transcripción y traducción de audio.",
-                    )
-                with tab_predictive:
-                    render_prompt_editor(
-                        "triage_predictive",
-                        "Prompt de Alertas Predictivas",
-                        "Detecta riesgos inminentes basados en signos vitales y antecedentes (Pre-Triaje).",
-                    )
+                from components.config.prompt_manager import render_prompt_manager
+                render_prompt_manager()
 
         if subtab_notif:
             with subtab_notif:
