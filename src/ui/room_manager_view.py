@@ -54,7 +54,6 @@ def render_patient_card_wrapper(patient, room_code, key_suffix=""):
         actions=actions,
         show_triage_level=False, # En control tower quizás no es lo más relevante o no está disponible siempre
         show_wait_time=True,
-        highlight_alert=True,
         key_prefix=f"rm_{room_code}_{key_suffix}"
     )
 
