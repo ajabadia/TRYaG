@@ -53,13 +53,16 @@ def render_validation_form():
         
         datos_auditoria = {
             "timestamp": datetime.now().isoformat(),
-            "motivo_consulta": datos_paciente['texto_medico'],
-            "edad": datos_paciente['edad'],
-            "dolor": datos_paciente['dolor'],
+            "motivo_consulta": datos_paciente.get('texto_medico', ''),
+            "edad": datos_paciente.get('edad'),
+            "dolor": datos_paciente.get('dolor'),
+            "antecedentes": datos_paciente.get('antecedentes', ''),
+            "alergias": datos_paciente.get('alergias_info_completa', ''),
+            "signos_vitales": datos_paciente.get('vital_signs', {}),
             "import_files": len(datos_paciente.get('imagenes', [])),
             "ia_files": len(datos_paciente.get('imagenes_confirmadas_ia', [])),
             "sugerencia_ia": nivel_texto,
-            "razones_ia": " | ".join(resultado['razones']),
+            "razones_ia": " | ".join(resultado.get('razones', [])),
             "calificacion_humana": st.session_state.get('calificacion_humana', 'No calificado')
         }
 
