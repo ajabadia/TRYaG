@@ -8,6 +8,7 @@ def render_patient_card(
     show_triage_level: bool = True,
     show_wait_time: bool = True,
     show_location: bool = False,
+    highlight_alert: bool = True,
     is_in_room: bool = False,
     key_prefix: str = ""
 ):
