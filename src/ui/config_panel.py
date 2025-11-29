@@ -128,7 +128,7 @@ def mostrar_panel_configuracion():
         st.markdown("### :material/tune: Configuración General")
         
         # Sub-tabs de General
-        gen_tabs = ["📱 Aplicación", "📷 Equipamiento", "💓 Signos Vitales"]
+        gen_tabs = ["📱 Aplicación", "📷 Equipamiento", "💓 Signos Vitales", "📋 Opciones Clínicas"]
         
         if has_permission("configuracion", "prompts"):
             gen_tabs.append("📝 Prompts IA")
@@ -137,10 +137,6 @@ def mostrar_panel_configuracion():
             gen_tabs.append("🔔 Notificaciones")
             
         gen_subtabs = st.tabs(gen_tabs)
-        
-        # Mapping tabs by index is risky if dynamic, better to find by name or use fixed logic if order is known
-        # But here order depends on permissions.
-        # Let's iterate or map them.
         
         # Helper to get tab by label
         def get_tab(label):
@@ -152,6 +148,7 @@ def mostrar_panel_configuracion():
         subtab_app = get_tab("📱 Aplicación")
         subtab_equip = get_tab("📷 Equipamiento")
         subtab_vitals = get_tab("💓 Signos Vitales")
+        subtab_clinical = get_tab("📋 Opciones Clínicas")
         subtab_prompts = get_tab("📝 Prompts IA")
         subtab_notif = get_tab("🔔 Notificaciones")
         
@@ -162,6 +159,10 @@ def mostrar_panel_configuracion():
         with subtab_vitals:
             from ui.config.vital_signs_config import render_vital_signs_config
             render_vital_signs_config()
+            
+        with subtab_clinical:
+            from ui.config.clinical_options_manager import render_clinical_options_manager
+            render_clinical_options_manager()
             
         if subtab_prompts:
             with subtab_prompts:

@@ -19,6 +19,7 @@ from components.common.audio_recorder import render_audio_recorder
 from components.common.audio_recorder import render_audio_recorder
 from components.common.file_importer import render_file_importer
 from components.triage.vital_signs_form import render_vital_signs_form, render_vital_sign_input
+from components.triage.patient_background_form import render_patient_background_form
 
 def procesar_respuesta_ia(resultado_ia):
     """
@@ -153,51 +154,8 @@ def render_input_form():
         if 'edad' not in st.session_state.datos_paciente or st.session_state.datos_paciente['edad'] is None:
              st.session_state.datos_paciente['edad'] = st.number_input("Edad", 0, 120, default_age, disabled=is_step1_disabled, key=f"edad_input_{reset_count}")
         
-        # --- ANTECEDENTES CLAVE ---
-        st.subheader("Antecedentes Clave")
-        
-        # 1. Antecedentes Generales
-        antecedentes = st.text_area(
-            "Antecedentes Médicos / Quirúrgicos",
-            st.session_state.datos_paciente.get('antecedentes', ''),
-            placeholder="Ej: Hipertensión, Diabetes, Cirugía previa...",
-            height=68,
-            disabled=is_step1_disabled,
-            key=f"antecedentes_input_{reset_count}"
-        )
-        st.session_state.datos_paciente['antecedentes'] = antecedentes
-        
-        # 2. Alergias
-        col_alergia_sel, col_alergia_txt = st.columns([1, 2])
-        with col_alergia_sel:
-            alergias_opts = ["No", "Sí", "Sí a medicación"]
-            current_alergia = st.session_state.datos_paciente.get('alergias_selector', "No")
-            alergia_val = st.selectbox(
-                "¿Alergias?", 
-                alergias_opts, 
-                index=alergias_opts.index(current_alergia) if current_alergia in alergias_opts else 0,
-                disabled=is_step1_disabled,
-                key=f"alergias_sel_{reset_count}"
-            )
-            st.session_state.datos_paciente['alergias_selector'] = alergia_val
-            
-        with col_alergia_txt:
-            if alergia_val != "No":
-                # Mostrar alerta visual si es medicación
-                if alergia_val == "Sí a medicación":
-                    st.warning("⚠️ ALERTA: Alergia a Medicación")
-                
-                alergias_txt = st.text_input(
-                    "Especificar Alergias",
-                    st.session_state.datos_paciente.get('alergias_txt', ''),
-                    placeholder="Ej: Penicilina, Látex...",
-                    disabled=is_step1_disabled,
-                    key=f"alergias_txt_{reset_count}"
-                )
-                st.session_state.datos_paciente['alergias_txt'] = alergias_txt
-            else:
-                st.session_state.datos_paciente['alergias_txt'] = ""
-                st.info("Sin alergias conocidas")
+        # --- ANTECEDENTES CLÍNICO (MODULARIZADO) ---
+        render_patient_background_form(reset_count, disabled=is_step1_disabled)
         if not is_step1_disabled:
             # Pasamos la edad explícitamente para que vital_signs_form pueda cargar la config correcta
             render_vital_signs_form(age=st.session_state.datos_paciente.get('edad'))
@@ -355,12 +313,15 @@ def render_input_form():
                     configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))
                     triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
                     
-                    # Preparar datos de alergias
-                    alergias_info = st.session_state.datos_paciente.get('alergias_selector', 'No')
-                    if alergias_info != "No":
-                        detalles = st.session_state.datos_paciente.get('alergias_txt', '')
-                        if detalles:
-                            alergias_info += f": {detalles}"
+                    # Preparar datos de alergias (Priorizar info completa)
+                    alergias_info = st.session_state.datos_paciente.get('alergias_info_completa')
+                    if not alergias_info:
+                        # Fallback a lógica antigua
+                        alergias_info = st.session_state.datos_paciente.get('alergias_selector', 'No')
+                        if alergias_info != "No":
+                            detalles = st.session_state.datos_paciente.get('alergias_txt', '')
+                            if detalles:
+                                alergias_info += f": {detalles}"
                     
                     resultado_ia, _ = llamar_modelo_gemini(
                         texto_completo, 

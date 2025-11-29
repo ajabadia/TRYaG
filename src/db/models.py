@@ -410,3 +410,23 @@ class Turno(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str, datetime: lambda v: v.isoformat()}
+
+
+# ============================================================================
+# CLINICAL OPTIONS
+# ============================================================================
+
+class ClinicalOption(BaseModel):
+    """Opción clínica configurable (Alergias, Patologías, etc.)."""
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    category: str = Field(..., description="Categoría (allergy_agent, pathology, etc.)")
+    value: str = Field(..., description="Valor interno")
+    label: str = Field(..., description="Etiqueta visible")
+    risk_level: Optional[str] = Field(default=None, description="Nivel de riesgo asociado (ej: high)")
+    meta: Optional[Dict[str, Any]] = Field(default=None, description="Metadatos adicionales")
+    active: bool = Field(default=True)
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
