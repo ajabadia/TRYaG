@@ -168,10 +168,11 @@ def mostrar_panel_configuracion():
             with subtab_prompts:
                 from components.config.prompt_editor import render_prompt_editor
                 st.info("Gestión de Prompts y Reglas de IA.")
-                tab_gemini, tab_sim, tab_transcription = st.tabs([
+                tab_gemini, tab_sim, tab_transcription, tab_predictive = st.tabs([
                     "Gemini (IA Generativa)",
                     "Simulación (Reglas)",
-                    "Transcripción"
+                    "Transcripción",
+                    "Alertas Predictivas"
                 ])
                 with tab_gemini:
                     render_prompt_editor(
@@ -191,8 +192,12 @@ def mostrar_panel_configuracion():
                         "Prompt de Transcripción",
                         "Instrucciones para la transcripción y traducción de audio.",
                     )
-                with st.expander("Debug Equipment"):
-                     st.write(st.session_state.get('equipment_config', {}))
+                with tab_predictive:
+                    render_prompt_editor(
+                        "triage_predictive",
+                        "Prompt de Alertas Predictivas",
+                        "Detecta riesgos inminentes basados en signos vitales y antecedentes (Pre-Triaje).",
+                    )
 
         if subtab_notif:
             with subtab_notif:

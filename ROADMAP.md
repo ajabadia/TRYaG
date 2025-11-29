@@ -333,16 +333,16 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 - [x] **Fase 2: Interfaz de Triaje (Entrada):**
     - [x] Formulario de signos vitales.
     - [x] Feedback visual (colores).
-- [ ] **Fase 3: Lógica de Clasificación:**
-    - [ ] Algoritmo "Peor Caso".
-    - [ ] Cálculo de prioridad.
-- [ ] **Fase 4: Gestión de Cola y Reevaluación:**
-    - [ ] Panel de espera dinámico.
-    - [ ] Flujo de re-triaje.
+- [x] **Fase 3: Lógica de Clasificación:**
+    - [x] Algoritmo "Peor Caso".
+    - [x] Cálculo de prioridad.
+- [x] **Fase 4: Gestión de Cola y Reevaluación:**
+    - [x] Panel de espera dinámico.
+    - [x] Flujo de re-triaje.
 - [ ] **Fase 5: Roles y Configuración:**
     - [ ] Pantalla de configuración de rangos.
-- [ ] **Fase 6: Integración IA:**
-    - [ ] Alertas predictivas.
+- [x] **Fase 6: Integración IA:**
+    - [x] Alertas predictivas.
 - [ ] **Fase 7: Informes:**
     - [ ] Hoja de triaje.
 

@@ -30,6 +30,17 @@ def render_prompt_editor(prompt_type, title, help_text=""):
     
     if not versions:
         st.warning("No hay versiones disponibles para este prompt.")
+        if st.button("✨ Inicializar con Prompt por Defecto", key=f"init_{prompt_type}"):
+            default_content = ""
+            if prompt_type == "triage_predictive":
+                from src.services.predictive_service import DEFAULT_PREDICTIVE_PROMPT
+                default_content = DEFAULT_PREDICTIVE_PROMPT
+            elif prompt_type == "triage_gemini":
+                # Fallback simple si no hay nada
+                default_content = "Actúa como experto en triaje..."
+            
+            pm.create_version(prompt_type, default_content or "Escribe aquí tu prompt...", author="system", notes="Versión inicial")
+            st.rerun()
         return
 
     # --- Selector de Versión ---
@@ -259,6 +270,19 @@ def render_prompt_editor(prompt_type, title, help_text=""):
                             model_used = get_model_transcription()
                             response, final_prompt_used = transcribir_audio(
                                 text_input=test_input,
+                                prompt_content=new_content
+                            )
+
+                        elif prompt_type == "triage_predictive":
+                            from src.services.predictive_service import generar_alertas_predictivas
+                            from src.config import get_model_triage
+                            model_used = get_model_triage()
+                            # Para pruebas, usamos valores dummy si no hay input estructurado
+                            # El test_input se usará como "antecedentes" para dar flexibilidad
+                            response, final_prompt_used = generar_alertas_predictivas(
+                                edad=50,
+                                vital_signs={"fc": 110, "tas": 160, "tad": 95, "temp": 38.5},
+                                antecedentes=test_input,
                                 prompt_content=new_content
                             )
                             

@@ -56,6 +56,13 @@ def render_app_config():
                 value=general_config.get('model_transcription', "gemini-2.5-flash"),
                 help="Modelo usado para audio",
             )
+        
+        st.markdown("**Funcionalidades IA**")
+        enable_predictive_alerts = st.checkbox(
+            "Habilitar Alertas Predictivas (Pre-Triaje)",
+            value=general_config.get('enable_predictive_alerts', True),
+            help="Si está desactivado, se ocultará el botón de análisis de riesgos para ahorrar tokens."
+        )
         # Botones Guardar / Restaurar
         col_save, col_reset, _ = st.columns([1, 1, 2])
         with col_save:
@@ -63,6 +70,7 @@ def render_app_config():
                 general_config['min_chars_motivo'] = new_min_chars
                 general_config['model_triage'] = model_triage
                 general_config['model_transcription'] = model_transcription
+                general_config['enable_predictive_alerts'] = enable_predictive_alerts
                 if save_general_config(general_config):
                     st.session_state.general_config = general_config
                     st.success(":material/check_circle: Configuración guardada correctamente")

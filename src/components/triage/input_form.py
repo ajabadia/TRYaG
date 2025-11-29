@@ -159,6 +159,90 @@ def render_input_form():
         if not is_step1_disabled:
             # Pasamos la edad explícitamente para que vital_signs_form pueda cargar la config correcta
             render_vital_signs_form(age=st.session_state.datos_paciente.get('edad'))
+            
+            # --- ALERTAS PREDICTIVAS (NUEVO) ---
+            # Solo mostrar si hay signos vitales registrados y está habilitado en config
+            from src.db.repositories.general_config import get_general_config_repository
+            
+            # Asegurar config cargada
+            if 'general_config' not in st.session_state:
+                st.session_state.general_config = get_general_config_repository().get_config()
+            
+            enable_predictive = st.session_state.general_config.get('enable_predictive_alerts', True)
+
+            if st.session_state.datos_paciente.get('vital_signs') and enable_predictive:
+                with st.expander("🛡️ Análisis de Riesgos (Pre-Triaje)", expanded=True):
+                    col_pred_btn, col_pred_res = st.columns([1, 3])
+                    
+                    with col_pred_btn:
+                        if st.button("Verificar Riesgos", help="Analizar signos vitales con IA para detectar riesgos inminentes", key="btn_predictive_check"):
+                            with st.spinner("Analizando riesgos..."):
+                                from services.predictive_service import generar_alertas_predictivas
+                                
+                                # Preparar datos
+                                antecedentes_txt = st.session_state.datos_paciente.get('antecedentes', '')
+                                alergias_txt = st.session_state.datos_paciente.get('alergias_txt', '')
+                                
+                                pred_result, _ = generar_alertas_predictivas(
+                                    edad=st.session_state.datos_paciente.get('edad'),
+                                    vital_signs=st.session_state.datos_paciente.get('vital_signs'),
+                                    antecedentes=antecedentes_txt,
+                                    alergias=alergias_txt
+                                )
+                                st.session_state.predictive_result = pred_result
+                    
+                    with col_pred_res:
+                        if 'predictive_result' in st.session_state and st.session_state.predictive_result:
+                            res = st.session_state.predictive_result
+                            
+                            # Etiqueta de origen IA
+                            st.caption("🤖 Análisis IA Generativa")
+                            
+                            if res.get("status") == "ERROR":
+                                st.error(f"Error en análisis: {res.get('msg')}")
+                            else:
+                                risk = res.get("risk_level", "Low")
+                                alerts = res.get("alerts", [])
+                                
+                                if risk == "High":
+                                    st.error(f"🚨 RIESGO ALTO DETECTADO")
+                                    for alert in alerts:
+                                        st.markdown(f"- **{alert}**")
+                                elif risk == "Medium":
+                                    st.warning(f"⚠️ RIESGO MODERADO")
+                                    for alert in alerts:
+                                        st.markdown(f"- {alert}")
+                                else:
+                                    st.success("✅ Sin riesgos inminentes detectados por la IA.")
+                                    if alerts:
+                                        for alert in alerts:
+                                            st.caption(f"- {alert}")
+                                
+                                # --- VALIDACIÓN HUMANA ---
+                                st.divider()
+                                st.markdown("**¿Es correcta esta predicción?**")
+                                c_val_1, c_val_2 = st.columns(2)
+                                
+                                # Claves únicas para los botones
+                                key_up = "pred_val_up"
+                                key_down = "pred_val_down"
+                                
+                                if st.button("👍 Correcto", key=key_up, use_container_width=True):
+                                    st.toast("Gracias por tu feedback (Positivo)", icon="✅")
+                                    # Aquí se podría guardar en BD
+                                    st.session_state.predictive_feedback = "positive"
+                                    
+                                if st.button("👎 Incorrecto", key=key_down, use_container_width=True):
+                                    st.toast("Gracias por tu feedback (Negativo)", icon="📝")
+                                    # Aquí se podría guardar en BD
+                                    st.session_state.predictive_feedback = "negative"
+                                    
+                                if 'predictive_feedback' in st.session_state:
+                                    if st.session_state.predictive_feedback == "positive":
+                                        st.caption("✅ Validado positivamente")
+                                    else:
+                                        st.caption("❌ Marcado como incorrecto")
+
         elif 'vital_signs' in st.session_state.datos_paciente:
              st.info("Signos vitales registrados.")
 
