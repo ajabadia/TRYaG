@@ -10,6 +10,15 @@ Este proyecto es un **Asistente de Triaje Inteligente** diseñado para optimizar
 
 > **⚠️ Aviso Legal:** Esta herramienta es un sistema de apoyo y **NO sustituye el juicio clínico** de un profesional sanitario cualificado.
 
+## ✨ Características Principales
+
+*   **Triaje Estructurado (Manchester):** Clasificación basada en signos vitales y síntomas con algoritmo de "peor caso".
+*   **Alertas Predictivas IA:** Análisis de riesgo temprano usando Gemini para detectar anomalías sutiles.
+*   **Configuración Dinámica:** Gestión de rangos de signos vitales y prompts desde la interfaz de administración.
+*   **Gestión de Colas:** Priorización automática de pacientes basada en gravedad y tiempo de espera.
+*   **Informes PDF:** Generación automática de hojas de triaje para imprimir o guardar.
+
+
 ## 📚 Documentación
 
 La documentación del proyecto está organizada en las siguientes secciones:

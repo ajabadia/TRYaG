@@ -19,6 +19,48 @@ def render_step_disposition():
         
     st.info(f"Triaje completado para: **{p.get('nombre')} {p.get('apellido1')}**")
     
+    # --- Generación de Informe ---
+    from services.report_service import generate_triage_pdf
+    
+    col_print, col_space = st.columns([1, 4])
+    with col_print:
+        if st.button("🖨️ Imprimir Hoja de Triaje", use_container_width=True):
+            # Construir registro para el reporte
+            # Nota: Idealmente esto debería venir de un objeto TriageRecord persistido, 
+            # pero aquí reconstruimos con lo que hay en sesión para la vista previa.
+            record = {
+                "audit_id": st.session_state.get('current_audit_id', 'PREVIEW'),
+                "timestamp": st.session_state.get('triage_start_time'),
+                "patient_data": p,
+                "vital_signs": st.session_state.datos_paciente.get('vital_signs', {}),
+                "motivo_consulta": st.session_state.datos_paciente.get('texto_medico', ''),
+                "patient_background": {
+                    "allergies": st.session_state.datos_paciente.get('alergias', []),
+                    "pathologies": st.session_state.datos_paciente.get('patologias', []),
+                    "medications": st.session_state.datos_paciente.get('medicacion', '')
+                },
+                "triage_result": st.session_state.get('resultado', {}),
+                "destination": "Pendiente de asignación",
+                "evaluator_id": st.session_state.get('username', 'Sistema')
+            }
+            
+            pdf_bytes = generate_triage_pdf(record)
+            
+            # Nombre del archivo
+            safe_name = f"{p.get('nombre')}_{p.get('apellido1')}".replace(" ", "_")
+            file_name = f"Triaje_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+            
+            st.download_button(
+                label="⬇️ Descargar PDF",
+                data=pdf_bytes,
+                file_name=file_name,
+                mime="application/pdf",
+                type="primary",
+                icon="📄"
+            )
+    
+    st.divider()
+    
     tab_espera, tab_consulta, tab_rechazo, tab_admision = st.tabs([
         "🏥 Boxes (Urgencias)", 
         "👨‍⚕️ Consulta / Ingreso",

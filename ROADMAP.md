@@ -343,8 +343,8 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - [ ] Pantalla de configuración de rangos.
 - [x] **Fase 6: Integración IA:**
     - [x] Alertas predictivas.
-- [ ] **Fase 7: Informes:**
-    - [ ] Hoja de triaje.
+- [x] **Fase 7: Informes:**
+    - [x] Hoja de triaje.
 
 ## 🚀 FASE 8: Preparación para Producción (Futuro)
 **Objetivo:** Reemplazar simulaciones con implementaciones reales y robustecer el sistema.

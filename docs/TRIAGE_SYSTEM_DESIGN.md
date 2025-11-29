@@ -85,6 +85,6 @@ El color final del triaje se determina por la métrica con mayor gravedad presen
 2.  **Fase 2: Interfaz de Triaje (Entrada):** Crear el formulario de signos vitales con feedback visual inmediato (colores).
 3.  **Fase 3: Lógica de Clasificación:** Implementar el algoritmo del "peor caso" y cálculo de prioridad.
 4.  **Fase 4: Gestión de Cola y Reevaluación:** Panel de espera dinámico y flujo de re-triaje.
-5.  **Fase 5: Roles y Configuración:** Login simulado, permisos y pantalla de configuración de rangos.
-6.  **Fase 6: Integración IA:** Alertas predictivas y análisis con Gemini.
-7.  **Fase 7: Informes:** Generación de la hoja de triaje.
+5.  **Fase 5: Roles y Configuración:** Login simulado, permisos y pantalla de configuración de rangos. (✅ Completado)
+6.  **Fase 6: Integración IA:** Alertas predictivas y análisis con Gemini. (✅ Completado)
+7.  **Fase 7: Informes:** Generación de la hoja de triaje. (✅ Completado)
