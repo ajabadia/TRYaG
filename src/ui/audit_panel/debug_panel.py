@@ -73,6 +73,8 @@ def render_debug_panel(key_prefix="debug_panel"):
                     sort_field = "updated_at"
                 elif collection_name == 'prompts':
                     sort_field = "created_at"
+                elif collection_name == 'ai_audit_logs':
+                    sort_field = "timestamp_start"
                 
                 # Intentar ordenar, si falla usar sin ordenar
                 try:
@@ -90,7 +92,7 @@ def render_debug_panel(key_prefix="debug_panel"):
                         df['_id'] = df['_id'].astype(str)
                     
                     # Convertir timestamps si existen
-                    for timestamp_field in ['timestamp', 'created_at', 'updated_at']:
+                    for timestamp_field in ['timestamp', 'created_at', 'updated_at', 'timestamp_start', 'timestamp_end']:
                         if timestamp_field in df.columns:
                             df[timestamp_field] = pd.to_datetime(df[timestamp_field], errors='coerce')
                     
@@ -121,6 +123,8 @@ def render_debug_panel(key_prefix="debug_panel"):
                             return f"{doc.get('denominacion', 'Unknown')} ({doc.get('codigo', 'N/A')}) - {salas_count} salas"
                         elif collection_name == 'vital_sign_references':
                             return f"{doc.get('name', 'Unknown')} ({doc.get('unit', '')})"
+                        elif collection_name == 'ai_audit_logs':
+                            return f"{doc.get('call_type', 'Unknown')} | {doc.get('model_name', 'N/A')} | {doc.get('status', 'N/A')} ({doc.get('timestamp_start', '')})"
                         else:
                             return str(doc.get('_id', ''))
 

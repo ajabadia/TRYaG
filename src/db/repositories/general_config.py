@@ -26,8 +26,8 @@ class GeneralConfigRepository:
             default_config = {
                 "_id": CONFIG_ID,
                 "min_chars_motivo": 3,
-                "model_triage": "gemini-2.5-flash",
-                "model_transcription": "gemini-2.5-flash"
+                "min_chars_motivo": 3,
+                "default_ai_model": "gemini-2.5-flash"
             }
             # Guardar por defecto para la próxima vez
             self.save_config(default_config)

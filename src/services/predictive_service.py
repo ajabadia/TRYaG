@@ -4,8 +4,9 @@
 Servicio para generar alertas predictivas basadas en signos vitales y antecedentes.
 Usa un prompt específico (triage_predictive) para detectar riesgos antes del triaje completo.
 """
-import google.generativeai as genai
 import json
+from src.services.gemini_client import get_gemini_service
+from src.core.prompt_manager import PromptManager
 from src.config import get_model_triage
 
 DEFAULT_PREDICTIVE_PROMPT = """## ROL ##
@@ -30,76 +31,62 @@ Analiza los datos proporcionados y genera alertas si detectas valores fuera de r
 }
 """
 
-def generar_alertas_predictivas(edad, vital_signs, antecedentes=None, alergias=None, prompt_content=None):
+def generar_alertas_predictivas(edad, vital_signs, antecedentes=None, alergias=None, prompt_content=None, user_id="system"):
     """
     Genera alertas predictivas usando Gemini.
-
-    Args:
-        edad (int): Edad del paciente.
-        vital_signs (dict): Diccionario con signos vitales.
-        antecedentes (str, optional): Antecedentes médicos.
-        alergias (str, optional): Alergias.
-        prompt_content (str, optional): Contenido del prompt a usar (para pruebas).
-
-    Returns:
-        dict: Resultado con 'risk_level' y 'alerts'.
     """
-    # 1. Obtener modelo configurado (usamos el mismo que para triaje)
-    model_name = get_model_triage()
+    # 1. Obtener Prompt y Configuración
+    pm = PromptManager()
+    prompt_data = None
     
-    generation_config = {
-        "temperature": 0.1, # Muy determinista para alertas médicas
-        "top_p": 0.95,
-        "max_output_tokens": 1024,
-        "response_mime_type": "application/json",
-    }
-    
-    try:
-        model = genai.GenerativeModel(model_name=model_name, generation_config=generation_config)
-    except Exception as e:
-        return {"status": "ERROR", "msg": f"Error al inicializar modelo: {e}"}, ""
-
-    # 2. Obtener Prompt
     if prompt_content:
         base_prompt = prompt_content
+        model_name = "gemini-1.5-flash" # Default for tests
+        version_id = "test-override"
     else:
-        from src.core.prompt_manager import PromptManager
-        pm = PromptManager()
         prompt_data = pm.get_prompt("triage_predictive")
-        
         if prompt_data:
             base_prompt = prompt_data.get("content", DEFAULT_PREDICTIVE_PROMPT)
+            version_id = prompt_data.get("version_id", "unknown")
+            model_name = prompt_data.get("model") or get_model_triage()
         else:
             base_prompt = DEFAULT_PREDICTIVE_PROMPT
+            version_id = "default"
+            model_name = get_model_triage()
 
-    # 3. Formatear Signos Vitales
+    # 2. Formatear Signos Vitales
     vs_str = "No registrados"
     if vital_signs:
         vs_list = [f"{k.upper()}: {v}" for k, v in vital_signs.items() if v is not None]
         if vs_list:
             vs_str = ", ".join(vs_list)
 
-    # 4. Inyectar variables
+    # 3. Inyectar variables
     final_prompt = base_prompt.replace("{edad}", str(edad))\
                               .replace("{signos_vitales}", vs_str)\
                               .replace("{antecedentes}", str(antecedentes or "Sin antecedentes relevantes"))\
                               .replace("{alergias}", str(alergias or "No conocidas"))
 
-    try:
-        # 5. Llamada a Gemini
-        response = model.generate_content(final_prompt)
-        
-        if not response.parts:
-             return {"status": "ERROR", "msg": "Bloqueo de seguridad IA"}, final_prompt
+    # 4. Llamar al Servicio Centralizado
+    service = get_gemini_service()
+    
+    response_data, _ = service.generate_content(
+        caller_id="predictive_service",
+        user_id=user_id,
+        call_type="predictive",
+        prompt_type="triage_predictive",
+        prompt_version_id=version_id,
+        model_name=model_name,
+        prompt_content=final_prompt,
+        generation_config={
+            "temperature": 0.1, # Muy determinista para alertas médicas
+            "top_p": 0.95,
+            "max_output_tokens": 1024,
+            "response_mime_type": "application/json",
+        },
+        metadata={
+            "patient_age": edad
+        }
+    )
 
-        cleaned_text = response.text.strip()
-        if cleaned_text.startswith("```"):
-            lines = cleaned_text.split("\n")
-            if len(lines) >= 2:
-                cleaned_text = "\n".join(lines[1:-1])
-        
-        result = json.loads(cleaned_text)
-        return result, final_prompt
-
-    except Exception as e:
-        return {"status": "ERROR", "msg": f"Error en predicción: {e}"}, final_prompt
+    return response_data, final_prompt

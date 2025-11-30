@@ -126,6 +126,7 @@ class PromptsRepository(BaseRepository[Prompt]):
         prompt_type: str,
         version_id: str,
         content: str,
+        model: Optional[str] = None,
         author: str = "admin",
         notes: str = "",
         status: str = "draft"
@@ -137,6 +138,7 @@ class PromptsRepository(BaseRepository[Prompt]):
             prompt_type: Tipo de prompt
             version_id: ID de la versión
             content: Contenido del prompt
+            model: Modelo de IA asociado (opcional)
             author: Autor de la versión
             notes: Notas sobre la versión
             status: Estado (draft, active, deprecated)
@@ -154,6 +156,7 @@ class PromptsRepository(BaseRepository[Prompt]):
         new_version = {
             "version_id": version_id,
             "content": content,
+            "model": model,
             "author": author,
             "created_at": datetime.now(),
             "updated_at": datetime.now(),
@@ -178,6 +181,7 @@ class PromptsRepository(BaseRepository[Prompt]):
         prompt_type: str,
         version_id: str,
         content: Optional[str] = None,
+        model: Optional[str] = None,
         notes: Optional[str] = None,
         status: Optional[str] = None,
         updated_by: Optional[str] = None
@@ -189,6 +193,7 @@ class PromptsRepository(BaseRepository[Prompt]):
             prompt_type: Tipo de prompt
             version_id: ID de la versión
             content: Nuevo contenido (opcional)
+            model: Nuevo modelo (opcional)
             notes: Nuevas notas (opcional)
             status: Nuevo estado (opcional)
             updated_by: Usuario que actualiza (opcional)
@@ -200,6 +205,8 @@ class PromptsRepository(BaseRepository[Prompt]):
         
         if content is not None:
             update_fields["versions.$.content"] = content
+        if model is not None:
+            update_fields["versions.$.model"] = model
         if notes is not None:
             update_fields["versions.$.notes"] = notes
         if status is not None:

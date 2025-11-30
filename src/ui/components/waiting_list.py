@@ -64,6 +64,7 @@ def render_waiting_list_component(patients: list, context: str = "dashboard", bo
             actions=actions,
             show_triage_level=True,
             show_wait_time=True,
+            show_location=True,
             key_prefix=f"wl_{context}"
         )
 

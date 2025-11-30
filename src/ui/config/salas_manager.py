@@ -48,7 +48,7 @@ def render_sala_card(sala: dict):
 
 
 @st.dialog("Editar Sala", width="large")
-def edit_sala_dialog(sala: dict):
+def edit_sala_dialog(sala: dict, centro_id: str):
     """Muestra un modal para editar los campos de la sala."""
     # Si es nueva sala (sin código), permitir editar código
     is_new = not sala.get('codigo')
@@ -72,6 +72,7 @@ def edit_sala_dialog(sala: dict):
 
             updated = {
                 "codigo": codigo,
+                "centro_id": centro_id,
                 "nombre": nombre,
                 "tipo": tipo,
                 "subtipo": subtipo,
@@ -79,6 +80,11 @@ def edit_sala_dialog(sala: dict):
                 "activa": activa,
                 "updated_at": datetime.now()
             }
+            # Preservar campos extra si existen (migración)
+            for k, v in sala.items():
+                if k not in updated and k != "_id":
+                    updated[k] = v
+            
             if save_sala(updated):
                 st.success("Sala guardada")
                 st.rerun()
@@ -87,7 +93,7 @@ def edit_sala_dialog(sala: dict):
 
 
 
-def render_salas_manager(existing_salas: list = None):
+def render_salas_manager(centro_id: str, existing_salas: list = None):
     """Componente principal que muestra todas las salas.
     Si se proporciona `existing_salas` (lista de dicts) se usa esa lista,
     de lo contrario se obtienen las salas desde la base de datos.
@@ -97,7 +103,7 @@ def render_salas_manager(existing_salas: list = None):
     
     # Botón para crear nueva sala
     if st.button("➕ Añadir Sala", type="primary"):
-        edit_sala_dialog({"codigo": "", "nombre": "", "tipo": "admision", "subtipo": "", "capacidad": 1, "activa": True})
+        edit_sala_dialog({"codigo": "", "nombre": "", "tipo": "admision", "subtipo": "", "capacidad": 1, "activa": True}, centro_id)
     
     # Obtener salas
     if existing_salas is None:

@@ -154,13 +154,14 @@ class PromptManager:
             
             return None
     
-    def create_version(self, prompt_type, content, author="admin", notes=""):
+    def create_version(self, prompt_type, content, model=None, author="admin", notes=""):
         """
         Crea una nueva versión (draft) de un prompt.
         
         Args:
             prompt_type: Tipo de prompt
             content: Contenido del prompt
+            model: Modelo de IA asociado (opcional)
             author: Autor de la versión
             notes: Notas sobre la versión
             
@@ -183,6 +184,7 @@ class PromptManager:
                 prompt_type=prompt_type,
                 version_id=new_version_id,
                 content=content,
+                model=model,
                 author=author,
                 notes=notes,
                 status="draft"
@@ -194,7 +196,7 @@ class PromptManager:
             print(f"Error creando versión en MongoDB: {e}")
             return None
     
-    def update_version(self, prompt_type, version_id, content, author="admin", notes=""):
+    def update_version(self, prompt_type, version_id, content, model=None, author="admin", notes=""):
         """
         Actualiza una versión existente (solo si es draft).
         
@@ -202,6 +204,7 @@ class PromptManager:
             prompt_type: Tipo de prompt
             version_id: ID de la versión
             content: Nuevo contenido
+            model: Nuevo modelo (opcional)
             author: Autor de la actualización
             notes: Notas actualizadas
             
@@ -223,6 +226,7 @@ class PromptManager:
                 prompt_type=prompt_type,
                 version_id=version_id,
                 content=content,
+                model=model,
                 notes=notes,
                 updated_by=author
             )

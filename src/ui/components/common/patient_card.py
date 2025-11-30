@@ -68,10 +68,20 @@ def render_patient_card(
 
     # 2. Renderizar
     # Contenedor con estilo diferente si está en sala
+    # 2. Renderizar
+    # Usar siempre container para consistencia, el estilo visual se maneja dentro
+    context = st.container(border=True)
+    
+    # Estilo CSS para destacar si está en sala (opcional, o usar st.info dentro)
     if is_in_room:
-        context = st.info("🔵 Paciente en Sala")
-    else:
-        context = st.container(border=True)
+        st.markdown("""
+        <style>
+        div[data-testid="stVerticalBlockBorderWrapper"] > div {
+            border-color: #2196F3 !important;
+            border-width: 2px !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
     with context:
         c_info, c_meta = st.columns([3, 1])
@@ -88,8 +98,20 @@ def render_patient_card(
             st.caption(f"ID: `{pid}`")
             
             if show_location:
-                loc = patient.get('sala_actual') or patient.get('sala_espera_origen') or "N/A"
-                st.caption(f"📍 {loc}")
+                # Prioridad: sala_nombre > sala_code > sala_actual > sala_espera_origen
+                loc_name = patient.get('sala_nombre')
+                loc_code = patient.get('sala_code') or patient.get('sala_actual')
+                
+                if loc_name and loc_code:
+                    loc_display = f"{loc_name} ({loc_code})"
+                elif loc_name:
+                    loc_display = loc_name
+                elif loc_code:
+                    loc_display = loc_code
+                else:
+                    loc_display = patient.get('sala_espera_origen') or "N/A"
+                    
+                st.caption(f"📍 {loc_display}")
 
         with c_meta:
             if show_wait_time:
@@ -115,6 +137,9 @@ def render_patient_card(
                     ):
                         if action.get('on_click'):
                             action['on_click'](patient)
+        
+        # Etiqueta de componente
+        st.markdown('<div style="color: #ccc; font-size: 0.6em; text-align: right;">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)
 
 def render_patient_header(patient, triage_result=None):
     """

@@ -271,6 +271,10 @@ def obtener_vista_global_salas() -> Dict[str, List[Dict[str, Any]]]:
     pacientes_db = list(db["people"].find({"patient_code": {"$in": patient_codes}}))
     pacientes_map = {p["patient_code"]: p for p in pacientes_db}
 
+    # Mapa de nombres de salas
+    config = load_centro_config()
+    salas_map = {s['codigo']: s.get('nombre', s['codigo']) for s in config.get('salas', [])}
+
     for flujo in flujos:
         sala_actual = flujo.get("sala_code")
         if not sala_actual: continue
@@ -292,6 +296,8 @@ def obtener_vista_global_salas() -> Dict[str, List[Dict[str, Any]]]:
             "apellido2": apellido2,
             "edad": p_info.get("edad"),
             "estado_flujo": flujo.get("estado"),
+            "sala_code": sala_actual,
+            "sala_nombre": salas_map.get(sala_actual, sala_actual),
             "sala_tipo": flujo.get("sala_tipo"),
             "sala_subtipo": flujo.get("sala_subtipo"),
             "created_at": flujo.get("created_at"),
@@ -313,6 +319,10 @@ def obtener_pacientes_en_espera(sala_code: str) -> List[Dict[str, Any]]:
     db = get_db()
     flujos = list(db["patient_flow"].find({"sala_code": sala_code, "activo": True}).sort("entrada", 1))
     
+    # Obtener nombre de la sala
+    config = load_centro_config()
+    sala_nombre = next((s.get('nombre') for s in config.get('salas', []) if s['codigo'] == sala_code), sala_code)
+    
     pacientes = []
     for flujo in flujos:
         p = db["people"].find_one({"patient_code": flujo["patient_code"]})
@@ -327,6 +337,8 @@ def obtener_pacientes_en_espera(sala_code: str) -> List[Dict[str, Any]]:
                 "flow_id": flujo.get("flow_id"),
                 "nombre_completo": nombre_completo,
                 "estado_flujo": flujo.get("estado"),
+                "sala_code": sala_code,
+                "sala_nombre": sala_nombre,
                 "sala_tipo": flujo.get("sala_tipo"),
                 "sala_subtipo": flujo.get("sala_subtipo"),
                 "entrada": flujo.get("entrada"),

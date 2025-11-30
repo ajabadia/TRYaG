@@ -49,6 +49,11 @@ def render_step_patient_selection() -> bool:
     # 3. Obtener pacientes de todas las salas de espera Y de la propia sala (derivados directos)
     pacientes_en_espera = []
     
+    # Mapa de nombres de salas
+    from ui.config_panel import load_centro_config
+    config = load_centro_config()
+    salas_map = {s['codigo']: s.get('nombre', s['codigo']) for s in config.get('salas', [])}
+    
     # Lista de salas a consultar: Espera + Propia Sala
     salas_a_consultar = list(salas_espera)
     if room_code not in salas_a_consultar:
@@ -66,6 +71,7 @@ def render_step_patient_selection() -> bool:
             if datos_paciente:
                 paciente_completo = {**datos_paciente, **flujo}
                 paciente_completo['sala_espera_origen'] = sala_code_iter
+                paciente_completo['sala_nombre'] = salas_map.get(sala_code_iter, sala_code_iter)
                 pacientes_en_espera.append(paciente_completo)
     
     if not pacientes_en_espera:

@@ -127,6 +127,12 @@ def render_step_patient_selection() -> bool:
     
     # 1. Paciente en sala (Prioritario)
     pacientes_en_atencion = obtener_pacientes_en_sala(room_code)
+    
+    # Mapa de nombres de salas para visualización
+    from ui.config_panel import load_centro_config
+    config = load_centro_config()
+    salas_map = {s['codigo']: s.get('nombre', s['codigo']) for s in config.get('salas', [])}
+
     if pacientes_en_atencion:
         flujo_activo = pacientes_en_atencion[0]
         datos_paciente = obtener_paciente_por_codigo(flujo_activo['patient_code'])
@@ -134,6 +140,7 @@ def render_step_patient_selection() -> bool:
             p_full = {**datos_paciente, **flujo_activo}
             p_full['is_in_room'] = True
             p_full['sala_espera_origen'] = room_code 
+            p_full['sala_nombre'] = salas_map.get(room_code, room_code)
             lista_pacientes.append(p_full)
             blocking_patient = p_full
             
@@ -153,6 +160,7 @@ def render_step_patient_selection() -> bool:
             if datos_paciente:
                 p_full = {**datos_paciente, **flujo}
                 p_full['sala_espera_origen'] = sala_esp
+                p_full['sala_nombre'] = salas_map.get(sala_esp, sala_esp)
                 p_full['is_in_room'] = False
                 lista_pacientes.append(p_full)
     

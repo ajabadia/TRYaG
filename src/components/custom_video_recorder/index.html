@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Recorder</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: transparent;
+        }
+        #video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+        video {
+            width: 100%;
+            display: block;
+        }
+        #controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        #btn-start {
+            background-color: #ff4b4b;
+            color: white;
+        }
+        #btn-start:hover {
+            background-color: #ff3333;
+        }
+        #btn-stop {
+            background-color: #333;
+            color: white;
+        }
+        #btn-stop:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        .recording-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            background-color: red;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+            display: none;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <video id="preview" autoplay muted playsinline></video>
+        <div id="rec-dot" class="recording-indicator"></div>
+    </div>
+    
+    <div id="controls">
+        <button id="btn-start">🔴 Grabar</button>
+        <button id="btn-stop" disabled>⏹️ Parar</button>
+    </div>
+    <div id="status">Listo para grabar</div>
+
+    <script>
+        // Streamlit communication helper
+        function sendMessageToStreamlit(type, data) {
+            // Streamlit component communication
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: "streamlit:component:setComponentValue",
+                    value: data
+                }, "*");
+            }
+        }
+
+        function setFrameHeight(height) {
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: "streamlit:component:setFrameHeight",
+                    height: height
+                }, "*");
+            }
+        }
+
+        // Recorder logic
+        const preview = document.getElementById('preview');
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
+        const status = document.getElementById('status');
+        const recDot = document.getElementById('rec-dot');
+        
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream;
+
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                preview.srcObject = stream;
+                status.textContent = "Cámara activa";
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                status.textContent = "Error: No se pudo acceder a la cámara/micrófono";
+                btnStart.disabled = true;
+            }
+        }
+
+        btnStart.onclick = () => {
+            recordedChunks = [];
+            try {
+                // Prefer mp4 or webm
+                const options = { mimeType: 'video/webm;codecs=vp8,opus' };
+                if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                    console.warn(`${options.mimeType} is not supported, trying default.`);
+                    mediaRecorder = new MediaRecorder(stream);
+                } else {
+                    mediaRecorder = new MediaRecorder(stream, options);
+                }
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    reader.onloadend = () => {
+                        const base64data = reader.result;
+                        sendMessageToStreamlit("video", base64data);
+                        status.textContent = "Video enviado ✅";
+                    };
+                };
+
+                mediaRecorder.start();
+                btnStart.disabled = true;
+                btnStop.disabled = false;
+                recDot.style.display = 'block';
+                status.textContent = "Grabando...";
+            } catch (e) {
+                console.error(e);
+                status.textContent = "Error al iniciar grabación";
+            }
+        };
+
+        btnStop.onclick = () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                btnStart.disabled = false;
+                btnStop.disabled = true;
+                recDot.style.display = 'none';
+                status.textContent = "Procesando...";
+            }
+        };
+
+        // Initialize
+        initCamera();
+        
+        // Adjust height initially
+        setTimeout(() => setFrameHeight(document.body.scrollHeight), 100);
+        
+        // Adjust height on resize
+        new ResizeObserver(() => {
+            setFrameHeight(document.body.scrollHeight);
+        }).observe(document.body);
+
+    </script>
+</body>
+</html>

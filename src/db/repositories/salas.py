@@ -71,3 +71,10 @@ def get_usuarios_asignados_sala(codigo: str) -> List[Dict[str, Any]]:
     repo = get_users_repository()
     all_users = repo.get_all_users(active_only=True)
     return [u for u in all_users if u.get("sala_asignada") == codigo]
+
+
+def get_salas_by_centro(centro_id: str) -> List[Dict[str, Any]]:
+    """Obtiene todas las salas de un centro específico."""
+    collection = get_collection()
+    return list(collection.find({"centro_id": centro_id}))
+

@@ -42,20 +42,49 @@ def render_app_config():
             )
         st.divider()
         st.markdown("#### :material/psychology: Modelos de IA")
-        st.caption("Configura los identificadores de los modelos Gemini a utilizar.")
-        col_ia1, col_ia2 = st.columns(2)
-        with col_ia1:
-            model_triage = st.text_input(
-                "Modelo Triaje",
-                value=general_config.get('model_triage', "gemini-2.5-flash"),
-                help="Modelo usado para el razonamiento clínico",
+        st.caption("Gestión de modelos Gemini disponibles y configuración por defecto.")
+        
+        # --- Sección de Descubrimiento de Modelos ---
+        from src.services.ai_model_discovery import fetch_and_update_models
+        from src.db.repositories.ai_models import get_ai_models_repository
+        
+        col_check, col_info = st.columns([1, 2])
+        with col_check:
+            if st.button("🔄 Comprobar modelos IA", help="Consulta a Google los modelos disponibles y actualiza la base de datos"):
+                with st.spinner("Consultando API de Google..."):
+                    success, msg, count = fetch_and_update_models()
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
+        
+        # Obtener modelos disponibles
+        models_repo = get_ai_models_repository()
+        available_models = models_repo.get_available_models()
+        
+        if not available_models:
+            st.warning("No hay modelos registrados. Pulsa 'Comprobar modelos IA'.")
+            available_models = ["gemini-2.5-flash"] # Fallback visual
+            
+        with st.expander("Ver lista de modelos disponibles", expanded=False):
+            st.dataframe(
+                [{"Modelo": m} for m in available_models],
+                use_container_width=True,
+                hide_index=True
             )
-        with col_ia2:
-            model_transcription = st.text_input(
-                "Modelo Transcripción",
-                value=general_config.get('model_transcription', "gemini-2.5-flash"),
-                help="Modelo usado para audio",
-            )
+
+        # --- Selección de Modelo por Defecto ---
+        current_default = general_config.get('default_ai_model', "gemini-2.5-flash")
+        if current_default not in available_models:
+            available_models.append(current_default)
+            
+        new_default_model = st.selectbox(
+            "Modelo Predeterminado Global",
+            options=available_models,
+            index=available_models.index(current_default) if current_default in available_models else 0,
+            help="Este modelo se usará si un prompt no especifica uno propio."
+        )
         
         st.markdown("**Funcionalidades IA**")
         enable_predictive_alerts = st.checkbox(
@@ -68,8 +97,7 @@ def render_app_config():
         with col_save:
             if st.button(":material/save: Guardar Cambios", use_container_width=True, type="primary"):
                 general_config['min_chars_motivo'] = new_min_chars
-                general_config['model_triage'] = model_triage
-                general_config['model_transcription'] = model_transcription
+                general_config['default_ai_model'] = new_default_model
                 general_config['enable_predictive_alerts'] = enable_predictive_alerts
                 if save_general_config(general_config):
                     st.session_state.general_config = general_config

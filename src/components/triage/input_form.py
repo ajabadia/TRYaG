@@ -16,7 +16,7 @@ from config import get_min_chars_motivo
 from components.triage.media_cards import render_media_card
 from components.common.webcam_manager import render_webcam_manager
 from components.common.audio_recorder import render_audio_recorder
-from components.common.audio_recorder import render_audio_recorder
+from ui.components.common.video_recorder import render_video_recorder
 from components.common.file_importer import render_file_importer
 from components.triage.vital_signs_form import render_vital_signs_form, render_vital_sign_input
 from components.triage.patient_background_form import render_patient_background_form
@@ -70,6 +70,13 @@ def render_input_form():
             st.session_state.datos_paciente['imagenes'].extend(photos)
         st.session_state.triage_input_type = "" # Resetear selector
 
+    def on_video_confirmed(video_wrappers):
+        if video_wrappers:
+            if 'imagenes' not in st.session_state.datos_paciente:
+                st.session_state.datos_paciente['imagenes'] = []
+            st.session_state.datos_paciente['imagenes'].extend(video_wrappers)
+        st.session_state.triage_input_type = "" # Resetear selector
+
     def on_files_confirmed(files_list):
         if files_list:
             if 'imagenes' not in st.session_state.datos_paciente:
@@ -104,37 +111,60 @@ def render_input_form():
         
         # --- SECCIÓN 1: ENTRADA DE DATOS MULTIMODAL ---
         
-        # Selector de Tipo de Entrada
-        input_type = st.selectbox(
-            "Seleccione método de entrada:",
-            ["", "🎤 Audio", "📷 Foto / Cámara", "📁 Archivo", "🏥 Importar Expediente"],
-            index=0,
-            key="triage_input_type",
-            label_visibility="collapsed",
-            disabled=not is_editing or is_step1_disabled
-        )
+        # --- SECCIÓN 1: ENTRADA DE DATOS MULTIMODAL (MODALES) ---
+        st.markdown("##### 📥 Añadir Información")
+        
+        col_btns = st.columns(5)
+        
+        # Definir diálogos
+        @st.dialog("🎤 Grabar Audio", width="large")
+        def dialog_audio():
+            render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed)
+            
+        @st.dialog("📷 Tomar Foto", width="large")
+        def dialog_photo():
+            render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close)
+            
+        @st.dialog("🎥 Grabar Video", width="large")
+        def dialog_video():
+            render_video_recorder(key_prefix="triage_video", on_video_ready=on_video_confirmed)
+            
+        @st.dialog("📁 Subir Archivo", width="large")
+        def dialog_file():
+            render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed)
+            
+        @st.dialog("🏥 Importar Historial", width="large")
+        def dialog_history():
+            st.markdown("##### 🏥 Importación de Historia Clínica")
+            st.info("Simulación de conexión con HCE (Historia Clínica Electrónica).")
+            
+            c_imp, c_cls = st.columns(2)
+            with c_imp:
+                if st.button("⬇️ Importar Últimos Informes", key="sim_import_btn", use_container_width=True):
+                    import_callback()
+                    st.rerun()
+            with c_cls:
+                if st.button("❌ Cerrar", key="hist_close_btn", use_container_width=True):
+                    st.rerun()
+            
+            st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/input_form.py</div>', unsafe_allow_html=True)
 
-        # Contenedor Dinámico (Solo si hay selección)
-        if input_type:
-            with st.container(border=True):
-                
-                # 1. AUDIO (MODULARIZADO)
-                if "Audio" in input_type:
-                    render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed, disabled=is_step1_disabled)
-
-                # 2. FOTO / CÁMARA (MODULARIZADO)
-                elif "Foto" in input_type:
-                    render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close, disabled=is_step1_disabled)
-
-                # 3. ARCHIVO (MODULARIZADO)
-                elif "Archivo" in input_type:
-                    render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed, disabled=is_step1_disabled)
-
-                # 4. IMPORTAR EXPEDIENTE
-                elif "Importar" in input_type:
-                    st.markdown("##### 🏥 Importación de Historia Clínica")
-                    st.info("Simulación de conexión con HCE (Historia Clínica Electrónica).")
-                    st.button("⬇️ Importar Últimos Informes", key="sim_import_btn", on_click=import_callback, disabled=is_step1_disabled)
+        # Botones de acción
+        with col_btns[0]:
+            if st.button("🎤 Audio", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                dialog_audio()
+        with col_btns[1]:
+            if st.button("📷 Foto", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                dialog_photo()
+        with col_btns[2]:
+            if st.button("🎥 Video", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                dialog_video()
+        with col_btns[3]:
+            if st.button("📁 Archivo", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                dialog_file()
+        with col_btns[4]:
+            if st.button("🏥 Historial", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                dialog_history()
 
         # Obtener contador de reset
         reset_count = st.session_state.get('reset_counter', 0)
@@ -354,9 +384,9 @@ def render_input_form():
                         # Verificar si es audio
                         is_audio_file = False
                         if isinstance(f, TempFileWrapper):
-                             is_audio_file = f.name.startswith("audio_") or f.name.endswith(('.wav', '.mp3', '.ogg'))
+                             is_audio_file = f.name.startswith("audio_") or f.name.endswith(('.wav', '.mp3', '.ogg', '.webm', '.mp4', '.mov', '.avi'))
                         elif hasattr(f, 'name'):
-                             is_audio_file = f.name.endswith(('.wav', '.mp3', '.ogg'))
+                             is_audio_file = f.name.endswith(('.wav', '.mp3', '.ogg', '.webm', '.mp4', '.mov', '.avi'))
                         
                         if is_audio_file:
                             md5 = calculate_md5(f)

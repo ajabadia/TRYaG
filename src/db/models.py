@@ -37,6 +37,7 @@ class PromptVersion(BaseModel):
     """Versión individual de un prompt."""
     version_id: str = Field(..., description="ID de la versión (ej: v1, v2)")
     content: str = Field(..., description="Contenido del prompt")
+    model: Optional[str] = Field(default=None, description="Modelo de IA asociado a esta versión")
     author: str = Field(default="admin", description="Autor de la versión")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: Optional[datetime] = None
@@ -49,11 +50,47 @@ class PromptVersion(BaseModel):
             "example": {
                 "version_id": "v1",
                 "content": "Actúa como un experto...",
+                "model": "gemini-1.5-flash",
                 "author": "admin",
                 "notes": "Versión inicial",
                 "status": "active"
             }
         }
+
+
+class AIAuditLog(BaseModel):
+    """Registro de auditoría de llamadas a la IA."""
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    timestamp_start: datetime = Field(default_factory=datetime.now)
+    timestamp_end: Optional[datetime] = None
+    duration_ms: Optional[float] = None
+    
+    # Contexto de llamada
+    caller_id: str = Field(..., description="Identificador del proceso llamante (ej: triage_service)")
+    user_id: str = Field(default="system", description="Usuario que inició la acción")
+    call_type: str = Field(..., description="Tipo de llamada (triage, transcription, predictive, simulation, test)")
+    
+    # Configuración usada
+    prompt_type: str = Field(..., description="Tipo de prompt usado")
+    prompt_version_id: Optional[str] = None
+    model_name: str = Field(..., description="Modelo de IA utilizado")
+    
+    # Payload
+    raw_prompt: str = Field(..., description="Prompt enviado (crudo)")
+    raw_response: str = Field(..., description="Respuesta recibida (cruda)")
+    
+    # Resultado
+    status: Literal["success", "error"] = Field(..., description="Estado de la llamada")
+    error_msg: Optional[str] = None
+    
+    # Metadata extra
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+
 
 
 class Prompt(BaseModel):
@@ -430,3 +467,41 @@ class ClinicalOption(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+
+
+# ============================================================================
+# SALAS
+# ============================================================================
+
+class Sala(BaseModel):
+    """Modelo de Sala (normalizado)."""
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    codigo: str = Field(..., description="Código único de la sala (ej: ADM-01)")
+    centro_id: str = Field(..., description="ID del centro al que pertenece")
+    nombre: str = Field(..., description="Nombre descriptivo")
+    tipo: Literal["admision", "triaje", "box", "consulta_ingreso", "espera", "otro"] = Field(..., description="Tipo de sala")
+    subtipo: Optional[Literal["atencion", "espera"]] = Field(default="atencion")
+    
+    # Capacidad y Estado
+    capacidad: int = Field(default=1, ge=0)
+    activa: bool = Field(default=True)
+    
+    # Detalles adicionales (migrados del array incrustado)
+    horario_inicio: Optional[str] = Field(default="00:00")
+    horario_fin: Optional[str] = Field(default="23:59")
+    equipamiento: List[str] = Field(default_factory=list)
+    notas: Optional[str] = Field(default=None)
+    
+    # Relaciones
+    salas_espera_asociadas: List[str] = Field(default_factory=list, description="Códigos de salas de espera asociadas")
+    salas_atencion_asociadas: List[str] = Field(default_factory=list, description="Códigos de salas de atención asociadas")
+    
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    updated_by: str = Field(default="admin")
+
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str, datetime: lambda v: v.isoformat()}
+

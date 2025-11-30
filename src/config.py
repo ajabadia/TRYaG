@@ -56,83 +56,40 @@ def get_min_chars_motivo():
 # Esta constante ahora es una función para obtener el valor dinámicamente
 MIN_CHARS_MOTIVO = get_min_chars_motivo()
 
-def get_model_triage():
+def get_default_ai_model():
     """
-    Obtiene el nombre del modelo para triaje desde MongoDB.
+    Obtiene el modelo de IA por defecto global desde MongoDB.
     Default: gemini-2.5-flash
     """
     # 1. Intentar desde MongoDB
     try:
         repo = get_config_repository()
-        config_item = repo.get_by_key('model_triage')
+        config_item = repo.get_by_key('default_ai_model')
         if config_item:
             return config_item['value']
     except Exception:
         pass
     
-    # 2. Fallback: intentar desde archivo JSON
+    # 2. Fallback: intentar desde archivo JSON (legacy support)
     config_file = os.path.join('data', 'config_general.json')
     if os.path.exists(config_file):
         try:
             with open(config_file, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-                return config.get('model_triage', 'gemini-2.5-flash')
+                # Intentar buscar la nueva key, si no, usar alguna vieja o default
+                return config.get('default_ai_model', config.get('model_triage', 'gemini-2.5-flash'))
         except Exception:
             pass
     
-    # 3. Valor por defecto
+    # 3. Valor por defecto hardcoded
     return 'gemini-2.5-flash'
+
+# Alias para compatibilidad hacia atrás
+def get_model_triage():
+    return get_default_ai_model()
 
 def get_model_transcription():
-    """
-    Obtiene el nombre del modelo para transcripción desde MongoDB.
-    Default: gemini-2.0-flash-exp
-    """
-    # 1. Intentar desde MongoDB
-    try:
-        repo = get_config_repository()
-        config_item = repo.get_by_key('model_transcription')
-        if config_item:
-            return config_item['value']
-    except Exception:
-        pass
-    
-    # 2. Fallback: intentar desde archivo JSON
-    config_file = os.path.join('data', 'config_general.json')
-    if os.path.exists(config_file):
-        try:
-            with open(config_file, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                return config.get('model_transcription', 'gemini-2.0-flash-exp')
-        except Exception:
-            pass
-    
-    # 3. Valor por defecto
-    return 'gemini-2.0-flash-exp'
+    return get_default_ai_model()
 
 def get_model_simulation():
-    """
-    Obtiene el nombre del modelo para simulación desde MongoDB.
-    Default: gemini-2.5-flash
-    """
-    # 1. Intentar desde MongoDB
-    try:
-        repo = get_config_repository()
-        config_item = repo.get_by_key('model_simulation')
-        if config_item:
-            return config_item['value']
-    except Exception:
-        pass
-    
-    # 2. Fallback: intentar desde archivo JSON
-    config_file = os.path.join('data', 'config_general.json')
-    if os.path.exists(config_file):
-        try:
-            with open(config_file, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                return config.get('model_simulation', 'gemini-2.5-flash')
-        except Exception:
-            pass
-    
-    # 3. Valor por defecto
-    return 'gemini-2.5-flash'
+    return get_default_ai_model()

@@ -129,9 +129,32 @@ def _render_prompt_editor_logic(prompt_type):
     # --- Área de Edición ---
     content = selected_version.get("content", "")
     notes = selected_version.get("notes", "")
+    current_model = selected_version.get("model", "gemini-2.5-flash")
+    
     can_edit = is_draft
     
     with st.expander("Editor de Contenido", expanded=True):
+        # Selector de Modelo (Dinámico desde BD)
+        from src.db.repositories.ai_models import get_ai_models_repository
+        models_repo = get_ai_models_repository()
+        available_models = models_repo.get_available_models()
+        
+        # Fallback si está vacío
+        if not available_models:
+            available_models = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
+            
+        model_options = available_models
+        if current_model not in model_options:
+            model_options.append(current_model)
+            
+        new_model = st.selectbox(
+            "Modelo IA",
+            options=model_options,
+            index=model_options.index(current_model) if current_model in model_options else 0,
+            disabled=not can_edit,
+            key=f"model_{prompt_type}_{selected_vid}"
+        )
+
         new_content = st.text_area(
             "Contenido del Prompt", 
             value=content, 
@@ -178,12 +201,12 @@ def _render_prompt_editor_logic(prompt_type):
     with col_b1:
         if is_draft:
             if st.button("Guardar Cambios", icon=":material/save:", key=f"save_{prompt_type}", type="primary"):
-                pm.update_version(prompt_type, selected_vid, new_content, author="admin", notes=new_notes)
+                pm.update_version(prompt_type, selected_vid, new_content, model=new_model, author="admin", notes=new_notes)
                 st.success("Cambios guardados.")
                 st.rerun()
         else:
             if st.button("Crear Nueva Versión", icon=":material/content_copy:", key=f"clone_{prompt_type}"):
-                pm.create_version(prompt_type, content, author="admin", notes=f"Copia de {selected_vid}")
+                pm.create_version(prompt_type, content, model=current_model, author="admin", notes=f"Copia de {selected_vid}")
                 st.success("Nueva versión creada.")
                 st.rerun()
 

@@ -48,7 +48,7 @@ def render_webcam_manager(key_prefix="webcam", on_close=None, disabled=False):
                 
                 # Incrementar contador para limpiar
                 st.session_state[f"{key_prefix}_reset_counter"] += 1
-                st.rerun()
+                # st.rerun() # REMOVIDO: Evitar cierre prematuro en modal
                 
             except Exception as e:
                 st.error(f"Error guardando captura: {e}")
@@ -86,7 +86,7 @@ def render_webcam_manager(key_prefix="webcam", on_close=None, disabled=False):
             if f"{key_prefix}_photos" in st.session_state:
                 del st.session_state[f"{key_prefix}_photos"]
             
-            # No es necesario st.rerun() dentro de un callback
+            st.rerun()
 
         # Botón Guardar y Cerrar
         st.button("✅ Guardar y Cerrar", key=f"{key_prefix}_save", type="primary", use_container_width=True, disabled=not photos or disabled, on_click=handle_save)
@@ -100,6 +100,8 @@ def render_webcam_manager(key_prefix="webcam", on_close=None, disabled=False):
             
             if on_close:
                 on_close(None) # None indica cancelación
+            
+            st.rerun()
 
         st.button("❌ Cancelar", key=f"{key_prefix}_cancel", use_container_width=True, on_click=handle_cancel, disabled=disabled)
 

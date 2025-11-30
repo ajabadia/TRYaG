@@ -10,6 +10,7 @@ import json
 import streamlit as st
 from utils.icons import render_icon
 from src.db.repositories.centros import get_centros_repository
+from src.db.repositories.salas import get_salas_by_centro
 
 # ---------------------------------------------------------------------------
 # Configuración general (JSON en disco)
@@ -31,14 +32,29 @@ def save_general_config(config):
 # ---------------------------------------------------------------------------
 
 def load_centro_config():
-    """Carga la configuración del centro desde MongoDB."""
+    """Carga la configuración del centro desde MongoDB.
+    
+    Normalización:
+    - Carga datos del centro (sin salas incrustadas).
+    - Carga salas desde la colección 'salas' usando SalasRepository.
+    - Combina ambos para mantener compatibilidad con la UI.
+    """
     try:
         centros_repo = get_centros_repository()
         centro = centros_repo.get_centro_principal()
+        
         if centro:
             if '_id' in centro:
                 centro['_id'] = str(centro['_id'])
+            
+            # Cargar salas desde colección normalizada
+            salas = get_salas_by_centro(centro['_id'])
+            # Ordenar por código para consistencia
+            salas.sort(key=lambda x: x.get('codigo', ''))
+            
+            centro['salas'] = salas
             return centro
+            
     except Exception as e:
         st.error(f"Error al cargar configuración del centro: {e}")
     # Valores por defecto
@@ -56,19 +72,32 @@ def load_centro_config():
 
 
 def save_centro_config(config):
-    """Guarda la configuración del centro en MongoDB."""
+    """Guarda la configuración del centro en MongoDB.
+    
+    Normalización:
+    - NO guarda el array 'salas' en la colección 'centros'.
+    - Las salas se gestionan independientemente vía SalasRepository.
+    """
     try:
         centros_repo = get_centros_repository()
+        
+        # Crear copia para no modificar el original en session_state
+        config_to_save = config.copy()
+        
+        # Eliminar 'salas' para evitar guardarlo en 'centros'
+        if 'salas' in config_to_save:
+            del config_to_save['salas']
+            
         centros_repo.create_or_update_centro(
-            codigo=config.get('codigo', ''),
-            denominacion=config.get('denominacion', ''),
-            cif=config.get('cif'),
-            direccion=config.get('direccion'),
-            email=config.get('email'),
-            telefono=config.get('telefono'),
-            logo_path=config.get('logo_path'),
-            mensaje=config.get('mensaje'),
-            salas=config.get('salas', []),
+            codigo=config_to_save.get('codigo', ''),
+            denominacion=config_to_save.get('denominacion', ''),
+            cif=config_to_save.get('cif'),
+            direccion=config_to_save.get('direccion'),
+            email=config_to_save.get('email'),
+            telefono=config_to_save.get('telefono'),
+            logo_path=config_to_save.get('logo_path'),
+            mensaje=config_to_save.get('mensaje'),
+            salas=[], # Pasamos lista vacía explícitamente
             updated_by="admin",
         )
         return True
@@ -218,7 +247,7 @@ def mostrar_panel_configuracion():
                 with tab_gestion:
                     from ui.config.salas_manager import render_salas_manager
                     existing_salas = centro_config.get('salas', [])
-                    render_salas_manager(existing_salas=existing_salas)
+                    render_salas_manager(centro_id=centro_config.get('_id'), existing_salas=existing_salas)
                 
                 with tab_asignacion:
                     from ui.config.asignacion_turnos import render_asignacion_turnos

@@ -8,21 +8,14 @@ import sys
 import os
 import streamlit as st
 from streamlit_cookies_manager import CookieManager
-
-# Ensure the project root is in the Python path before any imports
-root_dir = os.path.dirname(os.path.dirname(__file__))
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
-
+from ui.config_panel import mostrar_panel_configuracion
+from utils.icons import get_icon_path, render_icon
 from services.permissions_service import get_available_tabs
-from services.gemini_client import configure_gemini
 from ui.connection_status import check_database_connection
 from ui.config_panel import load_centro_config
 from ui.loading_indicator import render_loading_container
 from components.common.user_selector import render_user_selector
 from ui.main_view import mostrar_asistente_triaje
-from ui.config_panel import mostrar_panel_configuracion
-from utils.icons import get_icon_path, render_icon
 
 # ---------------------------------------------------------------------------
 # Page configuration
@@ -32,12 +25,15 @@ st.set_page_config(
     page_icon=get_icon_path("logo"),
     layout="wide",
 )
+
 # Gemini client configuration
 # ---------------------------------------------------------------------------
 try:
-    success, error_msg = configure_gemini(st.secrets["GOOGLE_API_KEY"])
-    if not success:
-        st.error(f"Error al configurar la API de Gemini: {error_msg}")
+    # Set API key in environment for GeminiService
+    if "GOOGLE_API_KEY" in st.secrets:
+        os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+    else:
+        st.warning("GOOGLE_API_KEY no encontrada en secrets.toml")
 except (KeyError, AttributeError):
     st.error(
         "No se ha encontrado la clave de API de Google. Asegúrate de añadirla a tu fichero .streamlit/secrets.toml"
@@ -247,7 +243,6 @@ if not disclaimer_accepted:
             color: white;
             border: none;
             cursor: pointer;
-            st.rerun()
         }
         div[data-testid="stButton"] > button:hover {
             background-color: #218838;
