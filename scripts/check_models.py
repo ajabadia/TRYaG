@@ -4,7 +4,7 @@ import google.generativeai as genai
 # --- IMPORTANTE ---
 # Pega tu clave de API MÁS RECIENTE aquí, directamente entre las comillas.
 # Asegúrate de que no haya espacios antes o después.
-API_KEY = "AIzaSyC8sV0M56YzCDL-O5n6m5emMLmtHjdxN3s" 
+API_KEY = "xxx" 
 
 try:
     genai.configure(api_key=API_KEY)
