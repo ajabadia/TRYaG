@@ -79,6 +79,67 @@ def guardar_auditoria(datos, session_state):
             )
             cleanup_temp_files(recorded_files)
 
+        # Si es una acción de triaje, guardar también en TriageRepository para registro clínico estructurado
+        if accion == 'triaje' and patient_code:
+            try:
+                from db.repositories.triage import get_triage_repository
+                triage_repo = get_triage_repository()
+                
+                # Construir TriageRecord (simplificado por ahora, mapeando lo que tenemos)
+                # Nota: Idealmente usaríamos el modelo Pydantic, pero por flexibilidad aquí pasamos dict
+                # y dejamos que el repo/modelo valide si es estricto, o guardamos como dict.
+                
+                # Extraer nivel final
+                nivel_final = None
+                color_final = None
+                if "nivel_corregido" in datos:
+                    # Parsear "Nivel X (Desc)"
+                    import re
+                    match = re.search(r'Nivel ([IV]+)', datos['nivel_corregido'])
+                    if match:
+                        roman = match.group(1)
+                        roman_to_int = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5}
+                        nivel_final = roman_to_int.get(roman)
+                        
+                        # Color aproximado
+                        colors = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'green', 5: 'blue'}
+                        color_final = colors.get(nivel_final, 'grey')
+                else:
+                    # Usar sugerencia IA
+                    # datos['sugerencia_ia'] suele ser "Nivel X - Color"
+                    pass # Pendiente mejorar parsing
+                
+                triage_record = {
+                    "audit_id": audit_id,
+                    "patient_id": patient_code,
+                    "timestamp": datetime.now(),
+                    "vital_signs": datos.get('signos_vitales'),
+                    "sugerencia_ia": {
+                        "analysis": {
+                            "reason": datos.get('motivo_consulta'),
+                            "explanation": datos.get('razones_ia')
+                        },
+                        "text": datos.get('sugerencia_ia')
+                    },
+                    "nivel_final": nivel_final,
+                    "color_final": color_final,
+                    "evaluator_id": usuario,
+                    "decision_humana": datos.get('decision_humana'),
+                    "justificacion": datos.get('justificacion_humana'),
+                    # Snapshot de datos paciente para el PDF
+                    "patient_snapshot": {
+                        "nombre": "Paciente", # Se debería enriquecer si es posible
+                        "patient_code": patient_code,
+                        "age": datos.get('edad'),
+                        "gender": "N/A"
+                    }
+                }
+                
+                triage_repo.create(triage_record)
+                
+            except Exception as e:
+                print(f"Error guardando TriageRecord: {e}")
+
         return audit_id
         
     except Exception as e:

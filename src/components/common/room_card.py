@@ -11,6 +11,8 @@ from services.patient_flow_service import obtener_pacientes_en_espera
 from services.staff_assignment_service import get_room_staff
 from db.repositories.funciones import get_funcion_by_code
 
+from utils.ui_utils import get_room_color
+
 def render_assigned_users(sala_code: str):
     """
     Renderiza usuarios asignados a la sala.
@@ -88,6 +90,10 @@ def render_room_card(
     codigo = sala.get('codigo', '')
     nombre = sala.get('nombre', '')
     plazas_totales = sala.get('plazas', 0)
+    tipo = sala.get('tipo', 'sin_tipo')
+    
+    # Obtener color
+    color = get_room_color(tipo)
     
     # Obtener pacientes en la sala
     if pacientes is None:
@@ -105,11 +111,11 @@ def render_room_card(
     
     # Card de la sala
     with st.container(border=True):
-        # Título de la sala
+        # Título de la sala con color
         if is_selected:
-            st.success(f"✓ **{nombre}**")
+            st.markdown(f"#### <span style='color:{color}'>✓ {nombre}</span>", unsafe_allow_html=True)
         else:
-            st.markdown(f"**{nombre}**")
+            st.markdown(f"#### <span style='color:{color}'>{nombre}</span>", unsafe_allow_html=True)
         
         # Código de la sala
         st.caption(f"**Código:** {codigo}")

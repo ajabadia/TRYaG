@@ -83,19 +83,36 @@ class GeminiService:
         error_msg = None
 
         try:
-            model = genai.GenerativeModel(model_name=model_name, generation_config=generation_config)
+            # Configuración de seguridad permisiva para evitar bloqueos en contexto médico
+            safety_settings = [
+                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+            ]
+            
+            model = genai.GenerativeModel(
+                model_name=model_name, 
+                generation_config=generation_config,
+                safety_settings=safety_settings
+            )
             
             # Llamada a la API
             response = model.generate_content(prompt_content)
             
             # Procesar respuesta
             if not response.parts:
+                # Intentar obtener más detalles del error
+                finish_reason = "UNKNOWN"
+                if response.candidates:
+                    finish_reason = response.candidates[0].finish_reason.name
+                
                 if response.prompt_feedback:
                     block_reason = response.prompt_feedback.block_reason.name
                     error_msg = f"Blocked: {block_reason}"
                     response_data = {"status": "ERROR", "msg": error_msg}
                 else:
-                    error_msg = "Empty response parts"
+                    error_msg = f"Empty response parts. Finish Reason: {finish_reason}"
                     response_data = {"status": "ERROR", "msg": error_msg}
             else:
                 raw_response_log = response.text

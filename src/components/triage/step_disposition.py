@@ -5,6 +5,7 @@ Paso 3 del Asistente de Triaje: Derivación / Destino.
 Permite asignar sala de espera, rechazar o devolver a admisión.
 """
 import streamlit as st
+from datetime import datetime
 from services.patient_flow_service import completar_triaje, rechazar_paciente, reassign_patient_flow
 from services.room_service import obtener_salas_por_tipo
 
@@ -24,40 +25,31 @@ def render_step_disposition():
     
     col_print, col_space = st.columns([1, 4])
     with col_print:
-        if st.button("🖨️ Imprimir Hoja de Triaje", use_container_width=True):
-            # Construir registro para el reporte
-            # Nota: Idealmente esto debería venir de un objeto TriageRecord persistido, 
-            # pero aquí reconstruimos con lo que hay en sesión para la vista previa.
-            record = {
-                "audit_id": st.session_state.get('current_audit_id', 'PREVIEW'),
-                "timestamp": st.session_state.get('triage_start_time'),
-                "patient_data": p,
-                "vital_signs": st.session_state.datos_paciente.get('vital_signs', {}),
-                "motivo_consulta": st.session_state.datos_paciente.get('texto_medico', ''),
-                "patient_background": {
-                    "allergies": st.session_state.datos_paciente.get('alergias', []),
-                    "pathologies": st.session_state.datos_paciente.get('patologias', []),
-                    "medications": st.session_state.datos_paciente.get('medicacion', '')
-                },
-                "triage_result": st.session_state.get('resultado', {}),
-                "destination": "Pendiente de asignación",
-                "evaluator_id": st.session_state.get('username', 'Sistema')
-            }
-            
-            pdf_bytes = generate_triage_pdf(record)
-            
-            # Nombre del archivo
-            safe_name = f"{p.get('nombre')}_{p.get('apellido1')}".replace(" ", "_")
-            file_name = f"Triaje_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
-            
-            st.download_button(
-                label="⬇️ Descargar PDF",
-                data=pdf_bytes,
-                file_name=file_name,
-                mime="application/pdf",
-                type="primary",
-                icon="📄"
-            )
+        # Construir registro para el reporte usando helper
+        from utils.triage_utils import get_current_triage_record
+        record = get_current_triage_record()
+        record["destination"] = "Pendiente de asignación" # Sobrescribir para este paso
+        
+        pdf_bytes = generate_triage_pdf(record)
+        
+        # Nombre del archivo (Sanitizado ASCII)
+        import re
+        import unicodedata
+        raw_name = f"{p.get('nombre')}_{p.get('apellido1')}"
+        normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
+        safe_name = re.sub(r'[^\w\-_]', '_', normalized)
+        
+        file_name = f"Triaje_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+        
+        st.download_button(
+            label="🖨️ Descargar Hoja de Triaje",
+            data=pdf_bytes,
+            file_name=file_name,
+            mime="application/octet-stream",
+            type="primary",
+            icon="📄",
+            use_container_width=True
+        )
     
     st.divider()
     
@@ -68,7 +60,6 @@ def render_step_disposition():
         "🔙 Devolver a Admisión"
     ])
     
-    # --- Opción 1: Boxes (Urgencias) ---
     # --- Opción 1: Boxes (Urgencias) ---
     with tab_espera:
         st.markdown("Asignar a una sala de espera de Boxes.")

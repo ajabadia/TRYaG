@@ -221,6 +221,27 @@ def render_step_patient_selection() -> bool:
                     except: pass
                 st.session_state.datos_paciente['edad'] = calcular_edad(fn)
             
+            # --- AUTO-ADVANCE ---
+            # En lugar de solo seleccionar, avanzamos directamente al paso 2
+            st.session_state.triage_step = 2
+            
+            # Inicializar estado de triaje limpio
+            st.session_state.datos_paciente = {
+                "texto_medico": "",
+                "edad": st.session_state.triage_patient.get('edad', 40) if st.session_state.triage_patient else 40,
+                "dolor": 5,
+                "imagenes": [],
+                "imagenes_confirmadas_ia": [],
+                "vital_signs": {}
+            }
+            st.session_state.resultado = None
+            st.session_state.calificacion_humana = None
+            st.session_state.validation_complete = False
+            st.session_state.analysis_complete = False
+            st.session_state.is_editing_text = True
+            st.session_state.show_text_error = False
+            st.session_state.modal_image_selection = {}
+            
             st.rerun()
 
         def on_reject(patient):
@@ -237,8 +258,9 @@ def render_step_patient_selection() -> bool:
         actions = []
         
         # Botón Principal (Atender/Continuar)
-        btn_label = "Continuar" if is_in_room else ("Atendiendo" if is_selected else "Atender")
-        btn_type = "primary" if (is_selected or is_in_room) else "secondary"
+        # Ahora es "Triar Ahora" o "Retomar Triaje"
+        btn_label = "Retomar Triaje" if is_in_room else "Triar Ahora"
+        btn_type = "primary"
         
         # Solo mostrar botón de atender si no está bloqueado o si es el paciente en sala
         # O si queremos mostrarlo deshabilitado, pasamos disabled=True
@@ -278,10 +300,11 @@ def render_step_patient_selection() -> bool:
         )
 
     # Mostrar paciente seleccionado y permitir avanzar
+    # (Ya no es necesario porque el botón avanza directo, pero por si acaso queda algo residual)
     if selected_patient:
-        st.divider()
-        st.info(f"👤 Atendiendo a: **{selected_patient.get('nombre')} {selected_patient.get('apellido1')}** (ID: {selected_patient.get('patient_code')})")
-        return True
+        # Si llegamos aquí es porque hubo un rerun pero no se cambió el step (raro con la nueva lógica)
+        # O si se seleccionó desde otro lado.
+        pass
         
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/step_patient_selection.py</div>', unsafe_allow_html=True)
     return False

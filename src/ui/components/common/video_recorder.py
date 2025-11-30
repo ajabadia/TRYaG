@@ -87,7 +87,7 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
     c_save, c_cancel = st.columns(2)
     
     with c_save:
-        def handle_save():
+        if st.button("✅ Guardar Videos", key=f"{key_prefix}_save", type="primary", use_container_width=True, disabled=not videos or disabled):
             if on_video_ready:
                 on_video_ready(st.session_state[f"{key_prefix}_videos"])
             # Limpiar
@@ -95,14 +95,10 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
                 del st.session_state[f"{key_prefix}_videos"]
             st.rerun()
         
-        st.button("✅ Guardar Videos", key=f"{key_prefix}_save", type="primary", use_container_width=True, on_click=handle_save, disabled=not videos or disabled)
-        
     with c_cancel:
-        def handle_cancel():
+        if st.button("❌ Cancelar", key=f"{key_prefix}_cancel", use_container_width=True):
             if f"{key_prefix}_videos" in st.session_state:
                 del st.session_state[f"{key_prefix}_videos"]
             st.rerun()
-        
-        st.button("❌ Cancelar", key=f"{key_prefix}_cancel", use_container_width=True, on_click=handle_cancel)
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/components/common/video_recorder.py</div>', unsafe_allow_html=True)

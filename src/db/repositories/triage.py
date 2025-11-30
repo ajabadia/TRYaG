@@ -105,6 +105,24 @@ class TriageRepository(BaseRepository[TriageRecord]):
             sort=[("timestamp", pymongo.DESCENDING)]
         )
 
+    def get_latest_by_patient_id(self, patient_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Obtiene el último registro de triaje para un paciente.
+        
+        Args:
+            patient_id: ID o Código del paciente
+            
+        Returns:
+            Optional[Dict]: Último registro encontrado o None
+        """
+        # Intentar buscar por patient_id (campo explícito)
+        results = self.find_all(
+            filters={"patient_id": patient_id},
+            sort=[("timestamp", pymongo.DESCENDING)],
+            limit=1
+        )
+        return results[0] if results else None
+
 
 # Instancia singleton
 _triage_repo: Optional[TriageRepository] = None

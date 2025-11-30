@@ -57,10 +57,17 @@ def render_input_form():
     """
     # --- CALLBACKS DE INTEGRACIÓN ---
     
-    def on_audio_confirmed(audio_wrapper):
-        if 'imagenes' not in st.session_state.datos_paciente:
-            st.session_state.datos_paciente['imagenes'] = []
-        st.session_state.datos_paciente['imagenes'].append(audio_wrapper)
+    def on_audio_confirmed(audio_wrappers):
+        if audio_wrappers:
+            if 'imagenes' not in st.session_state.datos_paciente:
+                st.session_state.datos_paciente['imagenes'] = []
+            
+            # Manejar tanto lista como item único por compatibilidad
+            if isinstance(audio_wrappers, list):
+                st.session_state.datos_paciente['imagenes'].extend(audio_wrappers)
+            else:
+                st.session_state.datos_paciente['imagenes'].append(audio_wrappers)
+                
         st.session_state.triage_input_type = "" # Resetear selector
 
     def on_webcam_close(photos):
@@ -117,23 +124,24 @@ def render_input_form():
         col_btns = st.columns(5)
         
         # Definir diálogos
-        @st.dialog("🎤 Grabar Audio", width="large")
+        # NOTA: dismissible=False evita que se cierre al hacer click fuera (requiere Streamlit reciente)
+        @st.dialog("🎤 Grabar Audio", width="large", dismissible=False)
         def dialog_audio():
             render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed)
             
-        @st.dialog("📷 Tomar Foto", width="large")
+        @st.dialog("📷 Tomar Foto", width="large", dismissible=False)
         def dialog_photo():
             render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close)
             
-        @st.dialog("🎥 Grabar Video", width="large")
+        @st.dialog("🎥 Grabar Video", width="large", dismissible=False)
         def dialog_video():
             render_video_recorder(key_prefix="triage_video", on_video_ready=on_video_confirmed)
             
-        @st.dialog("📁 Subir Archivo", width="large")
+        @st.dialog("📁 Subir Archivo", width="large", dismissible=False)
         def dialog_file():
             render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed)
             
-        @st.dialog("🏥 Importar Historial", width="large")
+        @st.dialog("🏥 Importar Historial", width="large", dismissible=False)
         def dialog_history():
             st.markdown("##### 🏥 Importación de Historia Clínica")
             st.info("Simulación de conexión con HCE (Historia Clínica Electrónica).")
@@ -282,11 +290,14 @@ def render_input_form():
 
         if st.session_state.datos_paciente.get('imagenes'):
             with st.container(border=True):
-                c_info_icon, c_info_text = st.columns([1, 20])
+                c_info_icon, c_info_text, c_refresh = st.columns([1, 15, 4])
                 with c_info_icon:
                     render_icon("info", size=20, color="#17a2b8")
                 with c_info_text:
                     st.info("Marca 'Analizar con IA' en los archivos que deseas enviar.")
+                with c_refresh:
+                    if st.button("🔄 Actualizar", key="btn_refresh_media", help="Recargar lista de archivos", use_container_width=True):
+                        st.rerun()
                 
                 # CSS para Grid Responsivo (Scoped)
                 st.markdown("""

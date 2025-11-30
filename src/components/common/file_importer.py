@@ -52,7 +52,8 @@ def render_file_importer(key_prefix="files", on_files_ready=None, disabled=False
     c_add, c_cancel = st.columns(2)
     
     with c_add:
-        st.button("✅ Añadir Archivos", key=f"{key_prefix}_add_btn", on_click=handle_add_files, disabled=not uploaded_files or disabled, use_container_width=True)
+        if st.button("✅ Añadir Archivos", key=f"{key_prefix}_add_btn", disabled=not uploaded_files or disabled, use_container_width=True):
+            handle_add_files()
         
     with c_cancel:
         if st.button("❌ Cancelar", key=f"{key_prefix}_cancel", use_container_width=True, disabled=disabled):

@@ -1,0 +1,15 @@
+Testing model: gemini-2.5-flash
+Sending prompt...
+
+--- Response Object ---
+Parts: 1
+Finish Reason: 1
+Safety Ratings: []
+
+Text: {
+  "risk_level": "Medium",
+  "alerts": [
+    "Fiebre (38.0°C) detectada.",
+    "Dolor moderado a severo (EVA 7.0) reportado."
+  ]
+}

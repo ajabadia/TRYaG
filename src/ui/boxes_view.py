@@ -23,6 +23,11 @@ def render_boxes_view():
     """
     st.title("🩺 Gestión de Boxes y Consultas")
     
+    # --- LÓGICA DE PERSISTENCIA Y AUTO-AVANCE ---
+    # Si ya hay sala seleccionada y estamos en paso 0, avanzar automáticamente
+    if st.session_state.get('boxes_room_code') and st.session_state.get('boxes_step', 0) == 0:
+        st.session_state.boxes_step = 1
+
     # Inicializar paso actual
     if 'boxes_step' not in st.session_state:
         st.session_state.boxes_step = 0
@@ -74,15 +79,16 @@ def render_boxes_view():
         elif st.session_state.boxes_step == 1:
             room_code = st.session_state.get('boxes_room_code')
             
-            # Barra superior con info de sala
-            col_info, col_change = st.columns([4, 1])
-            with col_info:
-                st.info(f"📍 Sala Activa: **{room_code}**")
-            with col_change:
-                if st.button("Cambiar Sala", type="secondary"):
-                    st.session_state.boxes_room_code = None
-                    st.session_state.boxes_step = 0
-                    st.rerun()
+            # Barra superior con info de sala y botón de cambio
+            with st.container(border=True):
+                col_info, col_change = st.columns([4, 1])
+                with col_info:
+                    st.markdown(f"📍 Sala Activa: **{room_code}**")
+                with col_change:
+                    if st.button("Cambiar Sala", type="secondary", use_container_width=True):
+                        st.session_state.boxes_room_code = None
+                        st.session_state.boxes_step = 0
+                        st.rerun()
 
             # Verificar si hay paciente activo en la sala (Médico ocupado)
             pacientes_activos = obtener_pacientes_en_sala(room_code)

@@ -29,6 +29,37 @@ def render_step_triage_process() -> bool:
     from ui.components.common.patient_card import render_patient_header
     render_patient_header(p, st.session_state.get('resultado'))
     
+    # --- HERRAMIENTAS (PDF) ---
+    from services.report_service import generate_triage_pdf
+    from utils.triage_utils import get_current_triage_record
+    from datetime import datetime
+    
+    with st.expander("🛠️ Herramientas", expanded=False):
+        record = get_current_triage_record()
+        record["destination"] = "BORRADOR - EN PROCESO"
+        pdf_bytes = generate_triage_pdf(record)
+        
+        # Sanitizar nombre de archivo de forma más agresiva (ASCII only)
+        import re
+        import unicodedata
+        
+        raw_name = f"{p.get('nombre', 'Paciente')}_{p.get('apellido1', '')}"
+        # Normalizar a ASCII (quitar acentos)
+        normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
+        # Solo permitir letras, números y guiones bajos
+        safe_name = re.sub(r'[^\w\-_]', '_', normalized)
+        
+        file_name = f"Borrador_{safe_name}_{datetime.now().strftime('%H%M')}.pdf"
+        
+        st.download_button(
+            label="📄 Descargar Borrador PDF",
+            data=pdf_bytes,
+            file_name=file_name,
+            mime="application/octet-stream",
+            use_container_width=True,
+            key="btn_download_draft_pdf"
+        )
+    
     st.divider()
     
     # Sub-paso 1: Entrada de datos (motivo, dolor, imágenes, audio)

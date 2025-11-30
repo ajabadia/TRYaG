@@ -63,7 +63,8 @@ def render_validation_form():
             "ia_files": len(datos_paciente.get('imagenes_confirmadas_ia', [])),
             "sugerencia_ia": nivel_texto,
             "razones_ia": " | ".join(resultado.get('razones', [])),
-            "calificacion_humana": st.session_state.get('calificacion_humana', 'No calificado')
+            "calificacion_humana": st.session_state.get('calificacion_humana', 'No calificado'),
+            "patient_code": st.session_state.triage_patient.get('patient_code') if st.session_state.get('triage_patient') else None
         }
 
         # Comprobar si ya se ha completado la validación en esta sesión

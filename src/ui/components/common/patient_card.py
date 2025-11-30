@@ -1,6 +1,9 @@
 # path: src/ui/components/common/patient_card.py
 import streamlit as st
 from datetime import datetime
+from utils.ui_utils import get_room_color
+
+from services.patient_service import calcular_edad, obtener_paciente_por_codigo
 
 def render_patient_card(
     patient: dict,
@@ -14,11 +17,11 @@ def render_patient_card(
 ):
     """
     Renderiza una tarjeta de paciente unificada y flexible.
+    Si faltan datos en el dict 'patient', intenta completarlos desde BD usando 'patient_code'.
     
     Args:
-        patient (dict): Datos del paciente.
-        actions (list): Lista de dicts con configuración de botones:
-                        [{'label': 'Llamar', 'key': 'call', 'on_click': func, 'type': 'primary', 'disabled': bool}]
+        patient (dict): Datos del paciente (puede ser parcial).
+        actions (list): Lista de dicts con configuración de botones.
         show_triage_level (bool): Mostrar badge de nivel de triaje.
         show_wait_time (bool): Mostrar tiempo de espera.
         show_location (bool): Mostrar sala actual/origen.
@@ -26,8 +29,36 @@ def render_patient_card(
         is_in_room (bool): Destacar si el paciente está en sala (estilo azul).
         key_prefix (str): Prefijo para keys de Streamlit.
     """
+    # 0. Enriquecer datos si es necesario
+    # Si faltan datos básicos (nombre, edad) y tenemos código, consultamos BD
+    pid = patient.get('patient_code')
+    if pid and (not patient.get('nombre') or patient.get('edad') is None):
+        full_data = obtener_paciente_por_codigo(pid)
+        if full_data:
+            # Mezclar: priorizar datos de flujo (patient) sobre estáticos (full_data) para cosas como ubicación,
+            # pero usar estáticos para demografía si faltan.
+            # Estrategia: Copiar full_data y actualizar con patient (para mantener estado actual de flujo)
+            merged = full_data.copy()
+            merged.update(patient)
+            patient = merged
+
     # 1. Preparar Datos Visuales
-    nombre = patient.get('nombre_completo', f"{patient.get('nombre', '')} {patient.get('apellido1', '')}")
+    nombre = patient.get('nombre_completo')
+    if not nombre:
+        nombre = f"{patient.get('nombre', '')} {patient.get('apellido1', '')} {patient.get('apellido2', '')}".strip()
+    
+    # Calcular edad si falta
+    edad = patient.get('edad')
+    if edad is None or edad == 'N/A':
+        fnac = patient.get('fecha_nacimiento')
+        if fnac:
+            if isinstance(fnac, str):
+                try: fnac = datetime.fromisoformat(fnac)
+                except: pass
+            if isinstance(fnac, datetime):
+                edad = calcular_edad(fnac)
+                patient['edad'] = edad # Guardar para uso posterior
+    
     pid = patient.get('patient_code', 'N/A')
     
     # Nivel Triaje
@@ -67,8 +98,6 @@ def render_patient_card(
                     elif mins > 60: alert_level = 'warning'
 
     # 2. Renderizar
-    # Contenedor con estilo diferente si está en sala
-    # 2. Renderizar
     # Usar siempre container para consistencia, el estilo visual se maneja dentro
     context = st.container(border=True)
     
@@ -95,7 +124,8 @@ def render_patient_card(
             else:
                 st.markdown(f"**{nombre}**")
             
-            st.caption(f"ID: `{pid}`")
+            edad_str = f"{patient.get('edad')} años" if patient.get('edad') is not None else ""
+            st.caption(f"ID: `{pid}` {('• ' + edad_str) if edad_str else ''}")
             
             if show_location:
                 # Prioridad: sala_nombre > sala_code > sala_actual > sala_espera_origen
@@ -110,8 +140,15 @@ def render_patient_card(
                     loc_display = loc_code
                 else:
                     loc_display = patient.get('sala_espera_origen') or "N/A"
-                    
-                st.caption(f"📍 {loc_display}")
+                
+                # Obtener color según tipo de sala (si está disponible)
+                sala_tipo = patient.get('sala_tipo')
+                # Si no tenemos el tipo explícito, intentamos inferirlo o usar default
+                # (Por ahora solo si viene en el dict)
+                
+                color = get_room_color(sala_tipo)
+                
+                st.markdown(f"📍 <span style='color:{color}; font-weight:bold;'>{loc_display}</span>", unsafe_allow_html=True)
 
         with c_meta:
             if show_wait_time:
@@ -137,9 +174,25 @@ def render_patient_card(
                     ):
                         if action.get('on_click'):
                             action['on_click'](patient)
+            
+            # Botón de Informe (Modal)
+            if pid != 'N/A':
+                col_pdf, _ = st.columns([1, 3])
+                with col_pdf:
+                    if st.button("📄 Informe", key=f"btn_pdf_{pid}_{key_prefix}", help="Ver y descargar informe", use_container_width=True):
+                        from ui.components.common.pdf_preview_modal import show_pdf_preview_modal
+                        from utils.triage_utils import get_triage_record_for_pdf
+                        
+                        record = get_triage_record_for_pdf(pid)
+                        if record:
+                            show_pdf_preview_modal(record, patient)
+                        else:
+                            st.toast("⚠️ No hay datos de triaje disponibles para este paciente.", icon="⚠️")
         
         # Etiqueta de componente
         st.markdown('<div style="color: #ccc; font-size: 0.6em; text-align: right;">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)
+
+from services.patient_service import calcular_edad
 
 def render_patient_header(patient, triage_result=None):
     """
@@ -157,7 +210,22 @@ def render_patient_header(patient, triage_result=None):
             with c1:
                 st.caption(f"**ID:** {patient.get('patient_code')}")
             with c2:
-                edad = patient.get('edad', 'N/A')
+                edad = patient.get('edad')
+                if edad is None or edad == 'N/A':
+                    fnac = patient.get('fecha_nacimiento')
+                    if fnac:
+                        if isinstance(fnac, str):
+                            try:
+                                fnac = datetime.fromisoformat(fnac)
+                            except:
+                                pass
+                        if isinstance(fnac, datetime):
+                            edad = calcular_edad(fnac)
+                        else:
+                            edad = 'N/A'
+                    else:
+                        edad = 'N/A'
+                
                 st.caption(f"**Edad:** {edad} años")
             with c3:
                 # Mostrar sala de origen si existe

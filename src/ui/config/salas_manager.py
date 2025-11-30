@@ -13,19 +13,12 @@ from db.repositories.salas import (
     delete_sala,
 )
 
-# Colores por tipo (para UI)
-TYPE_COLORS = {
-    "admision": "#28a745",
-    "triaje": "#17a2b8",
-    "box": "#ffc107",
-    "consulta": "#6c757d",
-}
-
+from utils.ui_utils import ROOM_TYPE_COLORS, get_room_color
 
 def render_sala_card(sala: dict):
     """Renderiza una tarjeta de sala con acciones de edición y borrado."""
     tipo = sala.get("tipo", "sin_tipo")
-    color = TYPE_COLORS.get(tipo, "#6c757d")
+    color = get_room_color(tipo)
     
     with st.container(border=True):
         col1, col2 = st.columns([3, 1])
@@ -60,7 +53,7 @@ def edit_sala_dialog(sala: dict, centro_id: str):
             codigo = st.text_input("Código", value=sala.get('codigo', ''), disabled=True)
             
         nombre = st.text_input("Nombre", value=sala.get('nombre', ''))
-        tipo = st.selectbox("Tipo", options=list(TYPE_COLORS.keys()), index=list(TYPE_COLORS.keys()).index(sala.get('tipo', 'admision')))
+        tipo = st.selectbox("Tipo", options=list(ROOM_TYPE_COLORS.keys()), index=list(ROOM_TYPE_COLORS.keys()).index(sala.get('tipo', 'admision')) if sala.get('tipo', 'admision') in ROOM_TYPE_COLORS else 0)
         subtipo = st.selectbox("Subtipo", options=["atención", "espera"], index=["atención", "espera"].index(sala.get('subtipo', 'atención')) if sala.get('subtipo') in ["atención", "espera"] else 0)
         capacidad = st.number_input("Capacidad", min_value=1, max_value=500, value=sala.get('capacidad', 1))
         activa = st.checkbox("Activa", value=sala.get('activa', True))

@@ -28,6 +28,10 @@ def mostrar_admision():
     """
     st.title("📋 Gestión de Admisión")
 
+    # --- LÓGICA DE PERSISTENCIA Y AUTO-AVANCE (SALA ADMISIÓN) ---
+    if st.session_state.get('admission_sala_admision_code') and st.session_state.get('admission_step', 0) == 0:
+        st.session_state.admission_step = 1
+
     # Inicializar paso actual
     if 'admission_step' not in st.session_state:
         st.session_state.admission_step = 0
@@ -56,30 +60,45 @@ def mostrar_admision():
             sala_selected = render_step_sala_admision()
             
             if sala_selected:
-                st.divider()
-                if st.button("Continuar a Datos del Paciente →", type="primary", use_container_width=True):
-                    st.session_state.admission_step = 1
-                    st.rerun()
+                # Auto-avance
+                st.session_state.admission_step = 1
+                st.rerun()
         
         # --- PASO 1: DATOS DEL PACIENTE ---
         elif st.session_state.admission_step == 1:
+            # Cabecera con info de sala y cambio
+            with st.container(border=True):
+                c_info, c_actions = st.columns([4, 1])
+                with c_info:
+                    st.markdown(f"📍 Admisión: **{st.session_state.get('admission_sala_admision_code')}**")
+                with c_actions:
+                    if st.button("Cambiar Sala", key="btn_change_adm_room", use_container_width=True):
+                        st.session_state.admission_sala_admision_code = None
+                        st.session_state.admission_step = 0
+                        st.rerun()
+
             patient_validated = render_step_patient_data()
             
             st.divider()
-            col_back, col_next = st.columns([1, 1])
             
-            with col_back:
-                if st.button("← Volver a Sala de Admisión"):
-                    st.session_state.admission_step = 0
-                    st.rerun()
-            
-            with col_next:
-                # Botón deshabilitado hasta que se valide el paciente
-                if st.button("Asignar Sala de Triaje →", type="primary", disabled=not patient_validated):
+            # Botón de acción principal (Asignar)
+            # Si está validado, mostramos botón primario grande
+            if patient_validated:
+                if st.button("Asignar Sala de Triaje →", type="primary", use_container_width=True):
                     st.session_state.admission_step = 2
-                    # Limpiar selección previa para obligar a seleccionar y que no aparezca el bloque de confirmación automáticamente
+                    # Limpiar selección previa
                     st.session_state.admission_sala_triaje_code = None
+                    
+                    # --- FAST-TRACK: PRE-SELECCIÓN DE SALA DE TRIAJE ---
+                    from services.room_service import obtener_salas_por_tipo
+                    salas_triaje = [s for s in obtener_salas_por_tipo("triaje") if s.get('subtipo') == 'espera']
+                    # Si solo hay una sala de espera de triaje, la pre-seleccionamos
+                    if len(salas_triaje) == 1:
+                        st.session_state.admission_sala_triaje_code = salas_triaje[0]['codigo']
+                    
                     st.rerun()
+            else:
+                st.info("Seleccione o cree un paciente para continuar.")
         
         # --- PASO 2: ASIGNACIÓN O RECHAZO (FUSIONADOS) ---
         elif st.session_state.admission_step == 2:
@@ -115,6 +134,7 @@ def mostrar_admision():
                 # Acciones Principales
                 col_confirm, col_change = st.columns([2, 1])
                 with col_confirm:
+                    # Botón Confirmar (Focus)
                     if st.button("📋 Confirmar y Enviar a Triaje", type="primary", use_container_width=True):
                         _execute_assignment(triaje_selected)
                 with col_change:
@@ -131,16 +151,6 @@ def mostrar_admision():
                         st.session_state.admission_sala_triaje_code = None # Limpiar selección
                         st.rerun()
                 with col_derive:
-                     # Placeholder para derivación a consulta (si existiera lógica específica)
-                     # Por ahora, asumimos que derivar a consulta es asignarlo a una sala tipo 'consulta'
-                     # Pero el grid actual solo muestra 'triaje'. 
-                     # Si el usuario quiere derivar a consulta, deberíamos mostrar salas de consulta?
-                     # El usuario dijo: "derivarlo a consultas (mira cómo se hace en otros lados)".
-                     # En Triage Step 3 hay derivación.
-                     # Aquí, simplificaremos mostrando un mensaje o implementando si es crítico.
-                     # Dado que no hay un "Step Consulta", lo trataremos como "Rechazar" o "Asignar a otra sala".
-                     # Implementaremos "Derivar a Consulta" como una acción que cambia el grid a salas de consulta?
-                     # Mejor: Botón que cambia el modo a 'derive_consulta' y muestra grid de consultas.
                     if st.button("👨‍⚕️ Derivar a Consulta", use_container_width=True):
                         st.session_state.admission_decision_mode = 'derive_consulta'
                         st.session_state.admission_sala_triaje_code = None
@@ -168,7 +178,6 @@ def mostrar_admision():
                 from components.common.room_card import render_room_grid
                 
                 salas_consulta = obtener_salas_por_tipo("consulta_ingreso")
-                # Filtrar activas y subtipo si aplica (asumimos todas las consultas valen)
                 
                 if not salas_consulta:
                     st.warning("No hay consultas disponibles.")
@@ -178,10 +187,7 @@ def mostrar_admision():
                 else:
                     selected_consulta = render_room_grid(salas_consulta, None, "sel_consulta")
                     if selected_consulta:
-                        # Reutilizamos lógica de asignación pero cambiando tipo destino
-                        _execute_assignment(selected_consulta, tipo_destino="consulta", subtipo_destino="atencion") # Asumimos atencion directa? O espera? Consultas suelen ser directas o espera.
-                        # Si es espera de consulta:
-                        # _execute_assignment(selected_consulta, tipo_destino="consulta", subtipo_destino="espera")
+                        _execute_assignment(selected_consulta, tipo_destino="consulta", subtipo_destino="atencion")
                     
                     if st.button("← Volver a Selección de Triaje"):
                         st.session_state.admission_decision_mode = None
@@ -191,19 +197,7 @@ def mostrar_admision():
             else:
                 st.info("Seleccione la sala de espera de triaje:")
                 
-                # Renderizar grid de triaje (el componente ya maneja su estado interno, pero aquí lo controlamos)
-                # El componente `render_step_sala_triaje` guarda en `admission_sala_triaje_code` y hace rerun.
-                # Así que solo necesitamos llamarlo.
                 triaje_selected = render_step_sala_triaje()
-                
-                # Si el componente retorna (ya seleccionó), el rerun ocurrirá dentro de él o aquí.
-                # Pero `render_step_sala_triaje` muestra "Sala seleccionada" al final.
-                # Debemos modificar `render_step_sala_triaje` O no usarlo y usar `render_room_grid` directamente aquí
-                # para tener control total del layout (ocultar grid).
-                # Dado que el usuario pidió "mismo comportamiento que paso 1", y en paso 1 modificamos el componente...
-                # Pero en paso 1 el componente MUESTRA la sala seleccionada y OCULTA el grid (return True).
-                # Aquí queremos que `render_step_sala_triaje` haga lo mismo.
-                # Si `render_step_sala_triaje` retorna True (seleccionado), entramos en el `if` de arriba en el próximo rerun.
                 
                 # Botones de acción alternativa (antes de seleccionar sala)
                 st.divider()
