@@ -20,7 +20,7 @@ def _get_username():
     return user.get("username", "unknown") if user else "unknown"
 
 
-from components.common.feedback_button import render_feedback_button
+from ui.components.common.tools_panel import render_tools_panel
 
 def mostrar_admision():
     """
@@ -52,10 +52,8 @@ def mostrar_admision():
     with col_content:
         # --- PASO 0: SELECCIÓN DE SALA DE ADMISIÓN ---
         if st.session_state.admission_step == 0:
-            # Botón de Feedback (alineado a la derecha)
-            c_spacer, c_fb = st.columns([10, 1])
-            with c_fb:
-                render_feedback_button("Admisión")
+            # Panel de Herramientas
+            render_tools_panel("Admisión", show_pdf=False)
 
             sala_selected = render_step_sala_admision()
             

@@ -12,11 +12,16 @@ from services.flow_manager import obtener_pacientes_en_sala
 from services.patient_service import obtener_paciente_por_codigo, calcular_edad
 from components.consultation import render_consultation_flow
 
+from ui.components.common.tools_panel import render_tools_panel
+
 def render_admission_management_view():
     """
     Renderiza la lista de pacientes o el flujo de consulta activo con stepper.
     """
     st.title("🛏️ Gestión de Ingreso o Consulta")
+    
+    # Panel de Herramientas
+    render_tools_panel("Consulta", show_pdf=False)
 
     # Inicializar paso
     if 'consultation_step' not in st.session_state:

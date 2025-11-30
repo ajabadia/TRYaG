@@ -6,19 +6,12 @@ Módulo orquestador que construye la vista principal del "Asistente de Triaje".
 Implementa un flujo por pasos (stepper) para selección de sala, paciente y triaje.
 """
 import streamlit as st
-# path: src/ui/main_view.py
-# Creado: 2025-11-21
-# Última modificación: 2025-11-24
-"""
-Módulo orquestador que construye la vista principal del "Asistente de Triaje".
-Implementa un flujo por pasos (stepper) para selección de sala, paciente y triaje.
-"""
-import streamlit as st
 from components.common.stepper import render_vertical_stepper
 from components.triage.step_sala_selection import render_step_sala_selection
 from components.triage.step_patient_selection import render_step_patient_selection
 from components.triage.step_triage_process import render_step_triage_process
 from components.triage.step_disposition import render_step_disposition
+from ui.components.common.tools_panel import render_tools_panel
 
 def mostrar_asistente_triaje():
     """
@@ -52,6 +45,9 @@ def mostrar_asistente_triaje():
     with col_content:
         # --- PASO 0: SELECCIÓN DE SALA ---
         if st.session_state.triage_step == 0:
+            # Panel de Herramientas (Global en paso 0)
+            render_tools_panel("Triaje", show_pdf=False)
+            
             sala_selected = render_step_sala_selection()
             
             # Si se selecciona sala, el componente hace rerun.
@@ -100,17 +96,8 @@ def mostrar_asistente_triaje():
 
         # --- PASO 2: REALIZAR TRIAJE ---
         elif st.session_state.triage_step == 2:
-            validation_complete = render_step_triage_process()
-            
-            # Botón para continuar a derivación si validación completa
-            if validation_complete:
-                st.divider()
-                if st.button("Continuar a Derivación →", type="primary", use_container_width=True):
-                    st.session_state.triage_step = 3
-                    st.rerun()
-            
-            st.divider()
-            if st.button("← Volver a Lista de Pacientes"):
+            # Botón Volver (Movido al principio)
+            if st.button("← Volver a Lista de Pacientes", use_container_width=True):
                 st.session_state.triage_step = 1
                 st.session_state.triage_patient = None
                 # Limpiar datos del triaje
@@ -120,11 +107,25 @@ def mostrar_asistente_triaje():
                     "edad": 40,
                     "dolor": 5,
                     "imagenes": [],
-                    "imagenes_confirmadas_ia": []
+                    "imagenes_confirmadas_ia": [],
+                    "vital_signs": {}
                 }
                 st.session_state.calificacion_humana = None
                 st.session_state.validation_complete = False
+                st.session_state.analysis_complete = False
                 st.rerun()
+            
+            # Panel de Herramientas (Feedback + PDF)
+            render_tools_panel("Triaje", st.session_state.get('triage_patient'))
+            
+            validation_complete = render_step_triage_process()
+            
+            # Botón para continuar a derivación si validación completa
+            if validation_complete:
+                st.divider()
+                if st.button("Continuar a Derivación →", type="primary", use_container_width=True):
+                    st.session_state.triage_step = 3
+                    st.rerun()
 
         # --- PASO 3: DERIVACIÓN ---
         elif st.session_state.triage_step == 3:

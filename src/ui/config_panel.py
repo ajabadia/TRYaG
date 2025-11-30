@@ -111,8 +111,12 @@ def save_centro_config(config):
 def mostrar_panel_configuracion():
     """Muestra el panel de configuración con pestañas modulares."""
     from ui.loading_indicator import loading_data
+    from ui.components.common.tools_panel import render_tools_panel
 
     st.header(":material/settings: Configuración")
+    
+    # Panel de Herramientas
+    render_tools_panel("Configuración", show_pdf=False)
 
     # Cargar configuración en session_state (una sola vez)
     if 'general_config' not in st.session_state:

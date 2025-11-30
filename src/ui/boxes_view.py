@@ -16,12 +16,16 @@ from components.boxes import (
     render_step_attention
 )
 from services.flow_manager import obtener_pacientes_en_sala
+from ui.components.common.tools_panel import render_tools_panel
 
 def render_boxes_view():
     """
     Renderiza la vista completa de gestión de boxes con stepper.
     """
     st.title("🩺 Gestión de Boxes y Consultas")
+    
+    # Panel de Herramientas
+    render_tools_panel("Atención Box", show_pdf=False)
     
     # --- LÓGICA DE PERSISTENCIA Y AUTO-AVANCE ---
     # Si ya hay sala seleccionada y estamos en paso 0, avanzar automáticamente
@@ -42,11 +46,6 @@ def render_boxes_view():
         pacientes_activos = obtener_pacientes_en_sala(st.session_state.boxes_room_code)
         if pacientes_activos:
              # Si hay paciente activo, deberíamos estar en atención (Paso 2)
-             # Pero necesitamos saber cuál es para seleccionarlo automáticamente o dejar que el usuario lo retome
-             # Por simplicidad, si hay paciente activo, asumimos que el médico debe atenderlo.
-             # Sin embargo, el componente render_step_attention suele requerir un paciente seleccionado.
-             # Si el componente step_attention maneja la selección automática, bien. 
-             # Si no, step_patient_selection debería mostrarlo como "En curso".
              pass
         else:
              if st.session_state.boxes_step > 1: # Si estábamos en atención y terminamos
@@ -100,10 +99,6 @@ def render_boxes_view():
                 st.rerun()
             else:
                 render_step_patient_selection()
-                # La transición a paso 2 ocurre cuando se selecciona un paciente (rerun interno o detección aquí)
-                # El componente render_step_patient_selection debería setear 'active_patient_code' o similar
-                # Si el componente no maneja el estado global directamente, habría que adaptarlo.
-                # Asumimos que render_step_patient_selection actualiza el estado necesario.
 
         # --- PASO 2: ATENCIÓN CLÍNICA ---
         elif st.session_state.boxes_step == 2:

@@ -16,9 +16,14 @@ from src.db.repositories.transcriptions import get_transcriptions_repository
 # Constantes
 PAGE_SIZE = 25
 
+from ui.components.common.tools_panel import render_tools_panel
+
 def mostrar_registro_auditoria_v2():
     """Muestra el panel de auditoría V2."""
     st.header(":material/assignment_ind: Panel de Auditoría y Supervisión (V2 Modular)")
+    
+    # Panel de Herramientas
+    render_tools_panel("Auditoría", show_pdf=False)
 
     if "num_audit_records_to_show" not in st.session_state:
         st.session_state.num_audit_records_to_show = PAGE_SIZE
