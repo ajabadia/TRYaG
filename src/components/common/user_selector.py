@@ -22,7 +22,15 @@ def render_user_selector():
 
     # Mapeo para el selectbox: "Nombre (Rol)" -> User Object
     # Usamos el ID como clave única para evitar problemas con nombres duplicados
-    user_options = {f"{u['nombre_completo']} ({u['username']})": u for u in users}
+    user_options = {}
+    for u in users:
+        nombre_display = u.get('nombre_completo')
+        if not nombre_display:
+            # Fallback: Construct from parts or use username
+            parts = [u.get('nombre', ''), u.get('apellidos', '')]
+            nombre_display = " ".join(p for p in parts if p).strip() or u['username']
+            
+        user_options[f"{nombre_display} ({u['username']})"] = u
     
     # Determinar índice actual
     current_user = st.session_state.get("current_user")
@@ -40,7 +48,13 @@ def render_user_selector():
             current_user = st.session_state.current_user
 
     if current_user:
-        current_key = f"{current_user['nombre_completo']} ({current_user['username']})"
+        # Reconstruct key for current user
+        c_nombre = current_user.get('nombre_completo')
+        if not c_nombre:
+             parts = [current_user.get('nombre', ''), current_user.get('apellidos', '')]
+             c_nombre = " ".join(p for p in parts if p).strip() or current_user['username']
+             
+        current_key = f"{c_nombre} ({current_user['username']})"
         if current_key in user_options:
             index = list(user_options.keys()).index(current_key)
     
@@ -66,8 +80,13 @@ def render_user_selector():
     role_def = get_role_by_code(selected_user.get("rol"))
     role_name = role_def["nombre"] if role_def else selected_user.get("rol")
     
+    display_name = selected_user.get('nombre_completo')
+    if not display_name:
+         parts = [selected_user.get('nombre', ''), selected_user.get('apellidos', '')]
+         display_name = " ".join(p for p in parts if p).strip() or selected_user['username']
+
     st.sidebar.info(
-        f"**{selected_user['nombre_completo']}**\n\n"
+        f"**{display_name}**\n\n"
         f"🆔 {selected_user.get('internal_id', '-')}\n\n"
         f"🔑 {role_name}"
     )
