@@ -18,7 +18,10 @@ Analiza los datos proporcionados y genera alertas si detectas valores fuera de r
 ## INPUTS ##
 - Edad: {edad}
 - Signos Vitales: {signos_vitales}
+- HDA (Historia Actual): {hda}
+- Contexto Clínico: {contexto_clinico}
 - Antecedentes: {antecedentes}
+- Historia Integral: {historia_integral}
 - Alergias: {alergias}
 
 ## REGLAS ##
@@ -31,7 +34,7 @@ Analiza los datos proporcionados y genera alertas si detectas valores fuera de r
 }
 """
 
-def generar_alertas_predictivas(edad, vital_signs, antecedentes=None, alergias=None, prompt_content=None, user_id="system"):
+def generar_alertas_predictivas(edad, vital_signs, antecedentes=None, alergias=None, historia_integral=None, hda=None, contexto_clinico=None, prompt_content=None, user_id="system"):
     """
     Genera alertas predictivas usando Gemini.
     """
@@ -64,7 +67,10 @@ def generar_alertas_predictivas(edad, vital_signs, antecedentes=None, alergias=N
     # 3. Inyectar variables
     final_prompt = base_prompt.replace("{edad}", str(edad))\
                               .replace("{signos_vitales}", vs_str)\
+                              .replace("{hda}", str(hda or "No disponible"))\
+                              .replace("{contexto_clinico}", str(contexto_clinico or "No disponible"))\
                               .replace("{antecedentes}", str(antecedentes or "Sin antecedentes relevantes"))\
+                              .replace("{historia_integral}", str(historia_integral or "No disponible"))\
                               .replace("{alergias}", str(alergias or "No conocidas"))
 
     # 4. Llamar al Servicio Centralizado

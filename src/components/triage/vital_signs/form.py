@@ -142,7 +142,11 @@ def render_vital_signs_form(age: int = 40):
         with c_det1:
             st.markdown("##### Triaje")
             for det in result["details"]:
-                st.write(f"- {det}")
+                # Formatear el diccionario a string legible
+                metric = det.get('metric', '').upper()
+                val = det.get('value')
+                label = det.get('label')
+                st.write(f"- **{metric}**: {val} ({label})")
         with c_det2:
             st.markdown("##### NEWS2")
             for det in news_result["details"]:

@@ -212,25 +212,9 @@ def render_input_form():
         st.session_state.datos_paciente['texto_medico'] = texto_medico
         is_text_valid = len(texto_medico) >= get_min_chars_motivo()
 
-        # --- HDA DETALLADA (NUEVO) ---
-        with st.expander("🧐 Historia de la Enfermedad Actual (HDA - ALICIA)", expanded=False):
-            st.caption("Desglose estructurado del motivo de consulta.")
-            c_hda1, c_hda2 = st.columns(2)
-            with c_hda1:
-                st.session_state.datos_paciente['hda_aparicion'] = st.text_input("Aparición (Inicio)", value=st.session_state.datos_paciente.get('hda_aparicion', ''), disabled=is_step1_disabled, key=f"hda_onset_{reset_count}")
-                st.session_state.datos_paciente['hda_localizacion'] = st.text_input("Localización", value=st.session_state.datos_paciente.get('hda_localizacion', ''), disabled=is_step1_disabled, key=f"hda_loc_{reset_count}")
-                st.session_state.datos_paciente['hda_intensidad'] = st.text_input("Intensidad", value=st.session_state.datos_paciente.get('hda_intensidad', ''), disabled=is_step1_disabled, key=f"hda_int_{reset_count}")
-            with c_hda2:
-                st.session_state.datos_paciente['hda_caracteristicas'] = st.text_input("Características (Tipo dolor)", value=st.session_state.datos_paciente.get('hda_caracteristicas', ''), disabled=is_step1_disabled, key=f"hda_char_{reset_count}")
-                st.session_state.datos_paciente['hda_irradiacion'] = st.text_input("Irradiación", value=st.session_state.datos_paciente.get('hda_irradiacion', ''), disabled=is_step1_disabled, key=f"hda_rad_{reset_count}")
-                st.session_state.datos_paciente['hda_alivio'] = st.text_input("Alivio/Agravantes", value=st.session_state.datos_paciente.get('hda_alivio', ''), disabled=is_step1_disabled, key=f"hda_agg_{reset_count}")
-            
-            st.divider()
-            c_hda3, c_hda4 = st.columns(2)
-            with c_hda3:
-                st.session_state.datos_paciente['hda_sintomas_asoc'] = st.text_area("Síntomas Acompañantes", value=st.session_state.datos_paciente.get('hda_sintomas_asoc', ''), height=68, placeholder="Fiebre, náuseas...", disabled=is_step1_disabled, key=f"hda_assoc_{reset_count}")
-            with c_hda4:
-                st.session_state.datos_paciente['hda_tratamiento_casa'] = st.text_area("Tratamiento Domiciliario", value=st.session_state.datos_paciente.get('hda_tratamiento_casa', ''), height=68, placeholder="Qué tomó antes de venir...", disabled=is_step1_disabled, key=f"hda_home_tx_{reset_count}")
+        # --- HDA DETALLADA (MODULARIZADO) ---
+        from components.triage.hda_form import render_hda_form
+        render_hda_form(reset_count, disabled=is_step1_disabled)
 
         # --- EDAD (Oculto si existe) ---
         default_age = st.session_state.datos_paciente.get('edad', 40)

@@ -58,6 +58,16 @@ Calcula el PTR sumando: `(Grado de Alteración 0-3) x (Multiplicador)`.
 ## TAREA ACTUAL ##
 Input: Motivo='{motivo}', Edad={edad}, Dolor={dolor}
 Signos Vitales: {signos_vitales}
+
+[INFORMACIÓN ADICIONAL]
+El campo 'Motivo' puede contener secciones adicionales como:
+- [ANTECEDENTES BÁSICOS]
+- [ALERGIAS]
+- [HISTORIA CLÍNICA EXTENDIDA]
+- [VALORACIÓN ENFERMERÍA]
+- [CONTEXTO CLÍNICO CRÍTICO] (Geriátrico, Inmunodeprimido, etc.)
+
+Analiza TODA esta información para ajustar el PTR y la decisión final.
 """
 
     print("Actualizando prompt 'triage_gemini'...")

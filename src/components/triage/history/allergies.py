@@ -10,7 +10,7 @@ def render_allergies_form(reset_count: int, disabled: bool = False):
     opt_alergias = repo.get_options("allergy_agent")
 
     with st.expander("🤧 Alergias e Intolerancias", expanded=False):
-        has_allergies = st.radio("¿Tiene Alergias Conocidas?", ["No", "Sí"], horizontal=True, index=0, disabled=disabled, key=f"alg_sel_{reset_count}")
+        has_allergies = st.radio("¿Tiene Alergias Conocidas?", ["No", "Sí"], horizontal=True, index=0, disabled=disabled, key=f"alg_sel_{reset_count}", help="Indique si el paciente refiere alergias a medicamentos, alimentos o látex")
         
         alergias_str = "No conocidas"
         
@@ -19,28 +19,31 @@ def render_allergies_form(reset_count: int, disabled: bool = False):
             with c1:
                 # Multiselect de agentes comunes
                 selected_agents = st.multiselect(
-                    "Agentes Comunes",
+                    "🦠 Agentes Comunes",
                     options=[opt.label for opt in opt_alergias],
-                    disabled=disabled, key=f"alg_agents_{reset_count}"
+                    disabled=disabled, key=f"alg_agents_{reset_count}",
+                    help="Seleccione los alérgenos comunes de la lista"
                 )
-                other_agents = st.text_input("Otros Agentes (Especificar)", disabled=disabled, key=f"alg_other_{reset_count}")
+                other_agents = st.text_input("📝 Otros Agentes (Especificar)", disabled=disabled, key=f"alg_other_{reset_count}", help="Escriba otros alérgenos no listados")
             
             with c2:
                 # Descripción de la Reacción
                 reaction_details = st.text_area(
-                    "¿Cuál fue la reacción? (Síntomas)",
+                    "⚠️ ¿Cuál fue la reacción? (Síntomas)",
                     placeholder="Ej: Hinchazón, dificultad respiratoria...",
-                    height=68, disabled=disabled, key=f"alg_det_{reset_count}"
+                    height=68, disabled=disabled, key=f"alg_det_{reset_count}",
+                    help="Describa los síntomas presentados en reacciones previas"
                 )
                 
                 # Nivel de Riesgo
                 reaction_type = st.radio(
-                    "Nivel de Riesgo",
+                    "🚨 Nivel de Riesgo",
                     [
                         "Bajo Riesgo (Náuseas, cefalea, somnolencia)", 
                         "🔴 ALTO RIESGO (Disnea, Angioedema, Anafilaxia)"
                     ],
-                    disabled=disabled, key=f"alg_risk_{reset_count}"
+                    disabled=disabled, key=f"alg_risk_{reset_count}",
+                    help="Evalúe la gravedad de la reacción alérgica"
                 )
                 
                 if "ALTO RIESGO" in reaction_type:
