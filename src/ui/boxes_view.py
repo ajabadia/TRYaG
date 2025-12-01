@@ -18,12 +18,41 @@ from components.boxes import (
 from services.flow_manager import obtener_pacientes_en_sala
 from ui.components.common.tools_panel import render_tools_panel
 
+def render_room_header(room_code, step_name, on_back=None, on_change=None):
+    """
+    Renderiza una cabecera pegajosa (sticky) para la vista de boxes.
+    """
+    # CSS para hacer sticky el contenedor
+    st.markdown("""
+        <style>
+        div[data-testid="stVerticalBlock"] > div:has(div.room-header-marker) {
+            position: sticky;
+            top: 3rem; /* Ajustar según altura del header global */
+            z-index: 90;
+            background-color: white;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f2f6;
+        }
+        </style>
+        <div class="room-header-marker"></div>
+    """, unsafe_allow_html=True)
+
+    with st.container():
+        c1, c2 = st.columns([3, 1])
+        with c1:
+            st.markdown(f"### 📍 {room_code} <span style='color:gray; font-weight:normal; font-size:0.8em'>| {step_name}</span>", unsafe_allow_html=True)
+        with c2:
+            if on_change:
+                if st.button("🔄 Cambiar Sala", key="btn_change_room", use_container_width=True):
+                    on_change()
+            elif on_back:
+                if st.button("⬅️ Volver", key="btn_back_list", use_container_width=True):
+                    on_back()
+
 def render_boxes_view():
     """
     Renderiza la vista completa de gestión de boxes con stepper.
     """
-    st.title("🩺 Gestión de Boxes y Consultas")
-    
     # Panel de Herramientas
     render_tools_panel("Atención Box", show_pdf=False)
     
@@ -63,11 +92,13 @@ def render_boxes_view():
     col_stepper, col_content = st.columns([1, 4])
     
     with col_stepper:
+        st.markdown("<br>", unsafe_allow_html=True) # Espaciador para alinear con header
         render_vertical_stepper(steps, st.session_state.boxes_step)
         
     with col_content:
         # --- PASO 0: SELECCIÓN DE SALA ---
         if st.session_state.boxes_step == 0:
+            st.markdown("### Seleccione su Box de Atención")
             render_step_sala_selection()
             # La transición a paso 1 ocurre cuando se selecciona sala (rerun provocado por el componente)
             if st.session_state.get('boxes_room_code'):
@@ -78,16 +109,12 @@ def render_boxes_view():
         elif st.session_state.boxes_step == 1:
             room_code = st.session_state.get('boxes_room_code')
             
-            # Barra superior con info de sala y botón de cambio
-            with st.container(border=True):
-                col_info, col_change = st.columns([4, 1])
-                with col_info:
-                    st.markdown(f"📍 Sala Activa: **{room_code}**")
-                with col_change:
-                    if st.button("Cambiar Sala", type="secondary", use_container_width=True):
-                        st.session_state.boxes_room_code = None
-                        st.session_state.boxes_step = 0
-                        st.rerun()
+            def change_room():
+                st.session_state.boxes_room_code = None
+                st.session_state.boxes_step = 0
+                st.rerun()
+
+            render_room_header(room_code, "Lista de Pacientes", on_change=change_room)
 
             # Verificar si hay paciente activo en la sala (Médico ocupado)
             pacientes_activos = obtener_pacientes_en_sala(room_code)
@@ -104,11 +131,11 @@ def render_boxes_view():
         elif st.session_state.boxes_step == 2:
             room_code = st.session_state.get('boxes_room_code')
             
-            # Barra superior simplificada o botón volver
-            if st.button("⬅️ Volver a Lista de Pacientes"):
-                 # Lógica para cancelar/pausar atención si es necesario
+            def go_back():
                  st.session_state.boxes_step = 1
                  st.rerun()
+            
+            render_room_header(room_code, "En Atención", on_back=go_back)
             
             render_step_attention()
 
