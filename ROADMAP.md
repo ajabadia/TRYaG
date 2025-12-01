@@ -242,7 +242,7 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 - **Video Recording:** La grabación de video directa desde el navegador requiere implementación custom (MediaRecorder API) ya que Streamlit nativo solo soporta foto. Tarea futura.
 
 ---
-**Estado Actual:** En Progreso (Fase 7.1 - 7.5 completadas, 7.7 y 7.8 en progreso).
+**Estado Actual:** En Progreso (Fase 7 completada, Fase 8 en planificación). Implementadas mejoras de IA y UX (Entrevista Guiada).
 
 ### 7.6 Nuevas Tareas (Pendientes de Ejecución)
 **Objetivo:** Mejoras de usabilidad, estandarización y herramientas de feedback.
@@ -343,8 +343,11 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - [ ] Pantalla de configuración de rangos.
 - [x] **Fase 6: Integración IA:**
     - [x] Alertas predictivas.
+    - [x] Optimización de análisis de riesgos (Botones y Lógica).
+    - [x] Actualización de modelos (Gemini 2.5 Flash).
 - [x] **Fase 7: Informes:**
     - [x] Hoja de triaje.
+    - [x] Entrevista Guiada Inteligente (Symptomate-style).
 
 ## 🚀 FASE 8: Preparación para Producción (Futuro)
 **Objetivo:** Reemplazar simulaciones con implementaciones reales y robustecer el sistema.

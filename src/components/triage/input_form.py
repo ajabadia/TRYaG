@@ -200,14 +200,32 @@ def render_input_form():
         # Obtener contador de reset
         reset_count = st.session_state.get('reset_counter', 0)
 
-        texto_medico = st.text_area(
-            "Motivo de Consulta", st.session_state.datos_paciente.get('texto_medico', ''),
-            height=100, placeholder="Ej: Varón de 45 años...",
-            disabled=not is_editing or is_step1_disabled, key=f"texto_medico_input_{reset_count}",
-            label_visibility="collapsed"
-        )
+        # --- ENTREVISTA GUIADA (MOVIDO ENCIMA DEL TEXT AREA) ---
+        # --- ENTREVISTA GUIADA (MOVIDO ENCIMA DEL TEXT AREA) ---
+        from components.triage.guided_interview import render_guided_interview
+        render_guided_interview(disabled=is_step1_disabled, key_suffix=str(reset_count))
+
+        widget_key = f"texto_medico_input_{reset_count}"
+        
+        # Evitar warning de Streamlit: "created with a default value but also had its value set via the Session State API"
+        # Solo pasamos 'value' si la key NO está en session_state. Si está, Streamlit usa el valor del estado.
+        ta_kwargs = {
+            "label": "Motivo de Consulta",
+            "height": 100,
+            "placeholder": "Ej: Varón de 45 años...",
+            "disabled": not is_editing or is_step1_disabled,
+            "key": widget_key,
+            "label_visibility": "collapsed"
+        }
+        
+        if widget_key not in st.session_state:
+            ta_kwargs["value"] = st.session_state.datos_paciente.get('texto_medico', '')
+
+        texto_medico = st.text_area(**ta_kwargs)
         st.session_state.datos_paciente['texto_medico'] = texto_medico
         is_text_valid = len(texto_medico) >= get_min_chars_motivo()
+
+
 
         # --- HDA DETALLADA (MODULARIZADO) ---
         from components.triage.hda_form import render_hda_form
@@ -311,6 +329,7 @@ def render_input_form():
         button_label = f"Analizar con IA ({imagenes_seleccionadas} de {total_imagenes} archivos)" if total_imagenes > 0 else "Analizar con IA"
         is_button_disabled = not is_text_valid or st.session_state.is_editing_text or is_step1_disabled
 
+
         if total_imagenes > 0:
             c_lock_icon, c_lock_text = st.columns([1, 20])
             with c_lock_icon:
@@ -336,8 +355,10 @@ def render_input_form():
                     imagenes_a_enviar = [f for f in st.session_state.datos_paciente.get('imagenes', []) if st.session_state.modal_image_selection.get(f.name)]
                     st.session_state.datos_paciente['imagenes_confirmadas_ia'] = imagenes_a_enviar
                     
-                    # Preparar texto enriquecido con transcripciones
+                    # Preparar texto enriquecido con transcripciones y entrevista
                     texto_completo = st.session_state.datos_paciente['texto_medico']
+                    
+
                     
                     # Buscar transcripciones de audios seleccionados
                     transcripciones_extra = []

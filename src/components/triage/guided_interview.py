@@ -1,0 +1,223 @@
+import streamlit as st
+from utils.icons import render_icon
+from db.repositories.clinical_options_repository import get_clinical_options_repository
+
+def render_guided_interview(disabled: bool = False, key_suffix: str = "0"):
+    """
+    Renderiza una entrevista guiada inteligente con interfaz de acordeón persistente.
+    Obtiene opciones dinámicamente de la base de datos.
+    """
+    # Inicializar diccionario de datos de entrevista si no existe
+    if 'gi_responses' not in st.session_state:
+        st.session_state.gi_responses = {}
+
+    # --- INTERFAZ DE ENTREVISTA (ACORDEÓN) ---
+    repo = get_clinical_options_repository()
+    
+    with st.expander("🗣️ Asistente de Síntomas (Entrevista Guiada)", expanded=False):
+        st.caption("Despliega las secciones relevantes y rellena la información. Los datos se guardan automáticamente.")
+
+        # --- 1. TRAUMA ---
+        st.markdown("##### 🤕 Traumatismo / Golpe / Caída")
+        mech_opts = repo.get_options_map("gi_trauma_mechanism")
+        loc_opts = repo.get_options_map("gi_trauma_location")
+        
+        # Recuperar valores previos
+        prev_trauma = st.session_state.gi_responses.get('trauma', {})
+        
+        # Usar claves únicas para persistencia automática en session_state
+        mech = st.selectbox("¿Cómo ocurrió?", ["No aplica"] + list(mech_opts.values()), 
+                           index=0 if not prev_trauma else (["No aplica"] + list(mech_opts.values())).index(prev_trauma.get('mechanism', "No aplica")) if prev_trauma.get('mechanism') in (["No aplica"] + list(mech_opts.values())) else 0,
+                           key="gi_trauma_mech", disabled=disabled)
+        
+        if mech != "No aplica":
+            loc_idx = 0
+            if prev_trauma.get('location') in list(loc_opts.values()):
+                loc_idx = list(loc_opts.values()).index(prev_trauma['location'])
+                
+            loc = st.selectbox("¿Dónde es la lesión principal?", list(loc_opts.values()), index=loc_idx, key="gi_trauma_loc", disabled=disabled)
+            
+            bleeding_opts = ["No", "Sí, leve", "Sí, abundante"]
+            bleeding_idx = bleeding_opts.index(prev_trauma.get('bleeding', "No")) if prev_trauma.get('bleeding') in bleeding_opts else 0
+            bleeding = st.radio("¿Hay sangrado activo?", bleeding_opts, index=bleeding_idx, horizontal=True, key="gi_trauma_bleeding", disabled=disabled)
+            
+            # Guardar en estado
+            st.session_state.gi_responses['trauma'] = {
+                "mechanism": mech,
+                "location": loc,
+                "bleeding": bleeding
+            }
+        elif 'trauma' in st.session_state.gi_responses:
+            del st.session_state.gi_responses['trauma']
+
+        st.divider()
+
+        # --- 2. DOLOR ---
+        st.markdown("##### ⚡ Dolor (Sin golpe previo)")
+        pain_opts = repo.get_options_map("gi_pain_type")
+        prev_pain = st.session_state.gi_responses.get('pain', {})
+        
+        has_pain = st.checkbox("¿El paciente refiere dolor?", value=bool(prev_pain), key="gi_pain_check", disabled=disabled)
+        
+        if has_pain:
+            # Slider de dolor (Propagación inmediata)
+            current_pain = st.session_state.datos_paciente.get('dolor', 0)
+            lvl = st.slider("Nivel de dolor (0-10)", 0, 10, current_pain, key="gi_pain_lvl", disabled=disabled)
+            st.session_state.datos_paciente['dolor'] = lvl # Propagación directa
+            
+            type_idx = 0
+            if prev_pain.get('type') in list(pain_opts.values()):
+                type_idx = list(pain_opts.values()).index(prev_pain['type'])
+                
+            type_pain = st.selectbox("¿Cómo es el dolor?", list(pain_opts.values()), index=type_idx, key="gi_pain_type_sel", disabled=disabled)
+            duration = st.text_input("¿Desde cuándo te duele?", value=prev_pain.get('duration', ''), placeholder="Ej: Hace 2 horas...", key="gi_pain_duration", disabled=disabled)
+            
+            st.session_state.gi_responses['pain'] = {
+                "level": lvl,
+                "type": type_pain,
+                "duration": duration
+            }
+        elif 'pain' in st.session_state.gi_responses:
+            del st.session_state.gi_responses['pain']
+
+        st.divider()
+
+        # --- 3. INFECCIÓN ---
+        st.markdown("##### 🌡️ Fiebre / Infección / Malestar")
+        sym_opts = repo.get_options_map("gi_infection_symptoms")
+        prev_inf = st.session_state.gi_responses.get('infection', {})
+        
+        has_inf = st.checkbox("¿Síntomas de infección?", value=bool(prev_inf), key="gi_inf_check", disabled=disabled)
+        
+        if has_inf:
+            fever_opts = ["No", "Sí, leve (<38)", "Sí, alta (>38)"]
+            fever_idx = fever_opts.index(prev_inf.get('fever', "No")) if prev_inf.get('fever') in fever_opts else 0
+            fever = st.radio("¿Tienes fiebre?", fever_opts, index=fever_idx, horizontal=True, key="gi_inf_fever", disabled=disabled)
+            
+            if fever != "No":
+                # Input de temperatura (Propagación)
+                current_temp = st.session_state.datos_paciente.get('vital_signs', {}).get('temp', 0.0)
+                temp_val = st.number_input("Temperatura exacta (Opcional)", min_value=35.0, max_value=43.0, value=current_temp if current_temp > 0 else 36.5, step=0.1, format="%.1f", key="gi_inf_temp_val", disabled=disabled)
+                
+                if temp_val > 35.0:
+                    if 'vital_signs' not in st.session_state.datos_paciente:
+                        st.session_state.datos_paciente['vital_signs'] = {}
+                    st.session_state.datos_paciente['vital_signs']['temp'] = temp_val
+
+            symptoms = st.multiselect("Otros síntomas:", list(sym_opts.values()), default=prev_inf.get('symptoms', []), key="gi_inf_syms", disabled=disabled)
+            
+            st.session_state.gi_responses['infection'] = {
+                "fever": fever,
+                "symptoms": symptoms
+            }
+        elif 'infection' in st.session_state.gi_responses:
+            del st.session_state.gi_responses['infection']
+
+        st.divider()
+
+        # --- 4. RESPIRATORIO ---
+        st.markdown("##### 🫁 Respiratorio")
+        prev_resp = st.session_state.gi_responses.get('respiratory', {})
+        has_resp = st.checkbox("¿Dificultad respiratoria o tos?", value=bool(prev_resp), key="gi_resp_check", disabled=disabled)
+        
+        if has_resp:
+            dys_opts = ["No", "Al esfuerzo", "En reposo"]
+            dys_idx = dys_opts.index(prev_resp.get('dyspnea', "No")) if prev_resp.get('dyspnea') in dys_opts else 0
+            dyspnea = st.radio("¿Siente falta de aire?", dys_opts, index=dys_idx, horizontal=True, key="gi_resp_dyspnea", disabled=disabled)
+            
+            cough = st.checkbox("¿Tiene tos?", value=prev_resp.get('cough', False), key="gi_resp_cough", disabled=disabled)
+            
+            st.session_state.gi_responses['respiratory'] = {
+                "dyspnea": dyspnea,
+                "cough": cough
+            }
+        elif 'respiratory' in st.session_state.gi_responses:
+            del st.session_state.gi_responses['respiratory']
+
+        st.divider()
+
+        # --- 5. OTRO ---
+        st.markdown("##### ❓ Otro Motivo")
+        prev_other = st.session_state.gi_responses.get('other', {})
+        desc = st.text_area("Describe brevemente qué te pasa:", value=prev_other.get('description', ''), key="gi_other_desc", disabled=disabled)
+        if desc:
+            st.session_state.gi_responses['other'] = {"description": desc}
+        elif 'other' in st.session_state.gi_responses:
+            del st.session_state.gi_responses['other']
+
+        st.markdown("---")
+        if st.button("✅ Actualizar Resumen", type="primary", use_container_width=True, disabled=disabled):
+            _update_summary(key_suffix)
+
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/guided_interview.py</div>', unsafe_allow_html=True)
+
+def _update_summary(key_suffix: str):
+    """Genera el resumen final de todas las secciones y actualiza el campo de texto."""
+    responses = st.session_state.get('gi_responses', {})
+    summary_lines = []
+
+    # Procesar Trauma
+    if 'trauma' in responses:
+        d = responses['trauma']
+        line = f"TRAUMATISMO: {d['mechanism']} en {d['location']}."
+        if d['bleeding'] != "No": line += f" Sangrado: {d['bleeding']}."
+        summary_lines.append(line)
+
+    # Procesar Dolor
+    if 'pain' in responses:
+        d = responses['pain']
+        line = f"DOLOR: Nivel {d['level']}/10, Tipo {d['type']}."
+        if d['duration']: line += f" Desde: {d['duration']}."
+        summary_lines.append(line)
+
+    # Procesar Infección
+    if 'infection' in responses:
+        d = responses['infection']
+        line = "INFECCIÓN:"
+        if d['fever'] != "No": line += f" Fiebre {d['fever']}."
+        if d['symptoms']: line += f" Síntomas: {', '.join(d['symptoms'])}."
+        summary_lines.append(line)
+
+    # Procesar Respiratorio
+    if 'respiratory' in responses:
+        d = responses['respiratory']
+        line = "RESPIRATORIO:"
+        if d['dyspnea'] != "No": line += f" Disnea {d['dyspnea']}."
+        if d['cough']: line += " Con tos."
+        summary_lines.append(line)
+
+    # Procesar Otro
+    if 'other' in responses:
+        summary_lines.append(f"OTRO: {responses['other']['description']}")
+
+    if not summary_lines:
+        st.warning("No has introducido ninguna información.")
+        return
+
+    final_text = "\n".join(summary_lines)
+    st.session_state.datos_paciente['guided_interview_summary'] = final_text
+    
+    # Concatenar al motivo de consulta existente (evitando duplicados si ya se añadió)
+    current_text = st.session_state.datos_paciente.get('texto_medico', '')
+    
+    new_text = ""
+    # Simple check para no duplicar masivamente
+    if "[ENTREVISTA GUIADA]" not in current_text:
+        if current_text:
+            new_text = current_text + "\n\n[ENTREVISTA GUIADA]:\n" + final_text
+        else:
+            new_text = "[ENTREVISTA GUIADA]:\n" + final_text
+    else:
+        # Si ya existe, intentar reemplazar la sección (más complejo, por ahora solo avisamos)
+        st.toast("⚠️ El resumen ya fue añadido. Edita el campo de texto directamente si necesitas cambios.")
+        new_text = current_text # Mantener igual
+    
+    if new_text != current_text:
+        st.session_state.datos_paciente['texto_medico'] = new_text
+        
+        # --- CRITICAL FIX: Force update of the text_area widget state ---
+        widget_key = f"texto_medico_input_{key_suffix}"
+        st.session_state[widget_key] = new_text
+        
+        st.toast("✅ Resumen actualizado en el formulario.")
+        st.rerun()
