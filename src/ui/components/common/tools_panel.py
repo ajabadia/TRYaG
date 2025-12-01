@@ -73,4 +73,11 @@ def render_tools_panel(module_name="General", patient=None, show_pdf=True):
             if unsynced > 0:
                 st.caption(f"⚠️ {unsynced} registros locales")
 
+            # Modo Formación
+            is_training = st.session_state.get('training_mode', False)
+            new_training = st.toggle("Modo Formación", value=is_training, key=f"toggle_training_{module_name}")
+            if new_training != is_training:
+                st.session_state.training_mode = new_training
+                st.rerun()
+
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/components/common/tools_panel.py</div>', unsafe_allow_html=True)

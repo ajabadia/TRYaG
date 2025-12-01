@@ -82,4 +82,17 @@ def render_extended_history_form(disabled: bool = False):
     full_history = "\n".join(history_parts)
     st.session_state.datos_paciente['historia_integral'] = full_history
 
+    # --- VISTA PREVIA IA (Resumen) ---
+    if full_history:
+        st.markdown("---")
+        with st.expander("🤖 Vista Previa IA (Resumen Antecedentes)", expanded=False):
+            st.caption("Este es el texto consolidado que recibirá la IA para el análisis.")
+            st.text_area(
+                "Contexto Generado",
+                value=full_history,
+                height=150,
+                disabled=True,
+                key=f"history_summary_{reset_count}"
+            )
+
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/extended_history.py</div>', unsafe_allow_html=True)

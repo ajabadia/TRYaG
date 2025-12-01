@@ -87,7 +87,8 @@ def render_step_disposition():
                     "datos_paciente": st.session_state.datos_paciente,
                     "resultado": st.session_state.resultado,
                     "evaluator_id": "system", # TODO: Usar usuario real
-                    "contingency_mode": st.session_state.get('contingency_mode', False)
+                    "contingency_mode": st.session_state.get('contingency_mode', False),
+                    "is_training": st.session_state.get('training_mode', False)
                 }
                 save_triage_data(p['patient_code'], full_data)
                 
@@ -144,7 +145,8 @@ def render_step_disposition():
                     "datos_paciente": st.session_state.datos_paciente,
                     "resultado": st.session_state.resultado,
                     "evaluator_id": "system",
-                    "contingency_mode": st.session_state.get('contingency_mode', False)
+                    "contingency_mode": st.session_state.get('contingency_mode', False),
+                    "is_training": st.session_state.get('training_mode', False)
                 }
                 save_triage_data(p['patient_code'], full_data)
                 

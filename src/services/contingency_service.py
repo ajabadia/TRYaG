@@ -46,23 +46,53 @@ def get_unsynced_count() -> int:
 
 def sync_local_data():
     """
-    Simula la sincronización de datos con el servidor central.
+    Sincroniza los datos locales con el servidor central (MongoDB).
     """
     _ensure_initialized()
-    unsynced = [r for r in st.session_state.local_triage_cache if not r['synced']]
+    unsynced = [r for r in st.session_state.local_triage_cache if not r.get('synced')]
     if not unsynced:
         st.info("No hay datos pendientes de sincronización.")
         return
 
-    # Simular envío
-    import time
-    with st.spinner(f"Sincronizando {len(unsynced)} registros..."):
-        time.sleep(1.5) # Simular latencia
+    from services.patient_flow_service import save_triage_data
+    
+    with st.spinner(f"Sincronizando {len(unsynced)} registros con la base de datos..."):
+        success_count = 0
+        failed_count = 0
         
-        # Marcar como sincronizados (en un caso real, se enviarían a la API)
-        for r in st.session_state.local_triage_cache:
-            r['synced'] = True
+        for record in unsynced:
+            # Reconstruir estructura esperada por save_triage_data
+            # El registro local tiene: {id, timestamp, patient, result, synced}
+            # save_triage_data espera: {datos_paciente: ..., resultado: ..., contingency_mode: True}
             
-        # Limpiar caché (o mantener historial)
-        st.session_state.local_triage_cache = [] 
-        st.success("✅ Sincronización completada correctamente.")
+            patient_data = record.get('patient', {})
+            triage_result = record.get('result', {})
+            
+            # Asegurar que patient_code existe
+            patient_code = patient_data.get('patient_code')
+            if not patient_code:
+                # Intentar recuperar de ID o generar uno temporal si es anónimo
+                patient_code = f"ANON-{record['id']}"
+            
+            full_data = {
+                "datos_paciente": patient_data,
+                "resultado": triage_result,
+                "evaluator_id": "system_offline",
+                "contingency_mode": True,
+                "is_training": st.session_state.get('training_mode', False) # Heredar estado actual o guardar en record
+            }
+            
+            if save_triage_data(patient_code, full_data):
+                record['synced'] = True
+                success_count += 1
+            else:
+                failed_count += 1
+        
+        # Limpiar solo los sincronizados
+        st.session_state.local_triage_cache = [r for r in st.session_state.local_triage_cache if not r.get('synced')]
+        
+        if success_count > 0:
+            st.success(f"✅ {success_count} registros sincronizados correctamente.")
+        
+        if failed_count > 0:
+            st.error(f"❌ {failed_count} registros fallaron al sincronizar. Se mantienen en caché local.")

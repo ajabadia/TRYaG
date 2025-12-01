@@ -329,7 +329,8 @@ def save_triage_data(patient_code: str, triage_data: Dict[str, Any]) -> bool:
                 "dis_needs": triage_data.get('datos_paciente', {}).get('dis_needs'),
                 "dis_barriers": triage_data.get('datos_paciente', {}).get('dis_barriers'),
             },
-            "contingency_mode": triage_data.get('contingency_mode', False)
+            "contingency_mode": triage_data.get('contingency_mode', False),
+            "is_training": triage_data.get('is_training', False)
         }
         
         collection.insert_one(record)

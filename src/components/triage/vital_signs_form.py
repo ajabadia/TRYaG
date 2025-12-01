@@ -27,17 +27,46 @@ def render_vital_sign_input(
     with col:
         current_val = st.session_state.datos_paciente.get('vital_signs', {}).get(metric_key)
         
-        # Si no hay valor actual, usar None para permitir placeholder o vacío si se desea, 
-        # pero number_input requiere un valor numérico por defecto.
-        # Usamos el default si no existe.
+        # Lógica de Tooltip y Default desde Config
+        final_help = help_text
+        input_default = default # Fallback
+        
+        if config:
+            # Construir tooltip enriquecido
+            # config es un dict o objeto pydantic. Asumimos dict por get_config del repo, 
+            # pero el modelo es VitalSignAgeConfig. El repo devuelve dict o objeto?
+            # Revisando vital_signs_repo.py, devuelve el objeto Pydantic o dict?
+            # El repo usa .dict() o devuelve el modelo?
+            # Asumiremos acceso por atributo o clave de forma segura.
+            
+            # Helper para acceso seguro (obj o dict)
+            def get_val(obj, key, default=None):
+                if isinstance(obj, dict): return obj.get(key, default)
+                return getattr(obj, key, default)
+
+            c_min = get_val(config, 'val_min')
+            c_max = get_val(config, 'val_max')
+            n_min = get_val(config, 'normal_min')
+            n_max = get_val(config, 'normal_max')
+            c_def = get_val(config, 'default_value')
+            
+            if c_def is not None:
+                input_default = float(c_def)
+                
+            info_str = f"\n\n📊 Rangos para edad:\n- Normal: {n_min} - {n_max}\n- Mín/Máx: {c_min} - {c_max}\n- Defecto: {c_def}"
+            final_help += info_str
+
+        # Si no hay valor actual, usar el default de la config (o el fallback)
+        val_to_show = float(current_val) if current_val is not None else input_default
+
         val = st.number_input(
             f"{label} ({unit})", 
             min_value=min_val, 
             max_value=max_val, 
-            value=float(current_val) if current_val is not None else None,
+            value=val_to_show,
             step=step,
             key=f"vs_{metric_key}",
-            help=help_text,
+            help=final_help,
             placeholder="-"
         )
         
