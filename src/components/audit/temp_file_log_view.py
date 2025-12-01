@@ -8,7 +8,7 @@ almacenados en MongoDB Atlas, sin aplicar filtros ni paginación. Útil para dep
 import streamlit as st
 import pandas as pd
 
-from src.db.repositories.files import get_file_imports_repository
+from db.repositories.files import get_file_imports_repository
 
 def render_temp_file_log_view():
     """Renderiza una tabla con todos los registros de la colección `file_imports_records`.

@@ -6,7 +6,7 @@ Módulo para la simulación de un modelo de IA para triaje traumatológico.
 Ahora configurable mediante JSON.
 """
 import json
-from src.core.prompt_manager import PromptManager
+from core.prompt_manager import PromptManager
 
 def simulacion_ia(motivo, edad, dolor, prompt_content=None):
     """

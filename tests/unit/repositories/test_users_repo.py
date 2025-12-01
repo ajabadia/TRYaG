@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from bson import ObjectId
-from src.db.repositories.users import UsersRepository
+from db.repositories.users import UsersRepository
 
 @pytest.fixture
 def mock_db_users(mock_db):
@@ -10,7 +10,7 @@ def mock_db_users(mock_db):
 @pytest.fixture
 def users_repo(mock_db):
     # Patch get_database inside the class init or module
-    with patch('src.db.repositories.users.get_database', return_value=mock_db):
+    with patch('db.repositories.users.get_database', return_value=mock_db):
         return UsersRepository()
 
 def test_create_user(users_repo, mock_db_users):

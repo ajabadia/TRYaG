@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime, timedelta
-from src.services.queue_manager import (
+from services.queue_manager import (
     calculate_priority_score, 
     sort_queue, 
     get_wait_time_alert

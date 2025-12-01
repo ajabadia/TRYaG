@@ -1,15 +1,15 @@
 import pytest
 from datetime import datetime, date, time
 from unittest.mock import MagicMock, patch
-from src.services.staff_assignment_service import (
+from services.staff_assignment_service import (
     get_current_user_assignment,
     validate_shift_assignment
 )
 
 @pytest.fixture
 def mock_repos():
-    with patch('src.services.staff_assignment_service.get_users_repository') as mock_users_repo, \
-         patch('src.services.staff_assignment_service.get_turnos_repository') as mock_turnos_repo:
+    with patch('services.staff_assignment_service.get_users_repository') as mock_users_repo, \
+         patch('services.staff_assignment_service.get_turnos_repository') as mock_turnos_repo:
         yield mock_users_repo, mock_turnos_repo
 
 def test_get_current_user_assignment_fixed_only(mock_repos):

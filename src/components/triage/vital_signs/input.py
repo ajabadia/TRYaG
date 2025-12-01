@@ -1,7 +1,7 @@
 # path: src/components/triage/vital_signs/input.py
 import streamlit as st
 from typing import Optional, Any
-from src.components.triage.triage_logic import evaluate_vital_sign
+from components.triage.triage_logic import evaluate_vital_sign
 
 def render_vital_sign_input(
     col, 

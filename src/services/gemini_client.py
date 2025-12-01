@@ -5,8 +5,8 @@ import os
 from datetime import datetime
 from typing import Optional, Dict, Any, Union, Tuple
 import streamlit as st
-from src.db.models import AIAuditLog
-from src.db.repositories.ai_audit import get_ai_audit_repository
+from db.models import AIAuditLog
+from db.repositories.ai_audit import get_ai_audit_repository
 
 class GeminiService:
     """

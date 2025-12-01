@@ -5,7 +5,7 @@ Servicio de gestión de permisos y control de acceso (RBAC).
 """
 import streamlit as st
 from typing import List, Dict, Optional
-from src.db.repositories.roles import get_role_by_code
+from db.repositories.roles import get_role_by_code
 
 def get_current_user() -> Optional[Dict]:
     """Retorna el usuario actual de la sesión o None."""

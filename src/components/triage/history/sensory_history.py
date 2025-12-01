@@ -5,7 +5,7 @@ def render_sensory_history_form(reset_count: int, disabled: bool = False):
     Renderiza Déficits Sensoriales y Ayudas en un acordeón.
     """
     with st.expander("👂 Déficits Sensoriales y Ayudas", expanded=False):
-        from src.db.repositories.clinical_options import get_clinical_options_repository
+        from db.repositories.clinical_options import get_clinical_options_repository
         repo = get_clinical_options_repository()
         
         c_sen1, c_sen2 = st.columns(2)

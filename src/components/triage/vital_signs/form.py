@@ -1,6 +1,6 @@
 # path: src/components/triage/vital_signs/form.py
 import streamlit as st
-from src.components.triage.triage_logic import calculate_worst_case, calculate_news_score
+from components.triage.triage_logic import calculate_worst_case, calculate_news_score
 from .utils import get_all_configs
 from .input import render_vital_sign_input
 

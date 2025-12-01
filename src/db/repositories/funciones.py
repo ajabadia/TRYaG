@@ -6,7 +6,7 @@ Repositorio de Funciones del personal.
 Maneja la colección 'funciones' en MongoDB, con fallback a valores por defecto.
 """
 from typing import List, Dict, Optional
-from src.db.connection import get_database
+from db.connection import get_database
 from datetime import datetime
 
 DEFAULT_FUNCIONES = [

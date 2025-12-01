@@ -1,7 +1,7 @@
 # path: src/db/repositories/ai_audit.py
 from typing import Optional
-from src.db.repositories.base import BaseRepository
-from src.db.models import AIAuditLog
+from db.repositories.base import BaseRepository
+from db.models import AIAuditLog
 
 class AIAuditRepository(BaseRepository[AIAuditLog]):
     def __init__(self):

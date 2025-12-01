@@ -1,8 +1,8 @@
 # path: src/ui/config_panel/vital_signs_config.py
 import streamlit as st
 import pandas as pd
-from src.db.repositories.vital_signs_repo import VitalSignsRepository
-from src.db.models import VitalSignReference, VitalSignAgeConfig
+from db.repositories.vital_signs_repo import VitalSignsRepository
+from db.models import VitalSignReference, VitalSignAgeConfig
 
 def render_vital_signs_config():
     """Renderiza el panel de configuración de signos vitales."""

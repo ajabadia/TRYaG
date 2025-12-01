@@ -7,8 +7,8 @@ Permite inspeccionar directamente las colecciones de MongoDB.
 """
 import streamlit as st
 import pandas as pd
-from src.db.connection import get_database
-from src.utils.setup_indexes import crear_indices_patient_flow, verificar_indices_necesarios
+from db.connection import get_database
+from utils.setup_indexes import crear_indices_patient_flow, verificar_indices_necesarios
 
 def render_debug_panel(key_prefix="debug_panel"):
     """Renderiza el panel de depuración de MongoDB."""

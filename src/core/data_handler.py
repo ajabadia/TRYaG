@@ -8,7 +8,7 @@ Contiene toda la lógica para leer y escribir en los repositorios de datos.
 """
 import os
 from utils.file_handler import process_and_log_files, cleanup_temp_files
-from src.db.repositories.audit import get_audit_repository
+from db.repositories.audit import get_audit_repository
 
 # --- CONSTANTES ---
 # AUDIT_LOG_FILE ya no se usa

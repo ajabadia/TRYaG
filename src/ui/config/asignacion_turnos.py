@@ -5,8 +5,8 @@ UI para la asignación de personal a salas (Gestión de Turnos).
 Permite asignar usuarios activos a las salas disponibles del centro.
 """
 import streamlit as st
-from src.db.repositories.users import get_users_repository
-from src.db.repositories.funciones import get_funcion_by_code
+from db.repositories.users import get_users_repository
+from db.repositories.funciones import get_funcion_by_code
 
 def render_asignacion_turnos(salas: list):
     """

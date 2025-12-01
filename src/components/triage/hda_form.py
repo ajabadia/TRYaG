@@ -13,7 +13,7 @@ def render_hda_form(reset_count: int, disabled: bool = False):
             st.session_state.datos_paciente['hda_localizacion'] = st.text_input("📍 Localización", value=st.session_state.datos_paciente.get('hda_localizacion', ''), disabled=disabled, key=f"hda_loc_{reset_count}", help="¿Dónde se encuentra el síntoma?")
             st.session_state.datos_paciente['hda_intensidad'] = st.slider("📈 Intensidad (EVA)", min_value=1, max_value=10, value=int(st.session_state.datos_paciente.get('hda_intensidad', 5) if str(st.session_state.datos_paciente.get('hda_intensidad', '5')).isdigit() else 5), key=f"hda_int_{reset_count}", help="Escala Visual Analógica (1=Leve, 10=Insuportable)")
         with c_hda2:
-            from src.db.repositories.clinical_options import get_clinical_options_repository
+            from db.repositories.clinical_options import get_clinical_options_repository
             repo = get_clinical_options_repository()
             opt_pain_char = repo.get_options("pain_characteristics")
             

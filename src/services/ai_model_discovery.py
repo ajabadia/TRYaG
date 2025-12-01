@@ -4,7 +4,7 @@ Servicio para descubrir y actualizar modelos de IA desde la API de Google.
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
-from src.db.repositories.ai_models import get_ai_models_repository
+from db.repositories.ai_models import get_ai_models_repository
 
 # Cargar variables de entorno si no están cargadas
 load_dotenv()

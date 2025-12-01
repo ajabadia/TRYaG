@@ -11,7 +11,7 @@ from services.triage_service import llamar_modelo_gemini
 from services.simulated_ia import simulacion_ia
 from utils.icons import render_icon
 from utils.file_handler import save_file_to_temp, cleanup_temp_files, calculate_md5, TempFileWrapper
-from src.core.transcription_handler import get_transcription
+from core.transcription_handler import get_transcription
 from config import get_min_chars_motivo
 from components.triage.media_cards import render_media_card
 from components.common.webcam_manager import render_webcam_manager
@@ -256,7 +256,7 @@ def render_input_form():
             
             # --- ALERTAS PREDICTIVAS (MODULARIZADO) ---
             # Solo mostrar si hay signos vitales registrados y está habilitado en config
-            from src.db.repositories.general_config import get_general_config_repository
+            from db.repositories.general_config import get_general_config_repository
             from components.triage.risk_analysis_panel import render_risk_analysis_panel
             
             # Asegurar config cargada

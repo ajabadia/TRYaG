@@ -3,7 +3,7 @@ Repositorio para gestionar los modelos de IA disponibles en MongoDB.
 """
 from typing import List, Dict, Any
 from datetime import datetime
-from src.db.connection import get_database
+from db.connection import get_database
 
 COLLECTION_NAME = "ai_models"
 

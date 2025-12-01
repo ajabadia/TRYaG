@@ -34,7 +34,7 @@ def render_clinical_context_form(reset_count: int, disabled: bool = False):
 
             # Cargar opciones si alguno está marcado
             if is_immuno or is_onco:
-                from src.db.repositories.clinical_options import get_clinical_options_repository
+                from db.repositories.clinical_options import get_clinical_options_repository
                 repo = get_clinical_options_repository()
                 all_opts = repo.get_options("immuno_onco")
                 

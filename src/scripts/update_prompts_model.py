@@ -5,7 +5,7 @@ from datetime import datetime
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from src.db.connection import get_database
+from db.connection import get_database
 
 def update_prompts_model():
     db = get_database()

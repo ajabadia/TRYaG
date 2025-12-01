@@ -7,7 +7,7 @@ Este paquete contiene:
 - repositories/: Implementaciones del patrón Repository
 """
 
-from src.db.connection import (
+from .connection import (
     get_client,
     get_database,
     health_check,

@@ -6,7 +6,7 @@ Gestiona la información de los centros y las salas asociadas.
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from src.db.repositories.base import BaseRepository
+from db.repositories.base import BaseRepository
 
 
 class CentrosRepository(BaseRepository):

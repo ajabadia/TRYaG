@@ -6,7 +6,7 @@ Maneja la colección 'people'.
 """
 from typing import Optional, List, Dict, Any
 from bson import ObjectId
-from src.db.connection import get_database
+from db.connection import get_database
 from datetime import datetime
 
 class PeopleRepository:

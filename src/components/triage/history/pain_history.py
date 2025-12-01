@@ -5,7 +5,7 @@ def render_pain_history_form(reset_count: int, disabled: bool = False):
     Renderiza Historial de Dolor y Opioides en un acordeón.
     """
     with st.expander("💊 Historial de Dolor y Opioides", expanded=False):
-        from src.db.repositories.clinical_options import get_clinical_options_repository
+        from db.repositories.clinical_options import get_clinical_options_repository
         repo = get_clinical_options_repository()
         
         c_pain1, c_pain2 = st.columns(2)

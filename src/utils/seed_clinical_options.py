@@ -6,8 +6,8 @@ from datetime import datetime
 # Add project root to path
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from src.db.connection import get_database
-from src.db.models import ClinicalOption
+from db.connection import get_database
+from db.models import ClinicalOption
 
 def seed_clinical_options():
     db = get_database()

@@ -4,7 +4,7 @@ Maneja la persistencia en MongoDB.
 """
 import uuid
 from datetime import datetime
-from src.db.repositories.transcriptions import get_transcriptions_repository
+from db.repositories.transcriptions import get_transcriptions_repository
 
 def get_transcription(file_md5):
     """

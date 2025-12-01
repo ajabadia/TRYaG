@@ -6,7 +6,7 @@ root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 sys.path.insert(0, root_dir)
 sys.path.insert(0, os.path.join(root_dir, "src"))
 
-from src.core.prompt_manager import PromptManager
+from core.prompt_manager import PromptManager
 
 def update_prompt():
     pm = PromptManager()

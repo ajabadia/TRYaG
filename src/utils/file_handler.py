@@ -8,7 +8,7 @@ import os
 import hashlib
 import shutil
 from datetime import datetime
-from src.db.repositories.files import get_file_imports_repository
+from db.repositories.files import get_file_imports_repository
 
 IMPORT_FILES_DIR = os.path.join('data', 'import_files')
 RECORDED_FILES_DIR = os.path.join('data', 'recorded_files')

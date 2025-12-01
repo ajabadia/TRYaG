@@ -6,7 +6,7 @@ Componente para la visualización del log de versiones de prompts.
 """
 import streamlit as st
 import pandas as pd
-from src.core.prompt_manager import PromptManager
+from core.prompt_manager import PromptManager
 
 def load_prompts_dataframe():
     """

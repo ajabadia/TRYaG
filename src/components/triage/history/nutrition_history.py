@@ -5,7 +5,7 @@ def render_nutrition_history_form(reset_count: int, disabled: bool = False):
     Renderiza Nutrición y Dieta en un acordeón.
     """
     with st.expander("🍎 Nutrición y Dieta", expanded=False):
-        from src.db.repositories.clinical_options import get_clinical_options_repository
+        from db.repositories.clinical_options import get_clinical_options_repository
         repo = get_clinical_options_repository()
 
         c_nut1, c_nut2 = st.columns(2)

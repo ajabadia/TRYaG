@@ -41,7 +41,7 @@ def render_surgical_history_form(reset_count: int, disabled: bool = False):
             st.session_state.datos_paciente['ant_implantes'] = implants
             
             if implants:
-                from src.db.repositories.clinical_options import get_clinical_options_repository
+                from db.repositories.clinical_options import get_clinical_options_repository
                 repo = get_clinical_options_repository()
                 opt_implants = repo.get_options("implant")
                 

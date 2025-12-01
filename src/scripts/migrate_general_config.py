@@ -1,6 +1,6 @@
 import os
 import sys
-from src.db.connection import get_database
+from db.connection import get_database
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))

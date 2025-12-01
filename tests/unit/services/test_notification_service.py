@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from bson import ObjectId
-from src.services.notification_service import (
+from services.notification_service import (
     create_notification, 
     _send_email, 
     _send_webhook,
@@ -16,7 +16,7 @@ def mock_db_notifications(mock_db):
 
 @pytest.fixture(autouse=True)
 def patch_notification_service_db(mock_db):
-    with patch('src.services.notification_service.get_database', return_value=mock_db):
+    with patch('services.notification_service.get_database', return_value=mock_db):
         yield
 
 def test_create_notification_in_app_only(mock_db_notifications):
@@ -35,7 +35,7 @@ def test_create_notification_in_app_only(mock_db_notifications):
     assert str(doc["_id"]) == notif_id
     assert doc["channels"] == ["in_app"]
 
-@patch('src.services.notification_service._send_email')
+@patch('services.notification_service._send_email')
 def test_create_notification_with_email(mock_send_email, mock_db_notifications):
     mock_send_email.return_value = True
     

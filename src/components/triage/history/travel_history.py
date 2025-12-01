@@ -5,7 +5,7 @@ def render_travel_history_form(reset_count: int, disabled: bool = False):
     Renderiza Viajes y Exposición en un acordeón.
     """
     with st.expander("✈️ Viajes y Exposición", expanded=False):
-        from src.db.repositories.clinical_options import get_clinical_options_repository
+        from db.repositories.clinical_options import get_clinical_options_repository
         repo = get_clinical_options_repository()
         
         st.session_state.datos_paciente['travel_recent'] = st.text_input("🌍 Viajes recientes (últimos 3 meses)", value=st.session_state.datos_paciente.get('travel_recent', ''), placeholder="País/Zona, Fecha...", disabled=disabled, key=f"trav_rec_{reset_count}", help="Estancias en el extranjero o zonas endémicas")

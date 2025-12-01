@@ -3,8 +3,8 @@
 Repositorio para la configuración de rangos de triaje.
 """
 from typing import Optional, List, Dict, Any
-from src.db.repositories.base import BaseRepository
-from src.db.models import TriageRangeConfig
+from db.repositories.base import BaseRepository
+from db.models import TriageRangeConfig
 
 class TriageConfigRepository(BaseRepository[TriageRangeConfig]):
     """

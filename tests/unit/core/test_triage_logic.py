@@ -1,11 +1,11 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.services.triage_service import llamar_modelo_gemini
+from services.triage_service import llamar_modelo_gemini
 
 @pytest.fixture
 def mock_dependencies():
-    with patch('src.services.triage_service.PromptManager') as mock_pm, \
-         patch('src.services.triage_service.get_gemini_service') as mock_gemini:
+    with patch('services.triage_service.PromptManager') as mock_pm, \
+         patch('services.triage_service.get_gemini_service') as mock_gemini:
         yield mock_pm, mock_gemini
 
 def test_llamar_modelo_gemini_basic(mock_dependencies):

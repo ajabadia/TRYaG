@@ -1,5 +1,5 @@
 import streamlit as st
-from src.db.repositories.clinical_options import get_clinical_options_repository
+from db.repositories.clinical_options import get_clinical_options_repository
 
 def render_social_history_form(reset_count: int, disabled: bool = False):
     """

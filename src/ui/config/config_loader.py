@@ -1,8 +1,8 @@
 # path: src/ui/config/config_loader.py
 import streamlit as st
-from src.db.repositories.general_config import get_general_config_repository
-from src.db.repositories.centros import get_centros_repository
-from src.db.repositories.salas import get_salas_by_centro
+from db.repositories.general_config import get_general_config_repository
+from db.repositories.centros import get_centros_repository
+from db.repositories.salas import get_salas_by_centro
 
 def load_general_config():
     """Carga la configuración general desde MongoDB."""

@@ -10,7 +10,7 @@ Componente de análisis gráfico para los Prompts.
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from src.core.prompt_manager import PromptManager
+from core.prompt_manager import PromptManager
 from utils.icon_utils import get_icon_html
 
 def load_prompts_data():

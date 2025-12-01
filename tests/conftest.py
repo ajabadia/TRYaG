@@ -23,8 +23,8 @@ def patch_mongo_connection(mock_mongo_client, mock_db):
     Automatically patch db.connection.get_client and get_database
     for all tests. Patches both 'src.db' and 'db' to cover different import styles.
     """
-    with patch('src.db.connection.get_client', return_value=mock_mongo_client), \
-         patch('src.db.connection.get_database', return_value=mock_db), \
+    with patch('db.connection.get_client', return_value=mock_mongo_client), \
+         patch('db.connection.get_database', return_value=mock_db), \
          patch('db.connection.get_client', return_value=mock_mongo_client), \
          patch('db.connection.get_database', return_value=mock_db):
         yield

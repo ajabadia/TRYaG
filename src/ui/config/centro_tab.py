@@ -1,6 +1,6 @@
 # path: src/ui/config/centro_tab.py
 import streamlit as st
-from src.services.permissions_service import has_permission
+from services.permissions_service import has_permission
 
 def render_centro_tab(centro_config):
     """Renderiza la pestaña de Configuración del Centro."""

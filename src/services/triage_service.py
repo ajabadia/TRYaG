@@ -4,9 +4,9 @@
 Servicio para la lógica de triaje con Gemini.
 """
 import json
-from src.services.gemini_client import get_gemini_service
-from src.core.prompt_manager import PromptManager
-from src.config import get_model_triage
+from services.gemini_client import get_gemini_service
+from core.prompt_manager import PromptManager
+from config import get_model_triage
 
 def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None, triage_result=None, antecedentes=None, alergias=None, gender=None, criterio_geriatrico=False, criterio_inmunodeprimido=False, criterio_inmunodeprimido_det=None, user_id="system", extended_history=None, nursing_assessment=None):
     """

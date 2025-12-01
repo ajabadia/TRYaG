@@ -107,7 +107,7 @@ def render_nursing_assessment_form(disabled: bool = False):
                 
         with c_safe2:
             # Refactorizado a Multiselect
-            from src.db.repositories.clinical_options import get_clinical_options_repository
+            from db.repositories.clinical_options import get_clinical_options_repository
             repo = get_clinical_options_repository()
             opt_belongings = repo.get_options("belongings")
             

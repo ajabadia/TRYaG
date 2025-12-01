@@ -7,8 +7,8 @@ para el patrón Repository antes de migrar los módulos más complejos.
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from src.db.repositories.base import BaseRepository
-from src.db.models import ConfigItem
+from db.repositories.base import BaseRepository
+from db.models import ConfigItem
 
 
 class ConfigRepository(BaseRepository[ConfigItem]):

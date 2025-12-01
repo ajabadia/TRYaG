@@ -5,7 +5,7 @@ def render_forensic_history_form(reset_count: int, disabled: bool = False):
     Renderiza Forense, Cultural y Escalas en un acordeón.
     """
     with st.expander("⚖️ Forense, Cultural y Escalas", expanded=False):
-        from src.db.repositories.clinical_options import get_clinical_options_repository
+        from db.repositories.clinical_options import get_clinical_options_repository
         repo = get_clinical_options_repository()
         
         st.markdown("**Protocolo Forense**")

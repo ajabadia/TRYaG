@@ -1,10 +1,10 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.permissions_service import has_permission, get_available_tabs
+from services.permissions_service import has_permission, get_available_tabs
 
 @pytest.fixture
 def mock_role_repo():
-    with patch('src.services.permissions_service.get_role_by_code') as mock_get_role:
+    with patch('services.permissions_service.get_role_by_code') as mock_get_role:
         yield mock_get_role
 
 @pytest.fixture
@@ -15,7 +15,7 @@ def mock_session_state():
     # The code uses st.session_state.get("current_user")
     
     # We can patch st.session_state with a real dict, which has a .get method
-    with patch('src.services.permissions_service.st.session_state', new_callable=dict) as mock_state:
+    with patch('services.permissions_service.st.session_state', new_callable=dict) as mock_state:
         yield mock_state
 
 def test_has_permission_no_user(mock_session_state):

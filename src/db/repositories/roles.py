@@ -6,7 +6,7 @@ Repositorio de Roles del sistema.
 Maneja la colección 'roles' en MongoDB, con fallback a roles por defecto.
 """
 from typing import List, Dict, Optional
-from src.db.connection import get_database
+from db.connection import get_database
 from datetime import datetime
 
 # Definición de Roles por Defecto (Seeding)

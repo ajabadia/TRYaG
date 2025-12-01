@@ -5,7 +5,7 @@ def render_psych_history_form(reset_count: int, disabled: bool = False):
     Renderiza Psiquiatría y Salud Mental en un acordeón.
     """
     with st.expander("🧠 Psiquiatría y Salud Mental", expanded=False):
-        from src.db.repositories.clinical_options import get_clinical_options_repository
+        from db.repositories.clinical_options import get_clinical_options_repository
         repo = get_clinical_options_repository()
         
         c_psy1, c_psy2 = st.columns(2)

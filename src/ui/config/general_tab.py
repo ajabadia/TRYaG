@@ -1,6 +1,6 @@
 # path: src/ui/config/general_tab.py
 import streamlit as st
-from src.services.permissions_service import has_permission
+from services.permissions_service import has_permission
 
 def render_general_tab():
     """Renderiza la pestaña de Configuración General."""

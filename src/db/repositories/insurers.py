@@ -1,7 +1,7 @@
 import os
 from bson.objectid import ObjectId
 from datetime import datetime
-from src.db.connection import get_database
+from db.connection import get_database
 
 class InsurersRepository:
     def __init__(self):

@@ -7,8 +7,8 @@ permitiendo múltiples versiones (draft, active, deprecated) por tipo.
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from src.db.repositories.base import BaseRepository
-from src.db.models import Prompt, PromptVersion
+from db.repositories.base import BaseRepository
+from db.models import Prompt, PromptVersion
 
 
 class PromptsRepository(BaseRepository[Prompt]):

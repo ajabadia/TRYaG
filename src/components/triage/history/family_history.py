@@ -5,7 +5,7 @@ def render_family_history_form(reset_count: int, disabled: bool = False):
     Renderiza Antecedentes Familiares en un acordeón.
     """
     with st.expander("👨‍👩‍👧‍👦 Antecedentes Familiares", expanded=False):
-        from src.db.repositories.clinical_options import get_clinical_options_repository
+        from db.repositories.clinical_options import get_clinical_options_repository
         repo = get_clinical_options_repository()
         
         c1, c2 = st.columns(2)

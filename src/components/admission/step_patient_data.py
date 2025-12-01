@@ -13,7 +13,7 @@ from services.patient_service import (
     calcular_edad,
 )
 from services.patient_flow_service import obtener_flujo_activo, rechazar_paciente
-from src.db.repositories.people import get_people_repository
+from db.repositories.people import get_people_repository
 from ui.config.people_manager import person_dialog
 from utils.icons import render_icon
 
@@ -183,7 +183,7 @@ def render_step_patient_data() -> bool:
             )
             
             if tiene_seguro == "Sí":
-                from src.db.repositories.insurers import get_insurers_repository
+                from db.repositories.insurers import get_insurers_repository
                 repo_insurers = get_insurers_repository()
                 insurers_list = repo_insurers.get_all(active_only=True)
                 

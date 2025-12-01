@@ -5,8 +5,8 @@ Componente para la selección temporal de usuario (Testing/Dev).
 Permite cambiar la identidad del usuario actual sin proceso de login.
 """
 import streamlit as st
-from src.db.repositories.users import get_users_repository
-from src.db.repositories.roles import get_role_by_code
+from db.repositories.users import get_users_repository
+from db.repositories.roles import get_role_by_code
 
 def render_user_selector():
     """

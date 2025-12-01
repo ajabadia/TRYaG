@@ -9,7 +9,7 @@ from pymongo.collection import Collection
 from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
 from bson import ObjectId
 
-from src.db.connection import get_database
+from db.connection import get_database
 
 # Tipo genérico para los modelos
 T = TypeVar('T')

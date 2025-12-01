@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.db.repositories.roles import RolesRepository, DEFAULT_ROLES
+from db.repositories.roles import RolesRepository, DEFAULT_ROLES
 
 @pytest.fixture
 def mock_db_roles(mock_db):
@@ -8,7 +8,7 @@ def mock_db_roles(mock_db):
 
 @pytest.fixture
 def roles_repo(mock_db):
-    with patch('src.db.repositories.roles.get_database', return_value=mock_db):
+    with patch('db.repositories.roles.get_database', return_value=mock_db):
         return RolesRepository()
 
 def test_initialize_defaults(roles_repo, mock_db_roles):

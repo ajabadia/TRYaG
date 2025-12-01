@@ -6,8 +6,8 @@ import os
 # Añadir root al path para imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from src.db.repositories.vital_signs_repo import VitalSignsRepository
-from src.db.models import VitalSignReference, VitalSignAgeConfig, VitalSignSeverityRange
+from db.repositories.vital_signs_repo import VitalSignsRepository
+from db.models import VitalSignReference, VitalSignAgeConfig, VitalSignSeverityRange
 
 def init_vital_signs():
     repo = VitalSignsRepository()

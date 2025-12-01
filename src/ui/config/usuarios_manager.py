@@ -7,10 +7,10 @@ Permite crear, editar y desactivar usuarios, asignando roles y funciones.
 import streamlit as st
 import time
 from datetime import datetime
-from src.db.repositories.users import get_users_repository
-from src.db.repositories.people import get_people_repository
-from src.db.repositories.roles import get_all_roles, get_role_by_code
-from src.db.repositories.funciones import get_all_funciones, get_funcion_by_code, get_funciones_repository
+from db.repositories.users import get_users_repository
+from db.repositories.people import get_people_repository
+from db.repositories.roles import get_all_roles, get_role_by_code
+from db.repositories.funciones import get_all_funciones, get_funcion_by_code, get_funciones_repository
 
 def render_user_card(user: dict):
     """Renderiza una tarjeta de usuario."""

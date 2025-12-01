@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from src.db.repositories.vital_signs_repo import VitalSignsRepository
+from db.repositories.vital_signs_repo import VitalSignsRepository
 
 def inspect():
     repo = VitalSignsRepository()

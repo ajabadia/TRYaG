@@ -10,7 +10,7 @@ from ui.components.common.tools_panel import render_tools_panel
 from ui.config.config_loader import load_general_config, load_centro_config
 from ui.config.general_tab import render_general_tab
 from ui.config.centro_tab import render_centro_tab
-from src.services.permissions_service import has_permission
+from services.permissions_service import has_permission
 
 def mostrar_panel_configuracion():
     """Muestra el panel de configuración con pestañas modulares."""

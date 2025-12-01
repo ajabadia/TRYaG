@@ -1,5 +1,5 @@
 import streamlit as st
-from src.db.repositories.clinical_options import get_clinical_options_repository, ClinicalOption
+from db.repositories.clinical_options import get_clinical_options_repository, ClinicalOption
 
 def render_clinical_options_manager():
     """

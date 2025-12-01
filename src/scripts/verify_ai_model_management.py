@@ -8,9 +8,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 # Load environment variables manually if needed, or rely on service
 load_dotenv()
 
-from src.services.ai_model_discovery import fetch_and_update_models
-from src.db.repositories.ai_models import get_ai_models_repository
-from src.db.repositories.general_config import get_general_config_repository
+from services.ai_model_discovery import fetch_and_update_models
+from db.repositories.ai_models import get_ai_models_repository
+from db.repositories.general_config import get_general_config_repository
 
 def verify_system():
     with open("verify_output_utf8.txt", "w", encoding="utf-8") as f:

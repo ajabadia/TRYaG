@@ -7,8 +7,8 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 import pymongo
 
-from src.db.repositories.base import BaseRepository
-from src.db.models import TranscriptionRecord
+from db.repositories.base import BaseRepository
+from db.models import TranscriptionRecord
 
 
 class TranscriptionsRepository(BaseRepository[TranscriptionRecord]):

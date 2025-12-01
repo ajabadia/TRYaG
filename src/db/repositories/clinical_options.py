@@ -2,8 +2,8 @@
 Repositorio para opciones clínicas configurables.
 """
 from typing import List, Optional
-from src.db.repositories.base import BaseRepository
-from src.db.models import ClinicalOption
+from db.repositories.base import BaseRepository
+from db.models import ClinicalOption
 
 class ClinicalOptionsRepository(BaseRepository):
     """

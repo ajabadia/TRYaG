@@ -6,8 +6,8 @@ Incluye selector de tipo de prompt y editor de versiones.
 """
 import streamlit as st
 import json
-from src.core.prompt_manager import PromptManager
-from src.utils.icons import render_icon
+from core.prompt_manager import PromptManager
+from utils.icons import render_icon
 
 def render_prompt_manager():
     """
@@ -74,7 +74,7 @@ def _render_prompt_editor_logic(prompt_type):
         if st.button("✨ Inicializar con Prompt por Defecto", key=f"init_{prompt_type}"):
             default_content = ""
             if prompt_type == "triage_predictive":
-                from src.services.predictive_service import DEFAULT_PREDICTIVE_PROMPT
+                from services.predictive_service import DEFAULT_PREDICTIVE_PROMPT
                 default_content = DEFAULT_PREDICTIVE_PROMPT
             elif prompt_type == "triage_gemini":
                 default_content = "Actúa como experto en triaje..."
@@ -135,7 +135,7 @@ def _render_prompt_editor_logic(prompt_type):
     
     with st.expander("Editor de Contenido", expanded=True):
         # Selector de Modelo (Dinámico desde BD)
-        from src.db.repositories.ai_models import get_ai_models_repository
+        from db.repositories.ai_models import get_ai_models_repository
         models_repo = get_ai_models_repository()
         available_models = models_repo.get_available_models()
         
@@ -244,16 +244,16 @@ def _render_prompt_editor_logic(prompt_type):
                 try:
                     response = None
                     if prompt_type == "triage_gemini":
-                        from src.services.triage_service import llamar_modelo_gemini
+                        from services.triage_service import llamar_modelo_gemini
                         response, _ = llamar_modelo_gemini(motivo=test_input, edad=30, dolor=5, prompt_content=new_content)
                     elif prompt_type == "triage_sim":
-                        from src.services.simulated_ia import simulacion_ia
+                        from services.simulated_ia import simulacion_ia
                         response = simulacion_ia(motivo=test_input, edad=30, dolor=5, prompt_content=new_content)
                     elif prompt_type == "transcription":
-                        from src.services.transcription_service import transcribir_audio
+                        from services.transcription_service import transcribir_audio
                         response, _ = transcribir_audio(text_input=test_input, prompt_content=new_content)
                     elif prompt_type == "triage_predictive":
-                        from src.services.predictive_service import generar_alertas_predictivas
+                        from services.predictive_service import generar_alertas_predictivas
                         response, _ = generar_alertas_predictivas(edad=50, vital_signs={"fc": 110}, antecedentes=test_input, prompt_content=new_content)
                     
                     st.session_state[f"{test_key_base}_result"] = response

@@ -1,8 +1,8 @@
 import streamlit as st
 from datetime import datetime, date
-from src.db.repositories.people import get_people_repository
+from db.repositories.people import get_people_repository
 
-from src.services.patient_service import generar_codigo_paciente
+from services.patient_service import generar_codigo_paciente
 
 def render_person_form(person_data=None, key_prefix="person_form"):
     """

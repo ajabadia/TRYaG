@@ -9,9 +9,9 @@ import pandas as pd
 from .raw_data_panel_v2 import mostrar_panel_datos_brutos_v2
 from .analysis_panel import mostrar_panel_analisis
 from .debug_panel import render_debug_panel
-from src.db.repositories.audit import get_audit_repository
-from src.db.repositories.files import get_file_imports_repository
-from src.db.repositories.transcriptions import get_transcriptions_repository
+from db.repositories.audit import get_audit_repository
+from db.repositories.files import get_file_imports_repository
+from db.repositories.transcriptions import get_transcriptions_repository
 
 # Constantes
 PAGE_SIZE = 25

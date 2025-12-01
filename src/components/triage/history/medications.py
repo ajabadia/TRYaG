@@ -42,7 +42,7 @@ def render_medications_form(reset_count: int, disabled: bool = False):
             st.session_state.datos_paciente['med_vacunas'] = vaccines_ok
             
             if vaccines_ok:
-                from src.db.repositories.clinical_options import get_clinical_options_repository
+                from db.repositories.clinical_options import get_clinical_options_repository
                 repo = get_clinical_options_repository()
                 opt_vaccines = repo.get_options("vaccine")
                 

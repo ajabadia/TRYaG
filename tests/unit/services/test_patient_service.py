@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime
-from src.services.patient_service import (
+from services.patient_service import (
     validar_dni, 
     generar_codigo_paciente, 
     crear_paciente, 
@@ -29,7 +29,7 @@ def test_generar_codigo_paciente():
 
 @pytest.fixture(autouse=True)
 def patch_patient_service_db(mock_db):
-    with patch('src.services.patient_service.get_database', return_value=mock_db):
+    with patch('services.patient_service.get_database', return_value=mock_db):
         yield
 
 def test_crear_paciente_success(mock_db):

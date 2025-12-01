@@ -2,7 +2,7 @@
 Repositorio para gestionar la configuración general de la aplicación en MongoDB.
 """
 from typing import Dict, Any, Optional
-from src.db.connection import get_database
+from db.connection import get_database
 
 COLLECTION_NAME = "general_config"
 CONFIG_ID = "app_general_config"  # ID único para el documento de configuración

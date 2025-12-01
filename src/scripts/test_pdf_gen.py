@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-from src.services.report_service import generate_triage_pdf
+from services.report_service import generate_triage_pdf
 from datetime import datetime
 import re
 

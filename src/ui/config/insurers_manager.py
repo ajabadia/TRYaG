@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from src.db.repositories.insurers import get_insurers_repository
+from db.repositories.insurers import get_insurers_repository
 
 def render_insurers_manager():
     """

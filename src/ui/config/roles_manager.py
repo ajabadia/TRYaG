@@ -6,7 +6,7 @@ Permite editar los permisos de acceso a los diferentes módulos del sistema.
 """
 import streamlit as st
 import time
-from src.db.repositories.roles import get_roles_repository, get_all_roles
+from db.repositories.roles import get_roles_repository, get_all_roles
 
 # Definición de la estructura de permisos del sistema
 # Esto define qué checkboxes se mostrarán en el editor

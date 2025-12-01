@@ -1,6 +1,6 @@
 # path: src/components/triage/triage_logic.py
 from typing import Dict, Any, Tuple, Optional, List
-from src.db.models import VitalSignAgeConfig, VitalSignSeverityRange
+from db.models import VitalSignAgeConfig, VitalSignSeverityRange
 
 # Definición de Prioridades y Colores
 PRIORITY_LEVELS = {

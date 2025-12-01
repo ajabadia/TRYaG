@@ -5,7 +5,7 @@ UI para configuración de la aplicación (Validación, Modelos IA).
 Componente modular para la sección General > Aplicación.
 """
 import streamlit as st
-from src.db.repositories.general_config import get_general_config_repository
+from db.repositories.general_config import get_general_config_repository
 
 def save_general_config(config):
     """Guarda la configuración general en MongoDB."""
@@ -45,8 +45,8 @@ def render_app_config():
         st.caption("Gestión de modelos Gemini disponibles y configuración por defecto.")
         
         # --- Sección de Descubrimiento de Modelos ---
-        from src.services.ai_model_discovery import fetch_and_update_models
-        from src.db.repositories.ai_models import get_ai_models_repository
+        from services.ai_model_discovery import fetch_and_update_models
+        from db.repositories.ai_models import get_ai_models_repository
         
         col_check, col_info = st.columns([1, 2])
         with col_check:
