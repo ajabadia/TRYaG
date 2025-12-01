@@ -11,7 +11,7 @@ def render_nutrition_history_form(reset_count: int, disabled: bool = False):
         c_nut1, c_nut2 = st.columns(2)
         with c_nut1:
             opt_diet = repo.get_options("diet_type")
-            diet_labels = [opt.label for opt in opt_diet] + ["Otra"]
+            diet_labels = [""] + [opt.label for opt in opt_diet] + ["Otra"]
             
             st.session_state.datos_paciente['nut_dieta'] = st.selectbox(
                 "🍽️ Tipo de Dieta Habitual",

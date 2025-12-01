@@ -21,10 +21,18 @@ from components.common.file_importer import render_file_importer
 from components.triage.vital_signs import render_vital_signs_form, render_vital_sign_input
 from components.triage.patient_background_form import render_patient_background_form
 
-def procesar_respuesta_ia(resultado_ia):
+def procesar_respuesta_ia(resultado_ia, algo_result=None):
     """
     Procesa la respuesta de la IA y la guarda en el estado de la sesión.
+    Combina con el resultado algorítmico si está disponible.
     """
+    final_result = {}
+    
+    # 1. Base: Algoritmo (si existe)
+    if algo_result:
+        final_result.update(algo_result)
+        
+    # 2. IA: Sobrescribe o enriquece
     if resultado_ia and "nivel_sugerido" in resultado_ia:
         niveles_info = {
             1: {"color": "red", "text": "NIVEL I - RESUCITACIÓN"},
@@ -34,22 +42,31 @@ def procesar_respuesta_ia(resultado_ia):
             5: {"color": "blue", "text": "NIVEL V - NO URGENTE"}
         }
         nivel_num = resultado_ia['nivel_sugerido']
-        st.session_state.resultado = {
-            "status": "SUCCESS",
-            "nivel": niveles_info.get(nivel_num, niveles_info[4]),
-            "razones": resultado_ia.get("razonamiento", ["No se proporcionó razonamiento."])
-        }
+        
+        # Actualizar campos clave para compatibilidad con PDF y UI
+        final_result["status"] = "SUCCESS"
+        final_result["final_priority"] = nivel_num
+        final_result["final_color"] = niveles_info.get(nivel_num, {}).get("color", "gray")
+        final_result["nivel"] = niveles_info.get(nivel_num, niveles_info[4]) # Estructura legacy para UI
+        final_result["razones"] = resultado_ia.get("razonamiento", ["No se proporcionó razonamiento."])
+        
+        # Preservar wait_time del algoritmo si la IA no lo da (la IA no suele darlo en este prompt)
+        if "wait_time" not in final_result:
+             final_result["wait_time"] = "N/A"
+
     else:
         # Si no tiene nivel_sugerido, verificar si tiene la estructura correcta
         if isinstance(resultado_ia, dict) and "nivel" in resultado_ia:
             # Ya tiene la estructura correcta
-            st.session_state.resultado = resultado_ia
+            final_result.update(resultado_ia)
         else:
             # Error o formato inesperado - crear estructura por defecto
-            st.session_state.resultado = {
+            final_result = {
                 "status": resultado_ia.get("status", "ERROR") if isinstance(resultado_ia, dict) else "ERROR",
                 "msg": resultado_ia.get("msg", "Error procesando respuesta de IA") if isinstance(resultado_ia, dict) else str(resultado_ia)
             }
+            
+    st.session_state.resultado = final_result
 
 def render_input_form():
     """
@@ -462,7 +479,7 @@ def render_input_form():
                             nursing_assessment=st.session_state.datos_paciente.get('nursing_assessment')
                         )
                         
-                        procesar_respuesta_ia(resultado_ia)
+                        procesar_respuesta_ia(resultado_ia, algo_result=triage_result)
                         st.session_state.analysis_complete = True
                         st.rerun()
 

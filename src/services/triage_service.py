@@ -19,7 +19,7 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
     
     if prompt_content:
         base_prompt = prompt_content
-        model_name = "gemini-1.5-flash" # Default for tests if not specified
+        model_name = "gemini-1.5-flash-001" # Default for tests if not specified
         version_id = "test-override"
     else:
         # Obtener versión activa

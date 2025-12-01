@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime
 from typing import Optional, Dict, Any, Union, Tuple
+import streamlit as st
 from src.db.models import AIAuditLog
 from src.db.repositories.ai_audit import get_ai_audit_repository
 
@@ -15,9 +16,26 @@ class GeminiService:
     
     def __init__(self):
         # Configurar API Key globalmente si no está ya
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = None
+        
+        # 1. Intentar desde st.secrets
+        try:
+            if "GOOGLE_API_KEY" in st.secrets:
+                api_key = st.secrets["GOOGLE_API_KEY"]
+        except FileNotFoundError:
+            pass
+        except Exception:
+            pass
+            
+        # 2. Fallback a variables de entorno
+        if not api_key:
+            api_key = os.getenv("GOOGLE_API_KEY")
+            
         if api_key:
             genai.configure(api_key=api_key)
+        else:
+            print("WARNING: GOOGLE_API_KEY not found in secrets or env vars.")
+            
         self.audit_repo = get_ai_audit_repository()
 
     def generate_content(

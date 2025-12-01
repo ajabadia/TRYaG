@@ -115,6 +115,19 @@ def render_validation_form():
                     datos_auditoria.update({"decision_humana": "Modificado", "nivel_corregido": nivel_humano_norm, "justificacion_humana": justificacion})
                     guardar_auditoria(datos_auditoria, st.session_state)
                     
+                    # Actualizar resultado en sesión para que el PDF refleje el cambio
+                    level_map = {"Nivel I": 1, "Nivel II": 2, "Nivel III": 3, "Nivel IV": 4, "Nivel V": 5}
+                    new_prio = level_map.get(nivel_humano_norm, 0)
+                    color_map = {1: "red", 2: "orange", 3: "#FFD700", 4: "green", 5: "blue"}
+                    
+                    if st.session_state.resultado:
+                        st.session_state.resultado['final_priority'] = new_prio
+                        st.session_state.resultado['final_color'] = color_map.get(new_prio, "gray")
+                        # Actualizar estructura legacy 'nivel' si existe
+                        if 'nivel' in st.session_state.resultado:
+                            st.session_state.resultado['nivel']['text'] = nuevo_nivel_display.upper()
+                            st.session_state.resultado['nivel']['color'] = color_map.get(new_prio, "gray")
+                    
                     st.session_state.validation_complete = True
                     st.session_state.validation_msg = f"Nivel modificado a {nivel_humano_norm}. Proceda a la derivación."
                     st.session_state.validation_msg_type = "warning"

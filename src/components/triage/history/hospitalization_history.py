@@ -27,7 +27,6 @@ def render_hospitalization_history_form(reset_count: int, disabled: bool = False
             if has_legal:
                 st.session_state.datos_paciente['hosp_legal_det'] = st.text_input("📝 Detalles Legales", value=st.session_state.datos_paciente.get('hosp_legal_det', ''), key=f"hosp_leg_det_{reset_count}", disabled=disabled, help="Especifique la situación legal")
         with c_legal_issues2:
-        with c_legal_issues2:
             # Sync with safety_alerts.py
             has_dnr = st.checkbox("📜 Documento Voluntades Anticipadas / DNR", value=st.session_state.datos_paciente.get('alert_dnr', False), disabled=disabled, key=f"hosp_vol_{reset_count}", help="Existe registro de instrucciones previas")
             st.session_state.datos_paciente['alert_dnr'] = has_dnr

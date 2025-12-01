@@ -146,11 +146,25 @@ from components.common.stepper import render_vertical_stepper
 from components.triage.step_sala_selection import render_step_sala_selection
 from components.triage.step_patient_selection import render_step_patient_selection
 from components.triage.step_triage_process import render_step_triage_process
+# path: src/ui/main_view.py
+# Creado: 2025-11-21
+# Última modificación: 2025-11-24
+"""
+Módulo orquestador que construye la vista principal del "Asistente de Triaje".
+Implementa un flujo por pasos (stepper) para selección de sala, paciente y triaje.
+"""
+import streamlit as st
+from components.common.stepper import render_vertical_stepper
+from components.triage.step_sala_selection import render_step_sala_selection
+from components.triage.step_patient_selection import render_step_patient_selection
+from components.triage.step_triage_process import render_step_triage_process
 from components.triage.step_disposition import render_step_disposition
 from components.triage.nursing_form import render_nursing_assessment_form
 from ui.components.common.tools_panel import render_tools_panel
 from datetime import datetime # Added import for training mode
 from services.patient_flow_service import save_triage_data # Added import for training mode
+
+from components.triage.step_final_disposition import render_step_final_disposition
 
 def mostrar_asistente_triaje():
     """
@@ -179,15 +193,15 @@ def mostrar_asistente_triaje():
             "Datos del Caso",
             "Realizar Triaje",
             "Valoración Enfermería",
+            "Órdenes y Planificación",
             "Finalizar Entrenamiento"
         ]
         # Mapeo de pasos visuales a lógicos: 
         # 0 -> 1 (Datos Caso)
         # 1 -> 2 (Triaje)
         # 2 -> 3 (Enfermería)
-        # 3 -> 4 (Finalizar)
-        # Ajuste visual del stepper si es necesario, o simplemente usamos indices 1, 2, 3, 4
-        # Para simplificar, usaremos los mismos índices lógicos 1, 2, 3, 4 y saltaremos el 0
+        # 3 -> 4 (Órdenes)
+        # 4 -> 5 (Finalizar)
         if st.session_state.triage_step == 0:
              st.session_state.triage_step = 1
     else:
@@ -196,7 +210,8 @@ def mostrar_asistente_triaje():
             "Selección de Paciente",
             "Realizar Triaje",
             "Valoración Enfermería",
-            "Derivación"
+            "Órdenes y Planificación",
+            "Destino (Derivación)"
         ]
     
     # Layout: stepper a la izquierda, contenido a la derecha
@@ -271,7 +286,7 @@ def mostrar_asistente_triaje():
                         # Avanzar
                         st.session_state.triage_step = 2
                         st.rerun()
-
+                
             else:
                 # Cabecera compacta de contexto
                 with st.container(border=True):
@@ -355,16 +370,26 @@ def mostrar_asistente_triaje():
             render_nursing_assessment_form()
             
             st.divider()
-            label_next = "Finalizar Entrenamiento" if is_training else "Continuar a Derivación →"
-            if st.button(label_next, type="primary", use_container_width=True):
+            if st.button("Continuar a Órdenes →", type="primary", use_container_width=True):
                 st.session_state.triage_step = 4
                 st.rerun()
 
-        # --- PASO 4: DERIVACIÓN / FINALIZACIÓN ---
+        # --- PASO 4: ÓRDENES Y PLANIFICACIÓN ---
         elif st.session_state.triage_step == 4:
             # Botón Volver
             if st.button("← Volver a Enfermería", use_container_width=True):
                 st.session_state.triage_step = 3
+                st.rerun()
+                
+            render_step_disposition() # Ahora solo renderiza Órdenes
+            
+            # El botón "Continuar" está dentro de render_step_disposition
+
+        # --- PASO 5: DESTINO / FINALIZACIÓN ---
+        elif st.session_state.triage_step == 5:
+            # Botón Volver
+            if st.button("← Volver a Órdenes", use_container_width=True):
+                st.session_state.triage_step = 4
                 st.rerun()
             
             if is_training:
@@ -393,6 +418,6 @@ def mostrar_asistente_triaje():
                     st.session_state.triage_patient = None
                     st.rerun()
             else:
-                render_step_disposition()
+                render_step_final_disposition()
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/main_view.py</div>', unsafe_allow_html=True)

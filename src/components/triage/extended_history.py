@@ -104,7 +104,7 @@ def render_extended_history_form(disabled: bool = False):
                 value=full_history,
                 height=150,
                 disabled=True,
-                key=f"history_summary_{reset_count}"
+                key=f"history_summary_{reset_count}_{hash(full_history)}"
             )
             
             if st.button("🔄 Refrescar Datos", key=f"refresh_hist_{reset_count}", help="Actualizar vista previa con los últimos cambios"):

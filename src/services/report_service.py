@@ -259,7 +259,7 @@ class TriageReportGenerator(FPDF):
         self.section_title("Clasificación de Triaje")
         
         level = self.result.get('final_priority', 0)
-        color_name = self.result.get('final_color', 'gray')
+        color_name = self.result.get('final_color') or 'gray'
         wait_time = self.result.get('wait_time', '-')
         
         # Color visual (cuadro relleno)

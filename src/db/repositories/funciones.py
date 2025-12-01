@@ -15,7 +15,7 @@ DEFAULT_FUNCIONES = [
         "nombre": "Administrativo",
         "descripcion": "Personal administrativo de admisión",
         "color": "#6C757D",
-        "icon": "badge",
+        "icon": "clipboard",
         "tipos_sala_compatibles": ["admision", "espera"]
     },
     {
@@ -23,7 +23,7 @@ DEFAULT_FUNCIONES = [
         "nombre": "Enfermero/a",
         "descripcion": "Personal de enfermería",
         "color": "#17A2B8",
-        "icon": "medical_services",
+        "icon": "medical",
         "tipos_sala_compatibles": ["triaje", "box", "consulta_ingreso"]
     },
     {
@@ -31,7 +31,7 @@ DEFAULT_FUNCIONES = [
         "nombre": "Médico/a",
         "descripcion": "Personal médico",
         "color": "#28A745",
-        "icon": "health_and_safety",
+        "icon": "medical",
         "tipos_sala_compatibles": ["triaje", "box", "consulta_ingreso", "observacion"]
     },
     {

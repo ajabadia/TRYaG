@@ -13,7 +13,7 @@ def render_nursing_assessment_form(disabled: bool = False):
         # Cabecera
         c_icon, c_title = st.columns([1, 20])
         with c_icon:
-            render_icon("activity", size=24) # Icono genérico de actividad/enfermería
+            render_icon("medical", size=24) # Icono corregido
         with c_title:
             st.header("3. Valoración de Enfermería")
 
@@ -51,8 +51,27 @@ def render_nursing_assessment_form(disabled: bool = False):
         with c_risk1:
             # Riesgo de Caídas (Simplificado Morse/Hendrich)
             st.markdown("**Riesgo de Caídas**")
-            fall_hist = st.checkbox("Historia de Caídas (últimos 3 meses)", value=st.session_state.datos_paciente.get('fall_hist', False), disabled=disabled, key=f"fall_hist_{reset_count}")
-            fall_help = st.checkbox("Necesita ayuda para deambular", value=st.session_state.datos_paciente.get('fall_help', False), disabled=disabled, key=f"fall_help_{reset_count}")
+            
+            # Intentar heredar datos de secciones previas
+            default_fall_hist = st.session_state.datos_paciente.get('fall_hist', False)
+            # Si no hay valor previo, comprobar si en antecedentes se mencionó caídas (lógica simple)
+            if 'fall_hist' not in st.session_state.datos_paciente:
+                 antecedentes = st.session_state.datos_paciente.get('antecedentes', '').lower()
+                 if 'caida' in antecedentes or 'caída' in antecedentes:
+                     default_fall_hist = True
+            
+            default_fall_help = st.session_state.datos_paciente.get('fall_help', False)
+            # Si no hay valor previo, comprobar si usa bastón/andador (viaje/sensorial)
+            if 'fall_help' not in st.session_state.datos_paciente:
+                # Chequear ayudas técnicas si existen en datos
+                pass 
+
+            fall_hist = st.checkbox("Historia de Caídas (últimos 3 meses)", value=default_fall_hist, disabled=disabled, key=f"fall_hist_{reset_count}")
+            fall_help = st.checkbox("Necesita ayuda para deambular", value=default_fall_help, disabled=disabled, key=f"fall_help_{reset_count}")
+            
+            # Persistir selección
+            st.session_state.datos_paciente['fall_hist'] = fall_hist
+            st.session_state.datos_paciente['fall_help'] = fall_help
             
             # Cálculo simple
             fall_risk_level = "Bajo"
@@ -87,7 +106,33 @@ def render_nursing_assessment_form(disabled: bool = False):
                 st.error("⚠️ Pendiente: Colocar pulsera ID")
                 
         with c_safe2:
-            st.session_state.datos_paciente['belongings'] = st.text_area("Inventario de Pertenencias / Valores", value=st.session_state.datos_paciente.get('belongings', ''), height=68, placeholder="Gafas, Dentadura, Móvil...", disabled=disabled, key=f"safe_bel_{reset_count}")
+            # Refactorizado a Multiselect
+            from src.db.repositories.clinical_options import get_clinical_options_repository
+            repo = get_clinical_options_repository()
+            opt_belongings = repo.get_options("belongings")
+            
+            belongings_selected = st.multiselect(
+                "Inventario de Pertenencias / Valores",
+                options=[opt.label for opt in opt_belongings],
+                default=st.session_state.datos_paciente.get('belongings_list', []) if isinstance(st.session_state.datos_paciente.get('belongings_list'), list) else [],
+                disabled=disabled, key=f"safe_bel_multi_{reset_count}"
+            )
+            st.session_state.datos_paciente['belongings_list'] = belongings_selected
+            
+            belongings_other = st.text_input(
+                "Otros valores / Notas",
+                value=st.session_state.datos_paciente.get('belongings_other', ''),
+                placeholder="Especifique otros...",
+                disabled=disabled, key=f"safe_bel_other_{reset_count}"
+            )
+            st.session_state.datos_paciente['belongings_other'] = belongings_other
+            
+            # Combinar para compatibilidad hacia atrás si es necesario
+            full_belongings = ", ".join(belongings_selected)
+            if belongings_other:
+                full_belongings += f" ({belongings_other})"
+            st.session_state.datos_paciente['belongings'] = full_belongings
+
             st.session_state.datos_paciente['family_notified'] = st.checkbox("Familiares Notificados", value=st.session_state.datos_paciente.get('family_notified', False), disabled=disabled, key=f"safe_fam_{reset_count}")
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/nursing_form.py</div>', unsafe_allow_html=True)

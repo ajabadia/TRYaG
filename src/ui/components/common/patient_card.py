@@ -203,12 +203,12 @@ def render_patient_card(
                 col_pdf, _ = st.columns([1, 3])
                 with col_pdf:
                     if st.button("📄 Informe", key=f"btn_pdf_{pid}_{key_prefix}", help="Ver y descargar informe", use_container_width=True):
-                        from ui.components.common.pdf_preview_modal import show_pdf_preview_modal
+                        from ui.components.reports.report_viewer import render_report_viewer
                         from utils.triage_utils import get_triage_record_for_pdf
                         
                         record = get_triage_record_for_pdf(pid)
                         if record:
-                            show_pdf_preview_modal(record, patient)
+                            render_report_viewer(record, patient)
                         else:
                             st.toast("⚠️ No hay datos de triaje disponibles para este paciente.", icon="⚠️")
         

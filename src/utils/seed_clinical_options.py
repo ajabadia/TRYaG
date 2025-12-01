@@ -315,6 +315,18 @@ def seed_clinical_options():
         {"category": "allergy_symptoms", "value": "diarrhea", "label": "Diarrea"},
         {"category": "allergy_symptoms", "value": "hypotension", "label": "Mareo / Hipotensión"},
         {"category": "allergy_symptoms", "value": "anaphylaxis", "label": "Shock Anafiláctico"},
+
+        # --- BELONGINGS ---
+        {"category": "belongings", "value": "glasses", "label": "Gafas / Lentes"},
+        {"category": "belongings", "value": "dentures", "label": "Prótesis Dental (Dentadura)"},
+        {"category": "belongings", "value": "hearing_aid", "label": "Audífono"},
+        {"category": "belongings", "value": "mobile_phone", "label": "Teléfono Móvil"},
+        {"category": "belongings", "value": "wallet", "label": "Cartera / Documentación"},
+        {"category": "belongings", "value": "jewelry", "label": "Joyas / Reloj"},
+        {"category": "belongings", "value": "clothing", "label": "Ropa de Calle"},
+        {"category": "belongings", "value": "keys", "label": "Llaves"},
+        {"category": "belongings", "value": "cane", "label": "Bastón / Muletas"},
+        {"category": "belongings", "value": "walker", "label": "Andador"},
     ]
 
     print(f"Seeding {len(options_data)} clinical options...")

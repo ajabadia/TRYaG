@@ -16,7 +16,6 @@ def render_risk_analysis_panel(patient_data, enable_predictive=True):
         return
 
     with st.expander("🛡️ Análisis de Riesgos (Pre-Triaje)", expanded=True):
-    with st.expander("🛡️ Análisis de Riesgos (Pre-Triaje)", expanded=True):
         col_btns, col_res = st.columns([1, 2])
         
         with col_btns:

@@ -71,13 +71,26 @@ def get_client() -> MongoClient:
     if _client is not None:
         return _client
     
-    # Obtener URI desde variables de entorno
-    mongodb_uri = os.getenv("MONGODB_URI")
+    # Obtener URI desde secrets (Streamlit Cloud) o variables de entorno
+    mongodb_uri = None
+    
+    # 1. Intentar desde st.secrets
+    try:
+        if "MONGODB_URI" in st.secrets:
+            mongodb_uri = st.secrets["MONGODB_URI"]
+    except FileNotFoundError:
+        pass # No secrets.toml found
+    except Exception:
+        pass
+        
+    # 2. Fallback a variables de entorno
+    if not mongodb_uri:
+        mongodb_uri = os.getenv("MONGODB_URI")
     
     if not mongodb_uri:
         raise ValueError(
-            "MONGODB_URI no encontrado en variables de entorno. "
-            "Asegúrate de tener un archivo .env con la configuración correcta."
+            "MONGODB_URI no encontrado en st.secrets ni en variables de entorno. "
+            "Asegúrate de configurar .streamlit/secrets.toml o el archivo .env."
         )
     
     # Debug: Mostrar URI enmascarada para verificar que se carga correctamente
@@ -117,7 +130,18 @@ def get_database() -> Database:
         return _database
     
     client = get_client()
-    db_name = os.getenv("MONGODB_DATABASE", "triaje_db")
+    
+    # Obtener nombre de DB desde secrets o env
+    db_name = None
+    try:
+        if "MONGODB_DATABASE" in st.secrets:
+            db_name = st.secrets["MONGODB_DATABASE"]
+    except:
+        pass
+        
+    if not db_name:
+        db_name = os.getenv("MONGODB_DATABASE", "triaje_db")
+        
     _database = client[db_name]
     
     return _database
