@@ -9,9 +9,12 @@ def render_psych_history_form(reset_count: int, disabled: bool = False):
         with c_psy1:
             st.session_state.datos_paciente['psy_diagnostico'] = st.text_area("Diagnósticos Psiquiátricos", value=st.session_state.datos_paciente.get('psy_diagnostico', ''), height=68, placeholder="Depresión, Ansiedad, Bipolar...", disabled=disabled, key=f"psy_dx_{reset_count}")
         with c_psy2:
-            st.session_state.datos_paciente['psy_suicidio'] = st.checkbox("⚠️ Riesgo de Suicidio / Autolesión", value=st.session_state.datos_paciente.get('psy_suicidio', False), disabled=disabled, key=f"psy_suicide_{reset_count}")
-            if st.session_state.datos_paciente['psy_suicidio']:
+            has_suicide = st.checkbox("⚠️ Riesgo de Suicidio / Autolesión", value=st.session_state.datos_paciente.get('psy_suicidio', False), disabled=disabled, key=f"psy_suicide_{reset_count}")
+            st.session_state.datos_paciente['psy_suicidio'] = has_suicide
+            
+            if has_suicide:
                 st.warning("Protocolo de Seguridad Activado: Notificar a Psiquiatría de Guardia.")
+                st.session_state.datos_paciente['psy_suicidio_det'] = st.text_input("Detalles Riesgo", value=st.session_state.datos_paciente.get('psy_suicidio_det', ''), key=f"psy_suicide_det_{reset_count}", disabled=disabled)
             
             st.session_state.datos_paciente['psy_medicacion'] = st.text_area("Medicación Psicotrópica", value=st.session_state.datos_paciente.get('psy_medicacion', ''), height=68, placeholder="Antidepresivos, Antipsicóticos...", disabled=disabled, key=f"psy_meds_{reset_count}")
 

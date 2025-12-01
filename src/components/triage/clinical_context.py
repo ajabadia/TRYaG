@@ -25,5 +25,8 @@ def render_clinical_context_form(reset_count: int, disabled: bool = False):
             val_immuno = st.session_state.datos_paciente.get('criterio_inmunodeprimido', False)
             criterio_inmunodeprimido = st.checkbox("Inmunodeprimido / Oncológico", value=val_immuno, disabled=disabled, key=f"ctx_immuno_{reset_count}")
             st.session_state.datos_paciente['criterio_inmunodeprimido'] = criterio_inmunodeprimido
+            
+            if criterio_inmunodeprimido:
+                st.session_state.datos_paciente['criterio_inmunodeprimido_det'] = st.text_input("Detalles Inmunosupresión", value=st.session_state.datos_paciente.get('criterio_inmunodeprimido_det', ''), key=f"ctx_immuno_det_{reset_count}", disabled=disabled)
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/clinical_context.py</div>', unsafe_allow_html=True)

@@ -18,3 +18,25 @@ class VitalSignsRepository(BaseRepository[VitalSignReference]):
         """Obtiene todas las referencias de signos vitales."""
         docs = self.find_all(sort=[("name", 1)])
         return [VitalSignReference(**d) for d in docs]
+
+    def get_config(self, metric: str, age: int) -> Optional[Any]:
+        """
+        Obtiene la configuración específica para un signo vital y edad.
+        
+        Args:
+            metric: Clave del signo vital (ej: 'fc', 'spo2')
+            age: Edad del paciente
+            
+        Returns:
+            VitalSignAgeConfig o None si no se encuentra
+        """
+        ref = self.get_by_key(metric)
+        if not ref:
+            return None
+            
+        # Buscar configuración por rango de edad
+        for config in ref.configs:
+            if config.min_age <= age <= config.max_age:
+                return config
+                
+        return None

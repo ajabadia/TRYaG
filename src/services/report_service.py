@@ -82,6 +82,16 @@ class TriageReportGenerator(FPDF):
         self.field("ID / DNI", self.patient.get('id_number', 'No disponible')) # Ajustar según modelo real
         self.field("Edad", f"{self.patient.get('age', 'No disponible')} años")
         self.field("Género", self.patient.get('gender', 'No disponible'))
+        
+        # Contexto Clínico
+        if self.patient.get('criterio_geriatrico'):
+            self.field("Criterio Geriátrico", "Sí (Edad >= 65)")
+        
+        if self.patient.get('criterio_inmunodeprimido'):
+            detalles = self.patient.get('criterio_inmunodeprimido_det', '')
+            val = f"Sí - {detalles}" if detalles else "Sí"
+            self.field("Inmunodeprimido", val)
+            
         self.ln(5)
 
         # 2. Motivo de Consulta y HDA
@@ -186,15 +196,27 @@ class TriageReportGenerator(FPDF):
         # Campos extendidos (extended_history.py)
         ext_fields = {
             "ant_familiares": "Antecedentes Familiares",
+            "ant_fam_cardio_det": " - Detalle Cardio",
+            "ant_fam_cancer_det": " - Detalle Cáncer",
+            "ant_fam_diabetes_det": " - Detalle Diabetes",
             "ant_psiquiatricos": "Psiquiatría/Salud Mental",
+            "psy_suicidio_det": " - Detalle Riesgo Suicidio",
             "ant_quirurgicos": "Antecedentes Quirúrgicos",
             "habitos_toxicos": "Hábitos Tóxicos",
             "nutricion_dieta": "Nutrición y Dieta",
+            "nut_disfagia_det": " - Detalle Disfagia",
+            "nut_peso_det": " - Detalle Pérdida Peso",
             "viajes_recientes": "Viajes/Exposición",
+            "exp_animales_det": " - Detalle Animales",
             "sensorial_ayudas": "Déficits Sensoriales",
+            "sens_auditivo_det": " - Detalle Auditivo",
+            "sens_visual_det": " - Detalle Visual",
             "dolor_cronico": "Historia de Dolor",
+            "pain_cronico_det": " - Detalle Dolor Crónico",
             "hospitalizaciones_previas": "Hospitalizaciones Previas",
-            "situacion_legal": "Situación Legal/Social"
+            "hosp_legal_det": " - Detalle Legal",
+            "situacion_legal": "Situación Legal/Social",
+            "for_violencia_det": " - Detalle Violencia"
         }
         
         for key, label in ext_fields.items():

@@ -281,15 +281,36 @@ def save_triage_data(patient_code: str, triage_data: Dict[str, Any]) -> bool:
             # Nuevos campos persistidos explícitamente
             "extended_history": {
                 "ant_familiares": triage_data.get('datos_paciente', {}).get('ant_familiares'),
+                "ant_fam_cardio_det": triage_data.get('datos_paciente', {}).get('ant_fam_cardio_det'),
+                "ant_fam_cancer_det": triage_data.get('datos_paciente', {}).get('ant_fam_cancer_det'),
+                "ant_fam_diabetes_det": triage_data.get('datos_paciente', {}).get('ant_fam_diabetes_det'),
+                
                 "ant_psiquiatricos": triage_data.get('datos_paciente', {}).get('ant_psiquiatricos'),
+                "psy_suicidio_det": triage_data.get('datos_paciente', {}).get('psy_suicidio_det'),
+                
                 "ant_quirurgicos": triage_data.get('datos_paciente', {}).get('ant_quirurgicos'),
+                
                 "habitos_toxicos": triage_data.get('datos_paciente', {}).get('habitos_toxicos'),
+                
                 "nutricion_dieta": triage_data.get('datos_paciente', {}).get('nutricion_dieta'),
+                "nut_disfagia_det": triage_data.get('datos_paciente', {}).get('nut_disfagia_det'),
+                "nut_peso_det": triage_data.get('datos_paciente', {}).get('nut_peso_det'),
+                
                 "viajes_recientes": triage_data.get('datos_paciente', {}).get('viajes_recientes'),
+                "exp_animales_det": triage_data.get('datos_paciente', {}).get('exp_animales_det'),
+                
                 "sensorial_ayudas": triage_data.get('datos_paciente', {}).get('sensorial_ayudas'),
+                "sens_auditivo_det": triage_data.get('datos_paciente', {}).get('sens_auditivo_det'),
+                "sens_visual_det": triage_data.get('datos_paciente', {}).get('sens_visual_det'),
+                
                 "dolor_cronico": triage_data.get('datos_paciente', {}).get('dolor_cronico'),
+                "pain_cronico_det": triage_data.get('datos_paciente', {}).get('pain_cronico_det'),
+                
                 "hospitalizaciones_previas": triage_data.get('datos_paciente', {}).get('hospitalizaciones_previas'),
+                "hosp_legal_det": triage_data.get('datos_paciente', {}).get('hosp_legal_det'),
+                
                 "situacion_legal": triage_data.get('datos_paciente', {}).get('situacion_legal'),
+                "for_violencia_det": triage_data.get('datos_paciente', {}).get('for_violencia_det'),
             },
             "nursing_assessment": {
                 "skin_integrity": triage_data.get('datos_paciente', {}).get('skin_integrity'),

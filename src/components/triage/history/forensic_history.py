@@ -8,9 +8,14 @@ def render_forensic_history_form(reset_count: int, disabled: bool = False):
         st.markdown("**Protocolo Forense**")
         c_for1, c_for2 = st.columns(2)
         with c_for1:
-            st.session_state.datos_paciente['for_trauma'] = st.checkbox("Trauma: Discrepancia relato/lesión", value=st.session_state.datos_paciente.get('for_trauma', False), disabled=disabled, key=f"for_trau_{reset_count}")
+            has_violence = st.checkbox("⚠️ Sospecha Violencia (Género/Doméstica)", value=st.session_state.datos_paciente.get('for_violencia', False), disabled=disabled, key=f"for_viol_{reset_count}")
+            st.session_state.datos_paciente['for_violencia'] = has_violence
+            if has_violence:
+                st.error("ACTIVAR PROTOCOLO VIOLENCIA")
+                st.session_state.datos_paciente['for_violencia_det'] = st.text_input("Detalles / Tipo Violencia", value=st.session_state.datos_paciente.get('for_violencia_det', ''), key=f"for_viol_det_{reset_count}", disabled=disabled)
+
         with c_for2:
-            st.session_state.datos_paciente['for_abuse'] = st.checkbox("Sospecha de Abuso/Negligencia", value=st.session_state.datos_paciente.get('for_abuse', False), disabled=disabled, key=f"for_abus_{reset_count}")
+            st.session_state.datos_paciente['for_cultural'] = st.text_input("Consideraciones Culturales/Religiosas", value=st.session_state.datos_paciente.get('for_cultural', ''), disabled=disabled, key=f"for_cult_{reset_count}")
         
         st.divider()
         st.markdown("**Cultural y Espiritual**")

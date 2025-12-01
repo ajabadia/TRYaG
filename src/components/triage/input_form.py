@@ -456,4 +456,30 @@ def render_input_form():
                             # Fallback a lógica antigua
                             alergias_info = st.session_state.datos_paciente.get('alergias_selector', 'No')
 
+                        # Combinar antecedentes legacy con historia integral
+                        antecedentes_legacy = st.session_state.datos_paciente.get('antecedentes', '')
+                        historia_integral = st.session_state.datos_paciente.get('historia_integral', '')
+                        
+                        # Llamada a la IA
+                        resultado_ia, final_prompt = llamar_modelo_gemini(
+                            motivo=texto_completo,
+                            edad=st.session_state.datos_paciente.get('edad'),
+                            dolor=st.session_state.datos_paciente.get('dolor', 0),
+                            vital_signs=st.session_state.datos_paciente.get('vital_signs', {}),
+                            imagen=imagen_pil,
+                            triage_result=triage_result,
+                            antecedentes=antecedentes_legacy,
+                            alergias=alergias_info,
+                            gender=st.session_state.datos_paciente.get('gender'),
+                            criterio_geriatrico=st.session_state.datos_paciente.get('criterio_geriatrico', False),
+                            criterio_inmunodeprimido=st.session_state.datos_paciente.get('criterio_inmunodeprimido', False),
+                            criterio_inmunodeprimido_det=st.session_state.datos_paciente.get('criterio_inmunodeprimido_det', ''),
+                            extended_history=historia_integral,
+                            nursing_assessment=st.session_state.datos_paciente.get('nursing_assessment')
+                        )
+                        
+                        procesar_respuesta_ia(resultado_ia)
+                        st.session_state.analysis_complete = True
+                        st.rerun()
+
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/input_form.py</div>', unsafe_allow_html=True)

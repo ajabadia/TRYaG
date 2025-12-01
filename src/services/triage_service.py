@@ -8,10 +8,11 @@ from src.services.gemini_client import get_gemini_service
 from src.core.prompt_manager import PromptManager
 from src.config import get_model_triage
 
-def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None, triage_result=None, antecedentes=None, alergias=None, gender=None, criterio_geriatrico=False, criterio_inmunodeprimido=False, user_id="system", extended_history=None, nursing_assessment=None):
+def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None, triage_result=None, antecedentes=None, alergias=None, gender=None, criterio_geriatrico=False, criterio_inmunodeprimido=False, criterio_inmunodeprimido_det=None, user_id="system", extended_history=None, nursing_assessment=None):
     """
     Llama al modelo Gemini de Google para obtener una sugerencia de triaje.
     """
+    # ... (rest of the function setup) ...
     # 1. Obtener Prompt y Configuración
     pm = PromptManager()
     prompt_data = None
@@ -63,10 +64,14 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
     # Inyectar Historia Extendida
     if extended_history:
         ext_lines = []
-        for k, v in extended_history.items():
-            if v:
-                label = k.replace('_', ' ').title()
-                ext_lines.append(f"- {label}: {v}")
+        if isinstance(extended_history, dict):
+            for k, v in extended_history.items():
+                if v:
+                    label = k.replace('_', ' ').title()
+                    ext_lines.append(f"- {label}: {v}")
+        elif isinstance(extended_history, str):
+            ext_lines.append(extended_history)
+            
         if ext_lines:
             motivo_completo += "\n\n[HISTORIA CLÍNICA EXTENDIDA]:\n" + "\n".join(ext_lines)
 
@@ -85,7 +90,8 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
     if criterio_geriatrico:
         contexto_clinico.append("PACIENTE GERIÁTRICO (Edad >= 65): Considerar taquicardia leve (>100) como riesgo moderado/alto. Umbrales de dolor pueden ser atípicos.")
     if criterio_inmunodeprimido:
-        contexto_clinico.append("PACIENTE INMUNODEPRIMIDO/ONCOLÓGICO: Fiebre (>38.0°C) es EMERGENCIA (Nivel 2/Naranja) inmediata. Ignorar ponderación estándar de temperatura.")
+        detalles = f" ({criterio_inmunodeprimido_det})" if criterio_inmunodeprimido_det else ""
+        contexto_clinico.append(f"PACIENTE INMUNODEPRIMIDO/ONCOLÓGICO{detalles}: Fiebre (>38.0°C) es EMERGENCIA (Nivel 2/Naranja) inmediata. Ignorar ponderación estándar de temperatura.")
     
     if contexto_clinico:
         motivo_completo += "\n\n[CONTEXTO CLÍNICO CRÍTICO]:\n" + "\n".join(contexto_clinico)
