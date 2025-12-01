@@ -1,0 +1,379 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-7.4.3, pluggy-1.6.0 -- C:\Users\ajaba\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web
+plugins: cov-4.1.0
+collecting ... collected 32 items
+
+tests/unit/core/test_triage_logic.py::test_llamar_modelo_gemini_basic PASSED [  3%]
+tests/unit/core/test_triage_logic.py::test_llamar_modelo_gemini_with_vitals PASSED [  6%]
+tests/unit/core/test_triage_logic.py::test_llamar_modelo_gemini_contexto_critico PASSED [  9%]
+tests/unit/core/test_triage_logic.py::test_llamar_modelo_gemini_exclusion PASSED [ 12%]
+tests/unit/repositories/test_roles_repo.py::test_initialize_defaults FAILED [ 15%]
+tests/unit/repositories/test_roles_repo.py::test_get_role_by_code FAILED [ 18%]
+tests/unit/repositories/test_roles_repo.py::test_create_role_success FAILED [ 21%]
+tests/unit/repositories/test_roles_repo.py::test_create_role_duplicate FAILED [ 25%]
+tests/unit/repositories/test_users_repo.py::test_create_user FAILED      [ 28%]
+tests/unit/repositories/test_users_repo.py::test_get_by_username FAILED  [ 31%]
+tests/unit/repositories/test_users_repo.py::test_get_users_by_role FAILED [ 34%]
+tests/unit/services/test_notification_service.py::test_create_notification_in_app_only FAILED [ 37%]
+tests/unit/services/test_notification_service.py::test_create_notification_with_email FAILED [ 40%]
+tests/unit/services/test_notification_service.py::test_send_email_success FAILED [ 43%]
+tests/unit/services/test_notification_service.py::test_send_webhook_success FAILED [ 46%]
+tests/unit/services/test_patient_service.py::test_validar_dni PASSED     [ 50%]
+tests/unit/services/test_patient_service.py::test_generar_codigo_paciente PASSED [ 53%]
+tests/unit/services/test_patient_service.py::test_crear_paciente_success PASSED [ 56%]
+tests/unit/services/test_patient_service.py::test_crear_paciente_duplicate_ss PASSED [ 59%]
+tests/unit/services/test_patient_service.py::test_buscar_paciente_existente PASSED [ 62%]
+tests/unit/services/test_permissions_service.py::test_has_permission_no_user FAILED [ 65%]
+tests/unit/services/test_permissions_service.py::test_has_permission_superadmin FAILED [ 68%]
+tests/unit/services/test_permissions_service.py::test_has_permission_specific_role FAILED [ 71%]
+tests/unit/services/test_permissions_service.py::test_get_available_tabs FAILED [ 75%]
+tests/unit/services/test_queue_manager.py::test_calculate_priority_score_levels PASSED [ 78%]
+tests/unit/services/test_queue_manager.py::test_calculate_priority_score_wait_time PASSED [ 81%]
+tests/unit/services/test_queue_manager.py::test_sort_queue PASSED        [ 84%]
+tests/unit/services/test_queue_manager.py::test_get_wait_time_alert PASSED [ 87%]
+tests/unit/services/test_staff_assignment.py::test_get_current_user_assignment_fixed_only PASSED [ 90%]
+tests/unit/services/test_staff_assignment.py::test_get_current_user_assignment_shift_active PASSED [ 93%]
+tests/unit/services/test_staff_assignment.py::test_get_current_user_assignment_shift_inactive PASSED [ 96%]
+tests/unit/services/test_staff_assignment.py::test_validate_shift_assignment_conflict PASSED [100%]
+
+================================== FAILURES ===================================
+__________________________ test_initialize_defaults ___________________________
+
+roles_repo = <src.db.repositories.roles.RolesRepository object at 0x000001BE53D20C20>
+mock_db_roles = Collection(Database(mongomock.MongoClient('localhost', 27017), 'db'), 'roles')
+
+    def test_initialize_defaults(roles_repo, mock_db_roles):
+        # Should be called on init if empty
+        # In mongomock, count_documents({}) is 0 initially
+    
+        # Verify defaults are inserted
+>       assert mock_db_roles.insert_one.call_count == len(DEFAULT_ROLES)
+E       AttributeError: 'function' object has no attribute 'call_count'
+
+tests\unit\repositories\test_roles_repo.py:19: AttributeError
+____________________________ test_get_role_by_code ____________________________
+
+roles_repo = <src.db.repositories.roles.RolesRepository object at 0x000001BE53CB42D0>
+mock_db_roles = Collection(Database(mongomock.MongoClient('localhost', 27017), 'db'), 'roles')
+
+    def test_get_role_by_code(roles_repo, mock_db_roles):
+>       mock_db_roles.find_one.return_value = {"code": "admin", "nombre": "Admin"}
+E       AttributeError: 'method' object has no attribute 'return_value' and no __dict__ for setting new attributes
+
+tests\unit\repositories\test_roles_repo.py:22: AttributeError
+__________________________ test_create_role_success ___________________________
+
+roles_repo = <src.db.repositories.roles.RolesRepository object at 0x000001BE53CB5950>
+mock_db_roles = Collection(Database(mongomock.MongoClient('localhost', 27017), 'db'), 'roles')
+
+    def test_create_role_success(roles_repo, mock_db_roles):
+        # Setup: Role does not exist
+>       mock_db_roles.find_one.return_value = None
+E       AttributeError: 'method' object has no attribute 'return_value' and no __dict__ for setting new attributes
+
+tests\unit\repositories\test_roles_repo.py:29: AttributeError
+_________________________ test_create_role_duplicate __________________________
+
+roles_repo = <src.db.repositories.roles.RolesRepository object at 0x000001BE53C7E3F0>
+mock_db_roles = Collection(Database(mongomock.MongoClient('localhost', 27017), 'db'), 'roles')
+
+    def test_create_role_duplicate(roles_repo, mock_db_roles):
+        # Setup: Role exists
+>       mock_db_roles.find_one.return_value = {"code": "existing"}
+E       AttributeError: 'method' object has no attribute 'return_value' and no __dict__ for setting new attributes
+
+tests\unit\repositories\test_roles_repo.py:39: AttributeError
+______________________________ test_create_user _______________________________
+
+users_repo = <src.db.repositories.users.UsersRepository object at 0x000001BE53D20C20>
+mock_db_users = Collection(Database(mongomock.MongoClient('localhost', 27017), 'db'), 'users')
+
+    def test_create_user(users_repo, mock_db_users):
+>       mock_db_users.insert_one.return_value.inserted_id = ObjectId("507f1f77bcf86cd799439011")
+E       AttributeError: 'function' object has no attribute 'return_value'
+
+tests\unit\repositories\test_users_repo.py:17: AttributeError
+____________________________ test_get_by_username _____________________________
+
+users_repo = <src.db.repositories.users.UsersRepository object at 0x000001BE53CB47D0>
+mock_db_users = Collection(Database(mongomock.MongoClient('localhost', 27017), 'db'), 'users')
+
+    def test_get_by_username(users_repo, mock_db_users):
+>       mock_db_users.find_one.return_value = {"username": "found"}
+E       AttributeError: 'method' object has no attribute 'return_value' and no __dict__ for setting new attributes
+
+tests\unit\repositories\test_users_repo.py:32: AttributeError
+___________________________ test_get_users_by_role ____________________________
+
+users_repo = <src.db.repositories.users.UsersRepository object at 0x000001BE53CB51D0>
+mock_db_users = Collection(Database(mongomock.MongoClient('localhost', 27017), 'db'), 'users')
+
+    def test_get_users_by_role(users_repo, mock_db_users):
+        # Mock find to return a cursor-like object (list in mongomock)
+>       mock_db_users.find.return_value = [{"username": "u1"}, {"username": "u2"}]
+E       AttributeError: 'method' object has no attribute 'return_value' and no __dict__ for setting new attributes
+
+tests\unit\repositories\test_users_repo.py:40: AttributeError
+____________________ test_create_notification_in_app_only _____________________
+
+mock_db_notifications = Collection(Database(mongomock.MongoClient('localhost', 27017), 'db'), 'notifications')
+
+    def test_create_notification_in_app_only(mock_db_notifications):
+>       mock_db_notifications.insert_one.return_value.inserted_id = "notif_123"
+E       AttributeError: 'function' object has no attribute 'return_value'
+
+tests\unit\services\test_notification_service.py:17: AttributeError
+_____________________ test_create_notification_with_email _____________________
+
+mock_send_email = <MagicMock name='_send_email' id='1916961688944'>
+mock_db_notifications = Collection(Database(mongomock.MongoClient('localhost', 27017), 'db'), 'notifications')
+
+    @patch('src.services.notification_service._send_email')
+    def test_create_notification_with_email(mock_send_email, mock_db_notifications):
+>       mock_db_notifications.insert_one.return_value.inserted_id = "notif_email"
+E       AttributeError: 'function' object has no attribute 'return_value'
+
+tests\unit\services\test_notification_service.py:36: AttributeError
+___________________________ test_send_email_success ___________________________
+
+args = (), keywargs = {}
+
+    @wraps(func)
+    def patched(*args, **keywargs):
+>       with self.decoration_helper(patched,
+                                    args,
+                                    keywargs) as (newargs, newkeywargs):
+
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py:1423: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\contextlib.py:141: in __enter__
+    return next(self.gen)
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py:1405: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\contextlib.py:530: in enter_context
+    result = _enter(cm)
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <unittest.mock._patch object at 0x000001BE527D2490>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'src.services.notification_service' from 'C:\\Users\\ajaba\\Downloads\\master\\ftm\\piloto ABD\\nuevo\\web\\src\\services\\notification_service.py'> does not have the attribute 'get_smtp_config'
+
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py:1467: AttributeError
+__________________________ test_send_webhook_success __________________________
+
+args = (), keywargs = {}
+
+    @wraps(func)
+    def patched(*args, **keywargs):
+>       with self.decoration_helper(patched,
+                                    args,
+                                    keywargs) as (newargs, newkeywargs):
+
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py:1423: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\contextlib.py:141: in __enter__
+    return next(self.gen)
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py:1405: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\contextlib.py:530: in enter_context
+    result = _enter(cm)
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <unittest.mock._patch object at 0x000001BE527CED70>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'src.services.notification_service' from 'C:\\Users\\ajaba\\Downloads\\master\\ftm\\piloto ABD\\nuevo\\web\\src\\services\\notification_service.py'> does not have the attribute 'get_webhook_config'
+
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py:1467: AttributeError
+_________________________ test_has_permission_no_user _________________________
+
+mock_session_state = {}
+
+    def test_has_permission_no_user(mock_session_state):
+>       mock_session_state.get = MagicMock(return_value=None)
+E       AttributeError: 'dict' object attribute 'get' is read-only
+
+tests\unit\services\test_permissions_service.py:16: AttributeError
+_______________________ test_has_permission_superadmin ________________________
+
+mock_session_state = {}
+mock_role_repo = <MagicMock name='get_role_by_code' id='1916939136912'>
+
+    def test_has_permission_superadmin(mock_session_state, mock_role_repo):
+>       mock_session_state.get = MagicMock(return_value={"rol": "superadministrador"})
+E       AttributeError: 'dict' object attribute 'get' is read-only
+
+tests\unit\services\test_permissions_service.py:20: AttributeError
+______________________ test_has_permission_specific_role ______________________
+
+mock_session_state = {}
+mock_role_repo = <MagicMock name='get_role_by_code' id='1916939137584'>
+
+    def test_has_permission_specific_role(mock_session_state, mock_role_repo):
+>       mock_session_state.get = MagicMock(return_value={"rol": "enfermero"})
+E       AttributeError: 'dict' object attribute 'get' is read-only
+
+tests\unit\services\test_permissions_service.py:27: AttributeError
+___________________________ test_get_available_tabs ___________________________
+
+mock_session_state = {}
+mock_role_repo = <MagicMock name='get_role_by_code' id='1916939139936'>
+
+    def test_get_available_tabs(mock_session_state, mock_role_repo):
+>       mock_session_state.get = MagicMock(return_value={"rol": "administrativo"})
+E       AttributeError: 'dict' object attribute 'get' is read-only
+
+tests\unit\services\test_permissions_service.py:42: AttributeError
+============================== warnings summary ===============================
+..\..\..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\mongomock\__version__.py:1
+  C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages\mongomock\__version__.py:1: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+    import pkg_resources
+
+..\..\..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\pkg_resources\__init__.py:3146
+  C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages\pkg_resources\__init__.py:3146: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+  Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+    declare_namespace(pkg)
+
+src\db\models.py:36
+src\db\models.py:36
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:36: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class PromptVersion(BaseModel):
+
+src\db\models.py:61
+src\db\models.py:61
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:61: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class AIAuditLog(BaseModel):
+
+..\..\..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\pydantic\_internal\_generate_schema.py:942: 26 warnings
+  C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages\pydantic\_internal\_generate_schema.py:942: PydanticDeprecatedSince20: `__get_validators__` is deprecated and will be removed, use `__get_pydantic_core_schema__` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    warnings.warn(
+
+..\..\..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\pydantic\_internal\_generate_schema.py:319: 50 warnings
+  C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages\pydantic\_internal\_generate_schema.py:319: PydanticDeprecatedSince20: `json_encoders` is deprecated. See https://docs.pydantic.dev/2.12/concepts/serialization/#custom-serializers for alternatives. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    warnings.warn(
+
+src\db\models.py:96
+src\db\models.py:96
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:96: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Prompt(BaseModel):
+
+src\db\models.py:142
+src\db\models.py:142
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:142: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class VitalSignReference(BaseModel):
+
+src\db\models.py:194
+src\db\models.py:194
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:194: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TriageRecord(BaseModel):
+
+src\db\models.py:245
+src\db\models.py:245
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:245: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class FileImportRecord(BaseModel):
+
+src\db\models.py:267
+src\db\models.py:267
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:267: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TranscriptionRecord(BaseModel):
+
+src\db\models.py:293
+src\db\models.py:293
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:293: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class PromptTest(BaseModel):
+
+src\db\models.py:318
+src\db\models.py:318
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:318: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ConfigItem(BaseModel):
+
+src\db\models.py:353
+src\db\models.py:353
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:353: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Person(BaseModel):
+
+src\db\models.py:398
+src\db\models.py:398
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:398: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class PatientFlow(BaseModel):
+
+src\db\models.py:433
+src\db\models.py:433
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:433: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Turno(BaseModel):
+
+src\db\models.py:456
+src\db\models.py:456
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:456: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ClinicalOption(BaseModel):
+
+src\db\models.py:476
+src\db\models.py:476
+  C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\db\models.py:476: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Sala(BaseModel):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/unit/repositories/test_roles_repo.py::test_initialize_defaults
+FAILED tests/unit/repositories/test_roles_repo.py::test_get_role_by_code - At...
+FAILED tests/unit/repositories/test_roles_repo.py::test_create_role_success
+FAILED tests/unit/repositories/test_roles_repo.py::test_create_role_duplicate
+FAILED tests/unit/repositories/test_users_repo.py::test_create_user - Attribu...
+FAILED tests/unit/repositories/test_users_repo.py::test_get_by_username - Att...
+FAILED tests/unit/repositories/test_users_repo.py::test_get_users_by_role - A...
+FAILED tests/unit/services/test_notification_service.py::test_create_notification_in_app_only
+FAILED tests/unit/services/test_notification_service.py::test_create_notification_with_email
+FAILED tests/unit/services/test_notification_service.py::test_send_email_success
+FAILED tests/unit/services/test_notification_service.py::test_send_webhook_success
+FAILED tests/unit/services/test_permissions_service.py::test_has_permission_no_user
+FAILED tests/unit/services/test_permissions_service.py::test_has_permission_superadmin
+FAILED tests/unit/services/test_permissions_service.py::test_has_permission_specific_role
+FAILED tests/unit/services/test_permissions_service.py::test_get_available_tabs
+================= 15 failed, 17 passed, 106 warnings in 5.10s =================

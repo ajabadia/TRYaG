@@ -1,0 +1,52 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-7.4.3, pluggy-1.6.0 -- C:\Users\ajaba\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web
+plugins: cov-4.1.0
+collecting ... collected 0 items / 3 errors
+
+=================================== ERRORS ====================================
+____________ ERROR collecting tests/unit/core/test_triage_logic.py ____________
+ImportError while importing test module 'C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\tests\unit\core\test_triage_logic.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\core\test_triage_logic.py:3: in <module>
+    from src.services.triage_service import llamar_modelo_gemini
+E   ModuleNotFoundError: No module named 'src'
+________ ERROR collecting tests/unit/services/test_patient_service.py _________
+ImportError while importing test module 'C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\tests\unit\services\test_patient_service.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\services\test_patient_service.py:3: in <module>
+    from src.services.patient_service import (
+E   ModuleNotFoundError: No module named 'src'
+________ ERROR collecting tests/unit/services/test_staff_assignment.py ________
+ImportError while importing test module 'C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\tests\unit\services\test_staff_assignment.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\services\test_staff_assignment.py:4: in <module>
+    from src.services.staff_assignment_service import (
+E   ModuleNotFoundError: No module named 'src'
+============================== warnings summary ===============================
+..\..\..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\mongomock\__version__.py:1
+  C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages\mongomock\__version__.py:1: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+    import pkg_resources
+
+..\..\..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\pkg_resources\__init__.py:3146
+  C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages\pkg_resources\__init__.py:3146: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+  Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+    declare_namespace(pkg)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/unit/core/test_triage_logic.py
+ERROR tests/unit/services/test_patient_service.py
+ERROR tests/unit/services/test_staff_assignment.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!
+======================== 2 warnings, 3 errors in 0.17s ========================

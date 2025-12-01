@@ -61,3 +61,23 @@ Ver [DEPLOYMENT.md](../DEPLOYMENT.md) para instrucciones detalladas sobre el des
 ### Variables de Entorno Requeridas
 *   `MONGODB_URI`: Connection string a Atlas.
 *   `GOOGLE_API_KEY`: Clave de API de Google AI Studio.
+
+## 🧪 Testing
+
+El proyecto incluye una suite de pruebas automatizadas usando `pytest`.
+
+### Configuración
+1.  Instalar dependencias de prueba:
+    ```bash
+    pip install -r requirements-test.txt
+    ```
+
+### Ejecución
+*   **Ejecutar todos los tests:**
+    ```bash
+    python -m pytest tests/ -v
+    ```
+*   **Ejecutar tests con cobertura:**
+    ```bash
+    python -m pytest tests/ -v --cov=src
+    ```
