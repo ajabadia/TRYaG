@@ -97,6 +97,29 @@ def render_tab_audit_v2(df_audit_base, df_files):
     # 4. Filtros Dinámicos (Columnas extra)
     df_filtered = render_filters(df_filtered, ["decision_humana", "usuario"], "audit_v2_dynamic")
     
+    # --- MÉTRICAS DE CALIDAD (NUEVO) ---
+    from services.analytics_service import calculate_triage_quality_metrics, render_quality_metrics_panel
+    
+    # Preparar datos para métricas (extraer niveles si es necesario)
+    # Asumimos que df_filtered tiene 'decision_ia' y 'decision_humana' o 'detalles'
+    # Intentamos extraer niveles numéricos de la columna 'detalles' si no existen explícitamente
+    
+    df_metrics = df_filtered.copy()
+    
+    # Lógica de extracción segura (si las columnas no existen pre-procesadas)
+    if "nivel_ia" not in df_metrics.columns and "detalles.nivel_sugerido" in df_metrics.columns:
+        df_metrics["nivel_ia"] = df_metrics["detalles.nivel_sugerido"]
+        
+    if "nivel_humano" not in df_metrics.columns and "decision_humana" in df_metrics.columns:
+        # Extraer número del string "Nivel X" si es necesario, o asumir que ya es el número
+        # Aquí asumimos que decision_humana podría ser "Nivel 4" o "4"
+        df_metrics["nivel_humano"] = pd.to_numeric(df_metrics["decision_humana"].astype(str).str.extract(r'(\d+)')[0], errors='coerce')
+
+    metrics = calculate_triage_quality_metrics(df_metrics)
+    render_quality_metrics_panel(metrics)
+    
+    st.divider()
+
     # 5. Barra de Acciones
     def refresh_data():
         st.cache_data.clear()

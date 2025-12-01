@@ -479,6 +479,24 @@ def render_input_form():
                             nursing_assessment=st.session_state.datos_paciente.get('nursing_assessment')
                         )
                         
+                        # Manejo de Errores de Conexión / Sugerencia de Contingencia
+                        if isinstance(resultado_ia, dict) and resultado_ia.get("suggest_contingency"):
+                            st.error(f"⚠️ {resultado_ia.get('msg')}")
+                            st.warning("Parece que hay problemas de conexión con la IA. Se recomienda activar el modo offline.")
+                            
+                            c_cont1, c_cont2 = st.columns(2)
+                            with c_cont1:
+                                if st.button("📴 Activar Modo Contingencia", type="primary", key="btn_activate_contingency_error"):
+                                    from services.contingency_service import set_contingency_mode
+                                    set_contingency_mode(True)
+                                    st.rerun()
+                            with c_cont2:
+                                if st.button("🔄 Reintentar", key="btn_retry_ai_error"):
+                                    st.rerun()
+                            
+                            # Detener ejecución para no guardar error como resultado
+                            st.stop()
+                        
                         procesar_respuesta_ia(resultado_ia, algo_result=triage_result)
                         st.session_state.analysis_complete = True
                         st.rerun()

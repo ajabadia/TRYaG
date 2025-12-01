@@ -337,7 +337,27 @@ def save_triage_data(patient_code: str, triage_data: Dict[str, Any]) -> bool:
         return True
     except Exception as e:
         print(f"Error saving triage record: {e}")
-        return False
+        
+        # Fallback: Guardado Local (Graceful Degradation)
+        try:
+            import streamlit as st
+            from services.contingency_service import save_triage_locally, set_contingency_mode
+            
+            print("⚠️ Database Error. Attempting local save...")
+            
+            # Reconstruir datos para el formato local
+            patient_data = triage_data.get('datos_paciente', {})
+            result = triage_data.get('resultado', {})
+            
+            save_triage_locally(patient_data, result)
+            set_contingency_mode(True)
+            
+            st.warning("⚠️ Error de conexión con Base de Datos. El registro se ha guardado LOCALMENTE y se ha activado el Modo Contingencia.")
+            return True # Retornamos True para que el flujo continúe (aunque sea en modo offline)
+            
+        except Exception as local_e:
+            print(f"CRITICAL: Failed to save locally too: {local_e}")
+            return False
 
 
 # ---------------------------------------------------------------------------

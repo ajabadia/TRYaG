@@ -115,8 +115,30 @@ class GeminiService:
                 safety_settings=safety_settings
             )
             
-            # Llamada a la API
-            response = model.generate_content(prompt_content)
+            # Retry logic for transient errors
+            import time
+            from google.api_core import exceptions as google_exceptions
+            
+            max_retries = 3
+            last_error = None
+            
+            for attempt in range(max_retries):
+                try:
+                    # Llamada a la API
+                    response = model.generate_content(prompt_content)
+                    break # Success
+                except (google_exceptions.ServiceUnavailable, 
+                        google_exceptions.DeadlineExceeded, 
+                        google_exceptions.ResourceExhausted,
+                        google_exceptions.Aborted,
+                        google_exceptions.InternalServerError) as e:
+                    last_error = e
+                    if attempt < max_retries - 1:
+                        wait_time = 2 ** attempt # 1s, 2s, 4s
+                        print(f"⚠️ Gemini API Error ({e}). Retrying in {wait_time}s...")
+                        time.sleep(wait_time)
+                    else:
+                        raise last_error
             
             # Procesar respuesta
             if not response.parts:
@@ -151,7 +173,15 @@ class GeminiService:
                     
         except Exception as e:
             error_msg = str(e)
-            response_data = {"status": "ERROR", "msg": f"Exception: {error_msg}"}
+            # Detectar si es error de conexión para sugerir contingencia
+            if "503" in error_msg or "deadline" in error_msg.lower() or "connection" in error_msg.lower():
+                response_data = {
+                    "status": "ERROR", 
+                    "msg": f"Error de Conexión con IA: {error_msg}", 
+                    "suggest_contingency": True
+                }
+            else:
+                response_data = {"status": "ERROR", "msg": f"Exception: {error_msg}"}
             
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds() * 1000
