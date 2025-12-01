@@ -16,7 +16,7 @@ from services.patient_flow_service import (
     rechazar_paciente,
     detectar_errores_salas,
 )
-from ui.config_panel import load_centro_config
+from ui.config.config_loader import load_centro_config
 from components.common.room_card import render_room_card
 
 # ---------------------------------------------------------------------------

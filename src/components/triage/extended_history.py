@@ -33,38 +33,50 @@ def render_extended_history_form(disabled: bool = False):
     history_parts = []
     dp = st.session_state.datos_paciente
 
+    def format_value(val):
+        if isinstance(val, list):
+            return ", ".join([str(v) for v in val])
+        return str(val)
+
     # 1. Familiares
     fam_parts = []
     if dp.get('ant_fam_cardio'): fam_parts.append(f"Cardio ({dp.get('ant_fam_cardio_det', '')})")
     if dp.get('ant_fam_cancer'): fam_parts.append(f"Cáncer ({dp.get('ant_fam_cancer_det', '')})")
     if dp.get('ant_fam_diabetes'): fam_parts.append(f"Diabetes ({dp.get('ant_fam_diabetes_det', '')})")
-    if dp.get('ant_fam_genetica'): fam_parts.append(f"Genética: {dp.get('ant_fam_genetica')}")
+    if dp.get('ant_fam_genetica'): fam_parts.append(f"Genética: {format_value(dp.get('ant_fam_genetica'))}")
     if fam_parts: history_parts.append(f"Familiares: {', '.join(fam_parts)}")
 
     # 2. Psiquiatría
-    if dp.get('psy_diagnostico'): history_parts.append(f"Psiquiatría Dx: {dp.get('psy_diagnostico')}")
+    if dp.get('psy_diagnostico'): history_parts.append(f"Psiquiatría Dx: {format_value(dp.get('psy_diagnostico'))}")
+    if dp.get('psy_diagnostico_otros'): history_parts.append(f"Otros Dx Psy: {dp.get('psy_diagnostico_otros')}")
     if dp.get('psy_suicidio'): history_parts.append(f"⚠️ RIESGO SUICIDIO: {dp.get('psy_suicidio_det', '')}")
-    if dp.get('psy_medicacion'): history_parts.append(f"Psicofármacos: {dp.get('psy_medicacion')}")
+    if dp.get('psy_medicacion'): history_parts.append(f"Psicofármacos: {format_value(dp.get('psy_medicacion'))}")
+    if dp.get('psy_medicacion_otros'): history_parts.append(f"Otros Psicofármacos: {dp.get('psy_medicacion_otros')}")
 
     # 3. Nutrición
     if dp.get('nut_dieta'): history_parts.append(f"Dieta: {dp.get('nut_dieta')}")
+    if dp.get('nut_dieta_otra'): history_parts.append(f"Dieta (Otra): {dp.get('nut_dieta_otra')}")
     if dp.get('nut_disfagia'): history_parts.append(f"Disfagia: {dp.get('nut_disfagia_det', '')}")
     if dp.get('nut_peso'): history_parts.append(f"Pérdida Peso: {dp.get('nut_peso_det', '')}")
-    if dp.get('nut_alergias_alim'): history_parts.append(f"Alergias Alim.: {dp.get('nut_alergias_alim')}")
+    if dp.get('nut_alergias_alim'): history_parts.append(f"Alergias Alim.: {format_value(dp.get('nut_alergias_alim'))}")
+    if dp.get('nut_alergias_otros'): history_parts.append(f"Otras Alergias Alim.: {dp.get('nut_alergias_otros')}")
 
     # 4. Viajes/Expo
     if dp.get('travel_recent'): history_parts.append(f"Viajes: {dp.get('travel_recent')}")
-    if dp.get('exp_animales'): history_parts.append(f"Animales: {dp.get('exp_animales_det', '')}")
-    if dp.get('exp_ocupacional'): history_parts.append(f"Ocupacional: {dp.get('exp_ocupacional')}")
+    if dp.get('exp_animales'): history_parts.append(f"Animales: {format_value(dp.get('exp_animales_det', []))}")
+    if dp.get('exp_animales_otros'): history_parts.append(f"Otros Animales: {dp.get('exp_animales_otros')}")
+    if dp.get('exp_ocupacional'): history_parts.append(f"Ocupacional: {format_value(dp.get('exp_ocupacional'))}")
+    if dp.get('exp_ocupacional_otros'): history_parts.append(f"Otro Riesgo Ocupacional: {dp.get('exp_ocupacional_otros')}")
 
     # 5. Sensorial
     if dp.get('sens_auditivo'): history_parts.append(f"Déficit Auditivo: {dp.get('sens_auditivo_det', '')}")
     if dp.get('sens_visual'): history_parts.append(f"Déficit Visual: {dp.get('sens_visual_det', '')}")
-    if dp.get('sens_idioma'): history_parts.append(f"Idioma: {dp.get('sens_idioma')}")
-    if dp.get('sens_protesis'): history_parts.append(f"Prótesis: {dp.get('sens_protesis')}")
+    if dp.get('sens_idioma'): history_parts.append(f"Idioma: {format_value(dp.get('sens_idioma'))}")
+    if dp.get('sens_protesis'): history_parts.append(f"Prótesis: {format_value(dp.get('sens_protesis'))}")
 
     # 6. Dolor
-    if dp.get('pain_cronico'): history_parts.append(f"Dolor Crónico: {dp.get('pain_cronico_det', '')}")
+    if dp.get('pain_cronico'): history_parts.append(f"Dolor Crónico: {format_value(dp.get('pain_cronico_det', []))}")
+    if dp.get('pain_cronico_otros'): history_parts.append(f"Otro Dolor: {dp.get('pain_cronico_otros')}")
     if dp.get('pain_opioides'): history_parts.append(f"Uso Opioides: Sí")
 
     # 7. Hospital/Legal
@@ -76,8 +88,8 @@ def render_extended_history_form(disabled: bool = False):
 
     # 8. Forense
     if dp.get('for_violencia'): history_parts.append(f"⚠️ VIOLENCIA: {dp.get('for_violencia_det', '')}")
-    if dp.get('for_cultural'): history_parts.append(f"Cultural: {dp.get('for_cultural')}")
-    if dp.get('cult_religion'): history_parts.append(f"Religión: {dp.get('cult_religion')}")
+    if dp.get('for_cultural'): history_parts.append(f"Cultural: {format_value(dp.get('for_cultural'))}")
+    if dp.get('cult_religion'): history_parts.append(f"Religión: {format_value(dp.get('cult_religion'))}")
 
     full_history = "\n".join(history_parts)
     st.session_state.datos_paciente['historia_integral'] = full_history
@@ -94,5 +106,8 @@ def render_extended_history_form(disabled: bool = False):
                 disabled=True,
                 key=f"history_summary_{reset_count}"
             )
+            
+            if st.button("🔄 Refrescar Datos", key=f"refresh_hist_{reset_count}", help="Actualizar vista previa con los últimos cambios"):
+                st.rerun()
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/extended_history.py</div>', unsafe_allow_html=True)

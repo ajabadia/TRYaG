@@ -5,12 +5,23 @@ def render_pain_history_form(reset_count: int, disabled: bool = False):
     Renderiza Historial de Dolor y Opioides en un acordeón.
     """
     with st.expander("💊 Historial de Dolor y Opioides", expanded=False):
+        from src.db.repositories.clinical_options import get_clinical_options_repository
+        repo = get_clinical_options_repository()
+        
         c_pain1, c_pain2 = st.columns(2)
         with c_pain1:
             has_chronic_pain = st.checkbox("😖 Dolor Crónico Diagnosticado", value=st.session_state.datos_paciente.get('pain_cronico', False), disabled=disabled, key=f"pain_chr_{reset_count}", help="Paciente con unidad del dolor o diagnóstico previo")
             st.session_state.datos_paciente['pain_cronico'] = has_chronic_pain
             if has_chronic_pain:
-                st.session_state.datos_paciente['pain_cronico_det'] = st.text_input("📍 Localización / Origen", value=st.session_state.datos_paciente.get('pain_cronico_det', ''), key=f"pain_chr_det_{reset_count}", disabled=disabled, help="Causa del dolor crónico")
+                opt_pain = repo.get_options("pain_location")
+                st.session_state.datos_paciente['pain_cronico_det'] = st.multiselect(
+                    "📍 Localización / Origen",
+                    options=[opt.label for opt in opt_pain],
+                    default=st.session_state.datos_paciente.get('pain_cronico_det', []) if isinstance(st.session_state.datos_paciente.get('pain_cronico_det'), list) else [],
+                    disabled=disabled, key=f"pain_chr_det_{reset_count}",
+                    help="Causa del dolor crónico"
+                )
+                st.session_state.datos_paciente['pain_cronico_otros'] = st.text_input("Otra Localización", value=st.session_state.datos_paciente.get('pain_cronico_otros', ''), key=f"pain_chr_oth_{reset_count}", disabled=disabled)
 
         with c_pain2:
             st.session_state.datos_paciente['pain_opioides'] = st.checkbox("💊 Uso crónico de Opioides", value=st.session_state.datos_paciente.get('pain_opioides', False), disabled=disabled, key=f"pain_op_{reset_count}", help="Tolerancia a analgésicos opioides")

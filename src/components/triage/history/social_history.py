@@ -67,8 +67,8 @@ def render_social_history_form(reset_count: int, disabled: bool = False):
             )
             st.session_state.datos_paciente['soc_cognitivo'] = cognitive
             if cognitive:
-                from src.db.repositories.clinical_options import get_clinical_options_repository
-                repo = get_clinical_options_repository()
+                # Repo already initialized at top of function
+                # repo = get_clinical_options_repository()
                 opt_dementia = repo.get_options("dementia")
                 
                 st.session_state.datos_paciente['soc_cognitivo_det'] = st.multiselect(

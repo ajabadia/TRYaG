@@ -4,7 +4,7 @@
 Servicio para gestión y consulta de salas.
 """
 from typing import Dict, Any, List
-from ui.config_panel import load_centro_config
+from ui.config.config_loader import load_centro_config
 
 def obtener_salas_por_tipo(tipo: str) -> List[Dict[str, Any]]:
     """Obtiene las salas activas de un tipo, añadiendo una etiqueta legible.

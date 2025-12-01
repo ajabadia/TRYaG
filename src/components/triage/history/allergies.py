@@ -8,6 +8,9 @@ def render_allergies_form(reset_count: int, disabled: bool = False):
     # Cargar opciones
     repo = get_clinical_options_repository()
     opt_alergias = repo.get_options("allergy_agent")
+    # Sort by type: drug, food, environmental
+    type_order = {'drug': 1, 'food': 2, 'environmental': 3}
+    opt_alergias.sort(key=lambda x: type_order.get(x.meta.get('type', ''), 4) if x.meta else 4)
 
     with st.expander("🤧 Alergias e Intolerancias", expanded=False):
         has_allergies = st.radio("¿Tiene Alergias Conocidas?", ["No", "Sí"], horizontal=True, index=0, disabled=disabled, key=f"alg_sel_{reset_count}", help="Indique si el paciente refiere alergias a medicamentos, alimentos o látex")
@@ -28,12 +31,15 @@ def render_allergies_form(reset_count: int, disabled: bool = False):
             
             with c2:
                 # Descripción de la Reacción
-                reaction_details = st.text_area(
+                opt_symptoms = repo.get_options("allergy_symptoms")
+                reaction_details = st.multiselect(
                     "⚠️ ¿Cuál fue la reacción? (Síntomas)",
-                    placeholder="Ej: Hinchazón, dificultad respiratoria...",
-                    height=68, disabled=disabled, key=f"alg_det_{reset_count}",
-                    help="Describa los síntomas presentados en reacciones previas"
+                    options=[opt.label for opt in opt_symptoms],
+                    default=st.session_state.datos_paciente.get('alergias_reaccion_detalles', []) if isinstance(st.session_state.datos_paciente.get('alergias_reaccion_detalles'), list) else [],
+                    disabled=disabled, key=f"alg_det_{reset_count}",
+                    help="Seleccione los síntomas presentados"
                 )
+                st.session_state.datos_paciente['alergias_reaccion_detalles'] = reaction_details
                 
                 # Nivel de Riesgo
                 reaction_type = st.radio(

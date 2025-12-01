@@ -13,7 +13,17 @@ def render_hda_form(reset_count: int, disabled: bool = False):
             st.session_state.datos_paciente['hda_localizacion'] = st.text_input("📍 Localización", value=st.session_state.datos_paciente.get('hda_localizacion', ''), disabled=disabled, key=f"hda_loc_{reset_count}", help="¿Dónde se encuentra el síntoma?")
             st.session_state.datos_paciente['hda_intensidad'] = st.slider("📈 Intensidad (EVA)", min_value=1, max_value=10, value=int(st.session_state.datos_paciente.get('hda_intensidad', 5) if str(st.session_state.datos_paciente.get('hda_intensidad', '5')).isdigit() else 5), key=f"hda_int_{reset_count}", help="Escala Visual Analógica (1=Leve, 10=Insuportable)")
         with c_hda2:
-            st.session_state.datos_paciente['hda_caracteristicas'] = st.text_input("📝 Características (Tipo dolor)", value=st.session_state.datos_paciente.get('hda_caracteristicas', ''), disabled=disabled, key=f"hda_char_{reset_count}", help="¿Cómo es el dolor? (Punzante, opresivo, quemante...)")
+            from src.db.repositories.clinical_options import get_clinical_options_repository
+            repo = get_clinical_options_repository()
+            opt_pain_char = repo.get_options("pain_characteristics")
+            
+            st.session_state.datos_paciente['hda_caracteristicas'] = st.multiselect(
+                "📝 Características (Tipo dolor)",
+                options=[opt.label for opt in opt_pain_char],
+                default=st.session_state.datos_paciente.get('hda_caracteristicas', []) if isinstance(st.session_state.datos_paciente.get('hda_caracteristicas'), list) else [],
+                disabled=disabled, key=f"hda_char_{reset_count}",
+                help="¿Cómo es el dolor? (Punzante, opresivo, quemante...)"
+            )
             st.session_state.datos_paciente['hda_irradiacion'] = st.text_input("↗️ Irradiación", value=st.session_state.datos_paciente.get('hda_irradiacion', ''), disabled=disabled, key=f"hda_rad_{reset_count}", help="¿Se mueve el dolor a otra zona?")
             st.session_state.datos_paciente['hda_alivio'] = st.text_input("💊 Alivio/Agravantes", value=st.session_state.datos_paciente.get('hda_alivio', ''), disabled=disabled, key=f"hda_agg_{reset_count}", help="¿Qué lo mejora o empeora?")
         

@@ -1,118 +1,20 @@
 # path: src/ui/config_panel.py
 # Creado: 2025-11-23
-# Actualizado: 2025-11-25 - Refactorizado con sub‑tabs y módulos
+# Actualizado: 2025-12-01 - Refactorizado en módulos (Loader, General, Centro)
 """
 Panel de configuración de la aplicación.
-Incluye pestañas: General, Centro (con sub‑tabs), Prompts y Notificaciones.
+Orquesta las pestañas principales delegando en módulos específicos.
 """
-import os
-import json
 import streamlit as st
-from utils.icons import render_icon
-from src.db.repositories.centros import get_centros_repository
-from src.db.repositories.salas import get_salas_by_centro
+from ui.components.common.tools_panel import render_tools_panel
+from ui.config.config_loader import load_general_config, load_centro_config
+from ui.config.general_tab import render_general_tab
+from ui.config.centro_tab import render_centro_tab
+from src.services.permissions_service import has_permission
 
-# ---------------------------------------------------------------------------
-# Configuración general (JSON en disco)
-# ---------------------------------------------------------------------------
-from src.db.repositories.general_config import get_general_config_repository
-
-def load_general_config():
-    """Carga la configuración general desde MongoDB."""
-    repo = get_general_config_repository()
-    return repo.get_config()
-
-def save_general_config(config):
-    """Guarda la configuración general en MongoDB."""
-    repo = get_general_config_repository()
-    return repo.save_config(config)
-
-# ---------------------------------------------------------------------------
-# Configuración del centro (MongoDB)
-# ---------------------------------------------------------------------------
-
-def load_centro_config():
-    """Carga la configuración del centro desde MongoDB.
-    
-    Normalización:
-    - Carga datos del centro (sin salas incrustadas).
-    - Carga salas desde la colección 'salas' usando SalasRepository.
-    - Combina ambos para mantener compatibilidad con la UI.
-    """
-    try:
-        centros_repo = get_centros_repository()
-        centro = centros_repo.get_centro_principal()
-        
-        if centro:
-            if '_id' in centro:
-                centro['_id'] = str(centro['_id'])
-            
-            # Cargar salas desde colección normalizada
-            salas = get_salas_by_centro(centro['_id'])
-            # Ordenar por código para consistencia
-            salas.sort(key=lambda x: x.get('codigo', ''))
-            
-            centro['salas'] = salas
-            return centro
-            
-    except Exception as e:
-        st.error(f"Error al cargar configuración del centro: {e}")
-    # Valores por defecto
-    return {
-        "codigo": "",
-        "denominacion": "",
-        "cif": "",
-        "direccion": "",
-        "email": "",
-        "telefono": "",
-        "logo_path": "",
-        "mensaje": "",
-        "salas": [],
-    }
-
-
-def save_centro_config(config):
-    """Guarda la configuración del centro en MongoDB.
-    
-    Normalización:
-    - NO guarda el array 'salas' en la colección 'centros'.
-    - Las salas se gestionan independientemente vía SalasRepository.
-    """
-    try:
-        centros_repo = get_centros_repository()
-        
-        # Crear copia para no modificar el original en session_state
-        config_to_save = config.copy()
-        
-        # Eliminar 'salas' para evitar guardarlo en 'centros'
-        if 'salas' in config_to_save:
-            del config_to_save['salas']
-            
-        centros_repo.create_or_update_centro(
-            codigo=config_to_save.get('codigo', ''),
-            denominacion=config_to_save.get('denominacion', ''),
-            cif=config_to_save.get('cif'),
-            direccion=config_to_save.get('direccion'),
-            email=config_to_save.get('email'),
-            telefono=config_to_save.get('telefono'),
-            logo_path=config_to_save.get('logo_path'),
-            mensaje=config_to_save.get('mensaje'),
-            salas=[], # Pasamos lista vacía explícitamente
-            updated_by="admin",
-        )
-        return True
-    except Exception as e:
-        st.error(f"Error al guardar configuración del centro: {e}")
-        return False
-
-# ---------------------------------------------------------------------------
-# UI principal
-# ---------------------------------------------------------------------------
 def mostrar_panel_configuracion():
     """Muestra el panel de configuración con pestañas modulares."""
-    from ui.loading_indicator import loading_data
-    from ui.components.common.tools_panel import render_tools_panel
-
+    
     st.header(":material/settings: Configuración")
     
     # Panel de Herramientas
@@ -124,14 +26,6 @@ def mostrar_panel_configuracion():
     if 'centro_config' not in st.session_state:
         st.session_state.centro_config = load_centro_config()
 
-    general_config = st.session_state.general_config
-    centro_config = st.session_state.centro_config
-
-    # -------------------------------------------------------------------
-    # Pestañas principales
-    # -------------------------------------------------------------------
-    from services.permissions_service import has_permission
-
     # -------------------------------------------------------------------
     # Pestañas principales (Dinámicas según permisos)
     # -------------------------------------------------------------------
@@ -142,158 +36,21 @@ def mostrar_panel_configuracion():
     
     if has_permission("configuracion", "centro"):
         tabs_map["Centro"] = ":material/business: Centro"
-        
-    # Prompts movido a General > Prompts
-        
-    # Notificaciones movido a General > Notificaciones
 
     selected_tabs = st.tabs(list(tabs_map.values()))
     
-    # Asignar variables a las tabs creadas para usar abajo
+    # Asignar variables a las tabs creadas
     tab_general = selected_tabs[list(tabs_map.keys()).index("General")]
     tab_centro = selected_tabs[list(tabs_map.keys()).index("Centro")] if "Centro" in tabs_map else None
 
-
     # -------------------------------------------------------------------
-    # Tab General (validación y modelos IA)
+    # Renderizar Pestañas
     # -------------------------------------------------------------------
     with tab_general:
-        st.markdown("### :material/tune: Configuración General")
-        
-        # Sub-tabs de General
-        gen_tabs = ["📱 Aplicación", "📷 Equipamiento", "💓 Signos Vitales", "📋 Opciones Clínicas", "🏥 Aseguradoras"]
-        
-        if has_permission("configuracion", "prompts"):
-            gen_tabs.append("📝 Prompts IA")
+        render_general_tab()
 
-        if has_permission("configuracion", "general"):
-            gen_tabs.append("🔔 Notificaciones")
-            
-        gen_subtabs = st.tabs(gen_tabs)
-        
-        # Helper to get tab by label
-        def get_tab(label):
-            try:
-                return gen_subtabs[gen_tabs.index(label)]
-            except ValueError:
-                return None
-
-        subtab_app = get_tab("📱 Aplicación")
-        subtab_equip = get_tab("📷 Equipamiento")
-        subtab_vitals = get_tab("💓 Signos Vitales")
-        subtab_clinical = get_tab("📋 Opciones Clínicas")
-        subtab_insurers = get_tab("🏥 Aseguradoras")
-        subtab_prompts = get_tab("📝 Prompts IA")
-        subtab_notif = get_tab("🔔 Notificaciones")
-        
-        with subtab_equip:
-            from ui.config.equipment_config import render_equipment_config
-            render_equipment_config()
-
-        with subtab_vitals:
-            from ui.config.vital_signs_config import render_vital_signs_config
-            render_vital_signs_config()
-            
-        with subtab_clinical:
-            from ui.config.clinical_options_manager import render_clinical_options_manager
-            render_clinical_options_manager()
-            
-        with subtab_insurers:
-            from ui.config.insurers_manager import render_insurers_manager
-            render_insurers_manager()
-            
-        if subtab_prompts:
-            with subtab_prompts:
-                from components.config.prompt_manager import render_prompt_manager
-                render_prompt_manager()
-
-        if subtab_notif:
-            with subtab_notif:
-                from ui.config.notification_config_ui import render_notification_config_panel
-                render_notification_config_panel()
-
-        with subtab_app:
-            from ui.config.app_config import render_app_config
-            render_app_config()
-
-    # -------------------------------------------------------------------
-    # Tab Centro – sub‑tabs modulares
-    # -------------------------------------------------------------------
     if tab_centro:
         with tab_centro:
-            # Sub-tabs dinámicas según permisos
-            subtabs_map = {}
-            subtabs_map["Datos"] = "📋 Datos Generales"
-            subtabs_map["Salas"] = "🏢 Salas (Orquestador)"
-            
-            if has_permission("configuracion", "usuarios"):
-                subtabs_map["Usuarios"] = "👤 Gestión de Usuarios"
-                subtabs_map["GestionTurnos"] = "📅 Gestión de Turnos (Temporal)"
-            
-            if has_permission("configuracion", "roles"):
-                subtabs_map["Roles"] = "🛡️ Gestión de Roles"
-                
-            selected_subtabs = st.tabs(list(subtabs_map.values()))
-            
-            subtab_datos = selected_subtabs[list(subtabs_map.keys()).index("Datos")]
-            subtab_salas = selected_subtabs[list(subtabs_map.keys()).index("Salas")]
-            subtab_usuarios = selected_subtabs[list(subtabs_map.keys()).index("Usuarios")] if "Usuarios" in subtabs_map else None
-            subtab_roles = selected_subtabs[list(subtabs_map.keys()).index("Roles")] if "Roles" in subtabs_map else None
-            subtab_turnos = selected_subtabs[list(subtabs_map.keys()).index("GestionTurnos")] if "GestionTurnos" in subtabs_map else None
-
-            with subtab_datos:
-                from ui.config.datos_generales import render_datos_generales
-                render_datos_generales()
-            
-            with subtab_salas:
-                st.info("Gestión integral de salas, asignaciones y control.")
-                tab_gestion, tab_asignacion, tab_control = st.tabs([
-                    "🛠️ Gestión de Salas", 
-                    "📍 Asignación (Fija)", 
-                    "🎮 Control de Salas"
-                ])
-                
-                with tab_gestion:
-                    from ui.config.salas_manager import render_salas_manager
-                    existing_salas = centro_config.get('salas', [])
-                    render_salas_manager(centro_id=centro_config.get('_id'), existing_salas=existing_salas)
-                
-                with tab_asignacion:
-                    from ui.config.asignacion_turnos import render_asignacion_turnos
-                    existing_salas = centro_config.get('salas', [])
-                    render_asignacion_turnos(salas=existing_salas)
-                    
-                with tab_control:
-                    from ui.room_manager_view import mostrar_gestor_salas
-                    mostrar_gestor_salas()
-            
-            if subtab_usuarios:
-                with subtab_usuarios:
-                    from ui.config.usuarios_manager import render_usuarios_manager
-                    render_usuarios_manager()
-
-            if subtab_roles:
-                with subtab_roles:
-                    from ui.config.roles_manager import render_roles_manager
-                    render_roles_manager()
-                    
-            if subtab_turnos:
-                with subtab_turnos:
-                    from ui.shift_manager_advanced import render_advanced_shift_manager
-                    render_advanced_shift_manager()
-
-    # -------------------------------------------------------------------
-    # Tab Prompts – edición de prompts IA
-    # -------------------------------------------------------------------
-    # -------------------------------------------------------------------
-    # Tab Prompts – Movido a General
-    # -------------------------------------------------------------------
-
-    # -------------------------------------------------------------------
-    # Tab Notificaciones – UI modular ya creada
-    # -------------------------------------------------------------------
-    # -------------------------------------------------------------------
-    # Tab Notificaciones – Movido a General
-    # -------------------------------------------------------------------
+            render_centro_tab(st.session_state.centro_config)
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config_panel.py</div>', unsafe_allow_html=True)

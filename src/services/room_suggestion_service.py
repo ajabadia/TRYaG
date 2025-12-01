@@ -5,7 +5,7 @@ Servicio de auto-sugerencia de salas.
 Recomienda la mejor sala alternativa basándose en múltiples criterios.
 """
 from typing import List, Dict, Any, Optional
-from ui.config_panel import load_centro_config
+from ui.config.config_loader import load_centro_config
 from services.patient_flow_service import obtener_vista_global_salas
 
 

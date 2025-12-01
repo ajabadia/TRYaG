@@ -194,25 +194,31 @@ class TriageReportGenerator(FPDF):
         if medications: self.field("Medicación Habitual", medications)
         
         # Campos extendidos (extended_history.py)
+        # Campos extendidos (extended_history.py)
         ext_fields = {
             "ant_familiares": "Antecedentes Familiares",
             "ant_fam_cardio_det": " - Detalle Cardio",
             "ant_fam_cancer_det": " - Detalle Cáncer",
             "ant_fam_diabetes_det": " - Detalle Diabetes",
             "ant_psiquiatricos": "Psiquiatría/Salud Mental",
+            "psy_diagnostico": " - Diagnósticos Psiquiátricos",
+            "psy_medicacion": " - Medicación Psicotrópica",
             "psy_suicidio_det": " - Detalle Riesgo Suicidio",
             "ant_quirurgicos": "Antecedentes Quirúrgicos",
             "habitos_toxicos": "Hábitos Tóxicos",
             "nutricion_dieta": "Nutrición y Dieta",
+            "nut_dieta": " - Dieta Habitual",
+            "nut_alergias_alim": " - Alergias Alimentarias",
             "nut_disfagia_det": " - Detalle Disfagia",
             "nut_peso_det": " - Detalle Pérdida Peso",
             "viajes_recientes": "Viajes/Exposición",
             "exp_animales_det": " - Detalle Animales",
+            "exp_ocupacional": " - Riesgo Ocupacional",
             "sensorial_ayudas": "Déficits Sensoriales",
             "sens_auditivo_det": " - Detalle Auditivo",
             "sens_visual_det": " - Detalle Visual",
             "dolor_cronico": "Historia de Dolor",
-            "pain_cronico_det": " - Detalle Dolor Crónico",
+            "pain_cronico_det": " - Localización Dolor Crónico",
             "hospitalizaciones_previas": "Hospitalizaciones Previas",
             "hosp_legal_det": " - Detalle Legal",
             "situacion_legal": "Situación Legal/Social",
@@ -222,6 +228,8 @@ class TriageReportGenerator(FPDF):
         for key, label in ext_fields.items():
             val = self.patient.get(key)
             if val:
+                if isinstance(val, list):
+                    val = ", ".join([str(v) for v in val])
                 self.field(label, val)
                 
         self.ln(5)

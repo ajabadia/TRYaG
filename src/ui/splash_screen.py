@@ -2,7 +2,7 @@ import streamlit as st
 import time
 import base64
 import os
-from ui.config_panel import load_centro_config
+from ui.config.config_loader import load_centro_config
 
 def get_image_base64(path):
     """Lee una imagen y la convierte a base64."""

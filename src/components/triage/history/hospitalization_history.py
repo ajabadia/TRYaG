@@ -27,6 +27,18 @@ def render_hospitalization_history_form(reset_count: int, disabled: bool = False
             if has_legal:
                 st.session_state.datos_paciente['hosp_legal_det'] = st.text_input("📝 Detalles Legales", value=st.session_state.datos_paciente.get('hosp_legal_det', ''), key=f"hosp_leg_det_{reset_count}", disabled=disabled, help="Especifique la situación legal")
         with c_legal_issues2:
-            st.session_state.datos_paciente['hosp_voluntades'] = st.checkbox("📜 Documento Voluntades Anticipadas", value=st.session_state.datos_paciente.get('hosp_voluntades', False), disabled=disabled, key=f"hosp_vol_{reset_count}", help="Existe registro de instrucciones previas")
+        with c_legal_issues2:
+            # Sync with safety_alerts.py
+            has_dnr = st.checkbox("📜 Documento Voluntades Anticipadas / DNR", value=st.session_state.datos_paciente.get('alert_dnr', False), disabled=disabled, key=f"hosp_vol_{reset_count}", help="Existe registro de instrucciones previas")
+            st.session_state.datos_paciente['alert_dnr'] = has_dnr
+            
+            if has_dnr:
+                st.warning("⚠️ VOLUNTADES ANTICIPADAS / DNR ACTIVO")
+                st.session_state.datos_paciente['alert_dnr_det'] = st.text_input(
+                    "📝 Detalles / Documento",
+                    value=st.session_state.datos_paciente.get('alert_dnr_det', ''),
+                    disabled=disabled, key=f"hosp_vol_det_{reset_count}",
+                    help="Referencia al documento legal"
+                )
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/hospitalization_history.py</div>', unsafe_allow_html=True)

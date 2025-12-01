@@ -23,7 +23,7 @@ from services.patient_flow_service import (
     obtener_flujo_activo,
     reassign_patient_flow,
 )
-from ui.config_panel import load_centro_config, save_centro_config
+from ui.config.config_loader import load_centro_config, save_centro_config
 from utils.icons import render_icon
 
 

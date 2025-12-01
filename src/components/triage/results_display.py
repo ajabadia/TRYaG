@@ -103,8 +103,8 @@ def render_results_display():
                         "display": "emergency"
                     },
                     "subject": {
-                        "reference": f"Patient/{datos_paciente.get('patient_code', 'UNKNOWN')}",
-                        "display": f"{datos_paciente.get('nombre', 'Paciente')} {datos_paciente.get('apellido1', '')}"
+                        "reference": f"Patient/{datos_paciente.get('patient_code') or 'UNKNOWN'}",
+                        "display": f"{datos_paciente.get('nombre') or 'Paciente'} {datos_paciente.get('apellido1') or 'Desconocido'}"
                     },
                     "period": {
                         "start": datetime.now().isoformat(),

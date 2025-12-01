@@ -12,7 +12,7 @@ from ui.config_panel import mostrar_panel_configuracion
 from utils.icons import get_icon_path, render_icon
 from services.permissions_service import get_available_tabs
 from ui.connection_status import check_database_connection
-from ui.config_panel import load_centro_config
+from ui.config.config_loader import load_centro_config
 from ui.loading_indicator import render_loading_container
 from components.common.user_selector import render_user_selector
 from ui.main_view import mostrar_asistente_triaje

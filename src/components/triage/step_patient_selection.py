@@ -129,7 +129,7 @@ def render_step_patient_selection() -> bool:
     pacientes_en_atencion = obtener_pacientes_en_sala(room_code)
     
     # Mapa de nombres de salas para visualización
-    from ui.config_panel import load_centro_config
+    from ui.config.config_loader import load_centro_config
     config = load_centro_config()
     salas_map = {s['codigo']: s.get('nombre', s['codigo']) for s in config.get('salas', [])}
 

@@ -13,7 +13,7 @@ from services.patient_flow_service import (
     obtener_flujo_activo
 )
 from services.room_service import obtener_salas_por_tipo
-from ui.config_panel import load_centro_config
+from ui.config.config_loader import load_centro_config
 
 from ui.components.waiting_list import render_waiting_list_component
 
