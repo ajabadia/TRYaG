@@ -1,0 +1,55 @@
+/* Global Styles */
+
+/* Reduce top spacing of the app */
+.main>div {
+    padding-top: 1rem;
+}
+
+/* Reduce header spacing */
+header {
+    padding-top: 0rem !important;
+}
+
+/* Reduce space between title and message */
+.header-message {
+    margin-top: -15px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Reduce padding of the main block */
+.block-container {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+/* Disable all transitions and animations for performance and 'snappy' feel */
+*,
+*::before,
+*::after {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Specifically target Streamlit's internal classes if needed */
+.st-emotion-cache-1y4p8pa {
+    transition: none !important;
+}
+
+/* Custom button style for Disclaimer - REMOVED to avoid global override
+   If specific styling is needed, it should be scoped or use st.button type="primary"
+*/
+/*
+div[data-testid="stButton"] > button {
+    background-color: #28a745;
+    font-size: 1.1rem;
+    padding: 0.75rem 1.5rem;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+div[data-testid="stButton"] > button:hover {
+    background-color: #218838;
+    color: white;
+}
+*/

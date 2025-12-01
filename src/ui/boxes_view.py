@@ -23,19 +23,11 @@ def render_room_header(room_code, step_name, on_back=None, on_change=None):
     Renderiza una cabecera pegajosa (sticky) para la vista de boxes.
     """
     # CSS para hacer sticky el contenedor
-    st.markdown("""
-        <style>
-        div[data-testid="stVerticalBlock"] > div:has(div.room-header-marker) {
-            position: sticky;
-            top: 3rem; /* Ajustar según altura del header global */
-            z-index: 90;
-            background-color: white;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f0f2f6;
-        }
-        </style>
-        <div class="room-header-marker"></div>
-    """, unsafe_allow_html=True)
+    # Cargar CSS externo
+    from utils.ui_utils import load_css
+    load_css("src/assets/css/pages/boxes.css")
+    
+    st.markdown('<div class="room-header-marker"></div>', unsafe_allow_html=True)
 
     with st.container():
         c1, c2 = st.columns([3, 1])

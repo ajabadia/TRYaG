@@ -358,6 +358,11 @@ def render_clickable_thumbnail(file_path: str, file_name: str, file_ext: str, ke
         thumb_b64 = get_or_create_thumbnail_base64(file_path, key, size=(200, 200)) # Usar key como hash temporal si no hay md5
     
     # CSS para el contenedor y el efecto hover
+    # Cargar CSS externo para thumbnails (si fuera estático, pero aquí usa keys dinámicas)
+    # Para mantener la funcionalidad de las keys dinámicas, mantenemos el CSS inyectado pero simplificado
+    # O mejor, usamos clases genéricas y pasamos el ID en el HTML.
+    # Refactorización: Usar clases genéricas en CSS y solo inyectar lo mínimo necesario.
+    
     st.markdown(f"""
     <style>
         .thumb-container-{key} {{
@@ -389,7 +394,6 @@ def render_clickable_thumbnail(file_path: str, file_name: str, file_ext: str, ke
             opacity: 0; /* Transparente */
             cursor: pointer;
         }}
-        /* Ajuste para el botón de Streamlit para que ocupe todo el contenedor */
         .thumb-wrapper-{key} button {{
             position: absolute;
             top: 0;

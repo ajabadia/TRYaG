@@ -104,14 +104,8 @@ def render_patient_card(
     
     # Estilo CSS para destacar si está en sala (opcional, o usar st.info dentro)
     if is_in_room:
-        st.markdown("""
-        <style>
-        div[data-testid="stVerticalBlockBorderWrapper"] > div {
-            border-color: #2196F3 !important;
-            border-width: 2px !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        from utils.ui_utils import load_css
+        load_css("src/assets/css/components/cards.css")
 
     with context:
         c_info, c_meta = st.columns([3, 1])

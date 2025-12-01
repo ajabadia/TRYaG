@@ -27,3 +27,19 @@ def get_room_color(room_type: str) -> str:
         return ROOM_TYPE_COLORS["default"]
         
     return ROOM_TYPE_COLORS.get(room_type.lower(), ROOM_TYPE_COLORS["default"])
+
+def load_css(file_path: str):
+    """
+    Carga un archivo CSS y lo inyecta en la aplicación Streamlit.
+    
+    Args:
+        file_path (str): Ruta relativa al archivo CSS desde la raíz del proyecto.
+    """
+    import streamlit as st
+    import os
+    
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    else:
+        st.warning(f"Archivo CSS no encontrado: {file_path}")

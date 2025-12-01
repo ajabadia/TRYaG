@@ -1,0 +1,9 @@
+div[data-testid="stVerticalBlock"]>div:has(div.room-header-marker) {
+    position: sticky;
+    top: 3rem;
+    /* Ajustar según altura del header global */
+    z-index: 90;
+    background-color: white;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f2f6;
+}

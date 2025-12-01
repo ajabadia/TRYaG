@@ -287,26 +287,9 @@ def render_input_form():
                         st.rerun()
                 
                 # CSS para Grid Responsivo (Scoped)
-                st.markdown("""
-                    <style>
-                    /* Target container with border (wrapper) or standard block */
-                    div[data-testid="stVerticalBlockBorderWrapper"]:has(.media-cards-grid) [data-testid="stHorizontalBlock"],
-                    div[data-testid="stVerticalBlock"]:has(.media-cards-grid) [data-testid="stHorizontalBlock"] {
-                        flex-wrap: wrap !important;
-                        flex-direction: row !important;
-                        gap: 10px !important;
-                    }
-                    
-                    /* Target columns */
-                    div[data-testid="stVerticalBlockBorderWrapper"]:has(.media-cards-grid) [data-testid="column"],
-                    div[data-testid="stVerticalBlock"]:has(.media-cards-grid) [data-testid="column"] {
-                        flex: 1 1 300px !important;
-                        min-width: 300px !important;
-                        max-width: 33% !important;
-                        width: auto !important;
-                    }
-                    </style>
-                """, unsafe_allow_html=True)
+                # Cargar CSS externo
+                from utils.ui_utils import load_css
+                load_css("src/assets/css/components/forms.css")
                 
                 # Marcador para CSS Scoped
                 st.markdown('<span class="media-cards-grid" style="display:none"></span>', unsafe_allow_html=True)

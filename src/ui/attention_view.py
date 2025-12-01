@@ -73,7 +73,8 @@ def render_active_patient(patient_code, box_code):
         with c_img:
             st.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", width=80) # Placeholder
         with c_dat:
-            st.markdown(f"## {paciente_data['nombre_completo']}")
+            nombre_paciente = paciente_data.get('nombre_completo') or f"{paciente_data.get('nombre', '')} {paciente_data.get('apellido1', '')}".strip()
+            st.markdown(f"## {nombre_paciente}")
             st.markdown(f"**Edad:** {paciente_data.get('edad', '?')} años | **ID:** {patient_code}")
             st.info(f"**Motivo Consulta:** {paciente_data.get('motivo_consulta', 'No especificado')}")
 

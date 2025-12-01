@@ -14,22 +14,9 @@ def render_vital_signs_form(age: int = 40):
     configs = get_all_configs(age)
     
     # CSS para Grid Responsivo
-    st.markdown("""
-        <style>
-        div[data-testid="stVerticalBlockBorderWrapper"]:has(.vital-signs-grid) [data-testid="stHorizontalBlock"],
-        div[data-testid="stVerticalBlock"]:has(.vital-signs-grid) [data-testid="stHorizontalBlock"] {
-            flex-wrap: wrap !important;
-            flex-direction: row !important;
-            gap: 15px !important;
-        }
-        div[data-testid="stVerticalBlockBorderWrapper"]:has(.vital-signs-grid) [data-testid="column"],
-        div[data-testid="stVerticalBlock"]:has(.vital-signs-grid) [data-testid="column"] {
-            flex: 1 1 200px !important; /* Un poco más ancho para sliders */
-            min-width: 200px !important;
-            max-width: 100% !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    # Cargar CSS externo
+    from utils.ui_utils import load_css
+    load_css("src/assets/css/components/forms.css")
 
     with st.container(border=True):
         st.markdown('<span class="vital-signs-grid" style="display:none"></span>', unsafe_allow_html=True)

@@ -47,12 +47,13 @@ def render_staff_conflicts_viewer():
     st.markdown("#### Detalle de Conflictos")
     
     for conflict in conflicts:
-        with st.expander(f"⚠️ {conflict['nombre_completo']}", expanded=False):
+        nombre_conflict = conflict.get('nombre_completo') or f"{conflict.get('nombre', '')} {conflict.get('apellidos', '')}".strip() or conflict.get('username', 'Usuario')
+        with st.expander(f"⚠️ {nombre_conflict}", expanded=False):
             col_info, col_action = st.columns([3, 1])
             
             with col_info:
                 st.markdown(f"""
-                **Usuario:** {conflict['nombre_completo']}  
+                **Usuario:** {nombre_conflict}  
                 **Asignación Fija:** `{conflict['fixed_sala']}`  
                 **Turno Temporal:** `{conflict['shift_sala']}`  
                 **Horario:** {conflict['horario']}  
@@ -117,7 +118,7 @@ def render_user_assignment_timeline():
         return
     
     # Selector de usuario
-    user_options = {str(u['_id']): u['nombre_completo'] for u in all_users}
+    user_options = {str(u['_id']): (u.get('nombre_completo') or f"{u.get('nombre', '')} {u.get('apellidos', '')}".strip() or u.get('username', 'Usuario')) for u in all_users}
     selected_user_id = st.selectbox(
         "Seleccionar Usuario",
         options=list(user_options.keys()),

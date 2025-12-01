@@ -16,33 +16,9 @@ IMPORT_FILES_LOG = os.path.join('data', 'import_files_log.csv')
 
 def file_preview_style():
     """Inyecta CSS para estilizar el cuadro de previsualización de ficheros."""
-    css = """
-        <style>
-            .file-preview-frame {
-                width: 100%;
-                aspect-ratio: 1 / 1; /* Fuerza una relación de aspecto cuadrada */
-                border: 1px solid #e0e0e0;
-                border-radius: 0.5rem;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                overflow: hidden;
-                background-color: #f8f9fa;
-            }
-            .file-preview-frame img {
-                max-width: 100%;
-                max-height: 100%;
-                object-fit: cover; /* Rellena el espacio, recortando si es necesario */
-            }
-            .file-preview-frame .file-type-text {
-                font-size: 2rem;
-                font-weight: bold;
-                color: #888;
-                text-transform: uppercase;
-            }
-        </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
+    # Cargar CSS externo
+    from utils.ui_utils import load_css
+    load_css("src/assets/css/components/tables.css")
 
 def deselect_file_row(index_to_deselect):
     """Callback para cerrar una card de fichero y deseleccionar la fila."""

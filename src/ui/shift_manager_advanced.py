@@ -141,7 +141,7 @@ def render_quick_shift_creator():
     col1, col2 = st.columns(2)
     
     with col1:
-        user_options = {str(u['_id']): u['nombre_completo'] for u in all_users}
+        user_options = {str(u['_id']): (u.get('nombre_completo') or f"{u.get('nombre', '')} {u.get('apellidos', '')}".strip() or u.get('username', 'Usuario')) for u in all_users}
         selected_user = st.selectbox(
             "Usuario",
             options=list(user_options.keys()),
@@ -297,9 +297,10 @@ def render_conflicts_tab():
         st.warning(f"⚠️ Se detectaron {len(conflicts)} conflictos")
         
         for conflict in conflicts:
-            with st.expander(f"⚠️ {conflict['nombre_completo']}", expanded=False):
+            nombre_conflict = conflict.get('nombre_completo') or f"{conflict.get('nombre', '')} {conflict.get('apellidos', '')}".strip() or conflict.get('username', 'Usuario')
+            with st.expander(f"⚠️ {nombre_conflict}", expanded=False):
                 st.markdown(f"""
-                **Usuario:** {conflict['nombre_completo']}  
+                **Usuario:** {nombre_conflict}  
                 **Asignación Fija:** {conflict['fixed_sala']}  
                 **Turno Temporal:** {conflict['shift_sala']}  
                 **Horario:** {conflict['horario']}  

@@ -43,24 +43,10 @@ def init_loading_container():
 
 def _get_loading_css():
     """Retorna el CSS para las animaciones de fade in/out."""
-    return f"""
-    <style>
-    @keyframes fadeIn {{
-        from {{ opacity: 0; transform: translateY(-10px); }}
-        to {{ opacity: 1; transform: translateY(0); }}
-    }}
-    @keyframes fadeOut {{
-        from {{ opacity: 1; transform: translateY(0); }}
-        to {{ opacity: 0; transform: translateY(-10px); }}
-    }}
-    .loading-indicator {{
-        animation: fadeIn {FADE_DURATION}s ease-in;
-    }}
-    .loading-indicator-out {{
-        animation: fadeOut {FADE_DURATION}s ease-out;
-    }}
-    </style>
-    """
+    # Cargar CSS externo
+    from utils.ui_utils import load_css
+    load_css("src/assets/css/components/loading.css")
+    return ""
 
 
 def show_loading(message: str = "Recuperando datos..."):

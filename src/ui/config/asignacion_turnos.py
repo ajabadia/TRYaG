@@ -94,7 +94,8 @@ def render_asignacion_turnos(salas: list):
                         if current_sala and current_sala != sala_code:
                             extra_info = f" (Actualmente en {current_sala})"
                         
-                        return f"{u['nombre_completo']} - {main_func.capitalize()}{extra_info}"
+                        nombre = u.get('nombre_completo') or f"{u.get('nombre', '')} {u.get('apellidos', '')}".strip() or u.get('username', 'Usuario')
+                        return f"{nombre} - {main_func.capitalize()}{extra_info}"
 
                     selected_ids = st.multiselect(
                         "Personal Asignado",

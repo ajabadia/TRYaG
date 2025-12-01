@@ -230,6 +230,8 @@ def render_room_card(
             # Advertencia si está llena
             if sala_llena and not is_selected:
                 st.error("🚫 Sala llena - No disponible")
+        
+        st.markdown('<div style="color: #ccc; font-size: 0.6em; text-align: right; margin-top: 5px;">src/components/common/room_card.py</div>', unsafe_allow_html=True)
     
     return button_clicked
 
@@ -239,7 +241,7 @@ def render_room_grid(
     selected_code: Optional[str],
     button_key_prefix: str,
     on_select_callback: Optional[callable] = None,
-    cols_per_row: int = 3,
+    cols_per_row: int = 2,
     **card_kwargs
 ) -> Optional[str]:
     """

@@ -92,33 +92,9 @@ def mostrar_app_principal():
 
     centro_config = load_centro_config()
 
-    # Custom CSS to tighten spacing
-    st.markdown(
-        """
-        <style>
-        /* Reduce top spacing of the app */
-        .main > div {
-            padding-top: 1rem;
-        }
-        /* Reduce header spacing */
-        header {
-            padding-top: 0rem !important;
-        }
-        /* Reduce space between title and message */
-        .header-message {
-            margin-top: -15px;
-            font-size: 0.9rem;
-            color: #666;
-        }
-        /* Reduce padding of the main block */
-        .block-container {
-            padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Load global CSS
+    from utils.ui_utils import load_css
+    load_css("src/assets/css/styles.css")
 
     # Header with logo and centre name
     col_logo, col_title = st.columns([1, 8])

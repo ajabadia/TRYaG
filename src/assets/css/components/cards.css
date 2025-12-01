@@ -1,0 +1,4 @@
+div[data-testid="stVerticalBlockBorderWrapper"]>div {
+    border-color: #2196F3 !important;
+    border-width: 2px !important;
+}

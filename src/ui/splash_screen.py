@@ -20,83 +20,9 @@ def render_splash_screen():
     Simula la carga de componentes en segundo plano.
     """
     # CSS para la animación
-    st.markdown(
-        """
-        <style>
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.9; }
-        }
-        
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        .splash-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 80vh;
-            animation: fadeOut 0.5s ease-in-out 3.5s forwards;
-        }
-        
-        /* Logo TRYaGE (Título) */
-        .tryag-logo {
-            width: 300px;
-            margin-bottom: 40px;
-            object-fit: contain;
-        }
-
-        /* Logo Centro (Pulsing) */
-        .center-logo {
-            width: 150px;
-            height: 150px;
-            object-fit: contain;
-            animation: pulse 2s infinite ease-in-out;
-            margin-bottom: 20px;
-            border-radius: 50%; /* Opcional: si el logo es cuadrado, lo hace redondo */
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .center-name {
-            font-family: 'Helvetica Neue', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 400;
-            color: #555;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .loading-bar {
-            width: 250px;
-            height: 4px;
-            background-color: #f0f0f0;
-            border-radius: 2px;
-            margin-top: 30px;
-            overflow: hidden;
-        }
-        
-        .loading-progress {
-            width: 100%;
-            height: 100%;
-            background-color: #28a745;
-            transform-origin: left;
-            animation: progress 3.5s ease-in-out forwards;
-        }
-        
-        @keyframes progress {
-            0% { transform: scaleX(0); }
-            100% { transform: scaleX(1); }
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    # Cargar CSS externo
+    from utils.ui_utils import load_css
+    load_css("src/assets/css/pages/splash.css")
 
     # Contenedor centrado
     with st.container():

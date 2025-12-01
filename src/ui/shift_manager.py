@@ -65,7 +65,8 @@ def render_shift_manager():
                     for shift in day_shifts:
                         # Obtener nombre usuario (cachear si es posible en futuro)
                         u = users_repo.get_by_id(shift.user_id)
-                        u_name = u['nombre_completo'].split()[0] if u else "???" # Solo primer nombre para ahorrar espacio
+                        nombre_completo = u.get('nombre_completo') or f"{u.get('nombre', '')} {u.get('apellidos', '')}".strip() or u.get('username', 'Usuario')
+                        u_name = nombre_completo.split()[0] if u else "???" # Solo primer nombre para ahorrar espacio
                         
                         # Color distintivo por sala (hash simple o lógica)
                         # Por simplicidad: borde coloreado
@@ -106,7 +107,7 @@ def render_shift_manager():
                 with st.expander(f"{turno.sala_code} - {turno.horario_inicio} a {turno.horario_fin}"):
                     # Buscar nombre de usuario
                     user = users_repo.get_by_id(turno.user_id)
-                    user_name = user['nombre_completo'] if user else "Desconocido"
+                    user_name = (user.get('nombre_completo') or f"{user.get('nombre', '')} {user.get('apellidos', '')}".strip() or user.get('username', 'Usuario')) if user else "Desconocido"
                     
                     st.write(f"**Usuario:** {user_name}")
                     st.write(f"**Notas:** {turno.notas}")
