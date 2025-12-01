@@ -49,18 +49,6 @@ def fetch_and_update_models():
         valid_models = []
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
-                # Limpiamos el prefijo 'models/' si se prefiere, 
-                # pero Gemini suele usarlo. Lo dejaremos tal cual viene de la API
-                # o lo normalizamos. En los scripts anteriores vimos que devuelve "models/gemini-..."
-                # pero en la config usábamos "gemini-..."
-                # Vamos a guardar el nombre exacto que devuelve la API para evitar errores 404,
-                # PERO si la app espera sin "models/", ajustamos.
-                # El error 404 decía "models/gemini-1.5-flash is not found", así que la API espera "models/..." 
-                # O la librería cliente lo añade.
-                # La librería cliente `genai.GenerativeModel("gemini-1.5-flash")` funciona.
-                # `genai.GenerativeModel("models/gemini-1.5-flash")` también suele funcionar.
-                # Vamos a quitar el prefijo "models/" para consistencia con lo que el usuario ve.
-                
                 name = m.name
                 if name.startswith("models/"):
                     name = name.replace("models/", "")

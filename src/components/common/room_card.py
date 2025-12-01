@@ -166,48 +166,16 @@ def render_room_card(
                         continue
 
                     # Lógica estándar de visualización unificada
-                    patient_code = p.get('patient_code', 'N/A')
+                    from ui.components.common.patient_card import render_patient_card
                     
-                    # Intentar obtener nombre completo
-                    nombre_completo = p.get('nombre_completo', '')
-                    if not nombre_completo:
-                        nombre = p.get('nombre', '')
-                        apellido1 = p.get('apellido1', '')
-                        apellido2 = p.get('apellido2', '')
-                        nombre_completo = f"{nombre} {apellido1} {apellido2}".strip()
-                    
-                    # Nivel de triaje
-                    nivel_triaje = p.get('nivel_triaje', p.get('nivel_asignado', ''))
-                    
-                    # Tiempo de espera
-                    wait_time_str = "0 min"
-                    entrada = p.get('entrada') or p.get('wait_start')
-                    if entrada:
-                        if isinstance(entrada, str):
-                            try:
-                                entrada = datetime.fromisoformat(entrada)
-                            except:
-                                pass
-                        
-                        if isinstance(entrada, datetime):
-                            diff = datetime.now() - entrada
-                            minutes = int(diff.total_seconds() / 60)
-                            wait_time_str = f"{minutes} min"
-
-                    # Renderizar mini-card del paciente
-                    with st.container(border=True):
-                        c_p1, c_p2 = st.columns([2, 1])
-                        with c_p1:
-                            st.markdown(f"**{nombre_completo}**")
-                            st.caption(f"🆔 {patient_code}")
-                        with c_p2:
-                            if nivel_triaje:
-                                # Icono de color según nivel
-                                colors = {"NIVEL I": "🔴", "NIVEL II": "🟠", "NIVEL III": "🟡", "NIVEL IV": "🟢", "NIVEL V": "🔵"}
-                                icon = colors.get(nivel_triaje, "⚪")
-                                st.markdown(f"{icon} **{nivel_triaje.split()[-1]}**")
-                            
-                            st.caption(f"⏱️ {wait_time_str}")
+                    render_patient_card(
+                        patient=p,
+                        show_triage_level=True,
+                        show_wait_time=True,
+                        show_location=False,
+                        is_in_room=True,
+                        key_prefix=f"room_{codigo}"
+                    )
         else:
             st.markdown("---")
             st.caption("_Sala vacía_")

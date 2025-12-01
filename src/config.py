@@ -82,7 +82,7 @@ def get_default_ai_model():
             pass
     
     # 3. Valor por defecto hardcoded
-    return 'gemini-1.5-flash-001'
+    return 'gemini-2.5-flash'
 
 # Alias para compatibilidad hacia atrás
 def get_model_triage():

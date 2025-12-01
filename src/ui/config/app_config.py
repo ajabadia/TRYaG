@@ -65,7 +65,7 @@ def render_app_config():
         
         if not available_models:
             st.warning("No hay modelos registrados. Pulsa 'Comprobar modelos IA'.")
-            available_models = ["gemini-2.5-flash"] # Fallback visual
+            available_models = ["gemini-2.5-flash", "gemini-2.0-flash-exp"] # Fallback visual
             
         with st.expander("Ver lista de modelos disponibles", expanded=False):
             st.dataframe(

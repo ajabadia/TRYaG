@@ -76,7 +76,7 @@ Analiza TODA esta información para ajustar el PTR y la decisión final.
     version_id = pm.create_version(
         prompt_type="triage_gemini",
         content=new_prompt_content,
-        model="gemini-1.5-flash",
+        model="gemini-2.5-flash",
         author="system_upgrade",
         notes="Implementación de Lógica Ponderada (PTR) y Contexto Clínico"
     )

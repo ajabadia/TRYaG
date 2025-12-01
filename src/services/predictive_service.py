@@ -44,7 +44,7 @@ def generar_alertas_predictivas(edad, vital_signs, antecedentes=None, alergias=N
     
     if prompt_content:
         base_prompt = prompt_content
-        model_name = "gemini-1.5-flash" # Default for tests
+        model_name = "gemini-2.5-flash" # Default for tests
         version_id = "test-override"
     else:
         prompt_data = pm.get_prompt("triage_predictive")

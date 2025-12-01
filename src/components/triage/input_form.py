@@ -135,29 +135,9 @@ def render_input_form():
         is_step1_disabled = st.session_state.analysis_complete
         is_editing = st.session_state.is_editing_text
         
-        # --- DATOS ADMINISTRATIVOS (NUEVO) ---
-        with st.expander("📋 Datos Administrativos y Logística", expanded=False):
-            c_adm1, c_adm2, c_adm3 = st.columns(3)
-            with c_adm1:
-                st.session_state.datos_paciente['fuente_informacion'] = st.selectbox(
-                    "Fuente de Información", 
-                    ["Paciente", "Familiar/Cuidador", "Servicio de Emergencias (EMS)", "Testigos", "Otro"],
-                    index=0, disabled=is_step1_disabled, key=f"admin_source_{reset_count}"
-                )
-            with c_adm2:
-                st.session_state.datos_paciente['referencia'] = st.text_input(
-                    "Médico/Centro Referente", 
-                    value=st.session_state.datos_paciente.get('referencia', ''),
-                    placeholder="Ej. CAP Norte, Dr. Smith",
-                    disabled=is_step1_disabled, key=f"admin_ref_{reset_count}"
-                )
-            with c_adm3:
-                st.session_state.datos_paciente['seguro'] = st.text_input(
-                    "Situación de Aseguramiento",
-                    value=st.session_state.datos_paciente.get('seguro', ''),
-                    placeholder="Ej. Seguridad Social, Privado...",
-                    disabled=is_step1_disabled, key=f"admin_ins_{reset_count}"
-                )
+        # --- DATOS ADMINISTRATIVOS (MODULARIZADO) ---
+        from components.triage.admin_data_form import render_admin_data_form
+        render_admin_data_form(reset_count, disabled=is_step1_disabled)
         
         # --- SECCIÓN 1: ENTRADA DE DATOS MULTIMODAL ---
         
@@ -445,43 +425,64 @@ def render_input_form():
                         historia_integral = st.session_state.datos_paciente.get('historia_integral', '')
                         
                         # Llamada a la IA
-                        resultado_ia, final_prompt = llamar_modelo_gemini(
-                            motivo=texto_completo,
-                            edad=st.session_state.datos_paciente.get('edad'),
-                            dolor=st.session_state.datos_paciente.get('dolor', 0),
-                            vital_signs=st.session_state.datos_paciente.get('vital_signs', {}),
-                            imagen=imagen_pil,
-                            triage_result=triage_result,
-                            antecedentes=antecedentes_legacy,
-                            alergias=alergias_info,
-                            gender=st.session_state.datos_paciente.get('gender'),
-                            criterio_geriatrico=st.session_state.datos_paciente.get('criterio_geriatrico', False),
-                            criterio_inmunodeprimido=st.session_state.datos_paciente.get('criterio_inmunodeprimido', False),
-                            criterio_inmunodeprimido_det=st.session_state.datos_paciente.get('criterio_inmunodeprimido_det', ''),
-                            extended_history=historia_integral,
-                            nursing_assessment=st.session_state.datos_paciente.get('nursing_assessment')
-                        )
-                        
-                        # Manejo de Errores de Conexión / Sugerencia de Contingencia
-                        if isinstance(resultado_ia, dict) and resultado_ia.get("suggest_contingency"):
-                            st.error(f"⚠️ {resultado_ia.get('msg')}")
-                            st.warning("Parece que hay problemas de conexión con la IA. Se recomienda activar el modo offline.")
+                        try:
+                            resultado_ia, final_prompt = llamar_modelo_gemini(
+                                motivo=texto_completo,
+                                edad=st.session_state.datos_paciente.get('edad'),
+                                dolor=st.session_state.datos_paciente.get('dolor', 0),
+                                vital_signs=st.session_state.datos_paciente.get('vital_signs', {}),
+                                imagen=imagen_pil,
+                                triage_result=triage_result,
+                                antecedentes=antecedentes_legacy,
+                                alergias=alergias_info,
+                                gender=st.session_state.datos_paciente.get('gender'),
+                                criterio_geriatrico=st.session_state.datos_paciente.get('criterio_geriatrico', False),
+                                criterio_inmunodeprimido=st.session_state.datos_paciente.get('criterio_inmunodeprimido', False),
+                                criterio_inmunodeprimido_det=st.session_state.datos_paciente.get('criterio_inmunodeprimido_det', ''),
+                                extended_history=historia_integral,
+                                nursing_assessment=st.session_state.datos_paciente.get('nursing_assessment')
+                            )
                             
-                            c_cont1, c_cont2 = st.columns(2)
-                            with c_cont1:
-                                if st.button("📴 Activar Modo Contingencia", type="primary", key="btn_activate_contingency_error"):
-                                    from services.contingency_service import set_contingency_mode
-                                    set_contingency_mode(True)
-                                    st.rerun()
-                            with c_cont2:
-                                if st.button("🔄 Reintentar", key="btn_retry_ai_error"):
-                                    st.rerun()
+                            # Manejo de Errores de Conexión / Sugerencia de Contingencia
+                            if isinstance(resultado_ia, dict) and resultado_ia.get("suggest_contingency"):
+                                st.error(f"⚠️ {resultado_ia.get('msg')}")
+                                st.warning("Parece que hay problemas de conexión con la IA. Se recomienda activar el modo offline.")
+                                
+                                c_cont1, c_cont2 = st.columns(2)
+                                with c_cont1:
+                                    if st.button("📴 Activar Modo Contingencia", type="primary", key="btn_activate_contingency_error"):
+                                        from services.contingency_service import set_contingency_mode
+                                        set_contingency_mode(True)
+                                        st.rerun()
+                                with c_cont2:
+                                    if st.button("🔄 Reintentar", key="btn_retry_ai_error"):
+                                        st.rerun()
+                                
+                                # Detener ejecución para no guardar error como resultado
+                                st.stop()
                             
-                            # Detener ejecución para no guardar error como resultado
+                            procesar_respuesta_ia(resultado_ia, algo_result=triage_result)
+                            st.session_state.analysis_complete = True
+                            st.rerun()
+
+                        except Exception as e:
+                            st.error(f"❌ Error crítico al contactar con la IA: {str(e)}")
+                            st.warning("El servicio de IA no está disponible. Puede reintentar o usar el modo manual.")
+                            
+                            col_err_1, col_err_2 = st.columns(2)
+                            with col_err_1:
+                                if st.button("🔄 Reintentar Análisis", key="btn_retry_exception"):
+                                    st.rerun()
+                            with col_err_2:
+                                if st.button("📝 Continuar Manualmente (Sin IA)", key="btn_manual_fallback", type="primary"):
+                                    # Simular resultado manual/fallido para permitir avanzar
+                                    st.session_state.resultado = {
+                                        "status": "MANUAL_FALLBACK",
+                                        "nivel_sugerido": triage_result.get('final_priority', 5),
+                                        "razonamiento": ["Fallo del sistema IA.", f"Error: {str(e)}", "Clasificación basada en constantes."]
+                                    }
+                                    st.session_state.analysis_complete = True
+                                    st.rerun()
                             st.stop()
-                        
-                        procesar_respuesta_ia(resultado_ia, algo_result=triage_result)
-                        st.session_state.analysis_complete = True
-                        st.rerun()
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/input_form.py</div>', unsafe_allow_html=True)

@@ -141,7 +141,7 @@ def _render_prompt_editor_logic(prompt_type):
         
         # Fallback si está vacío
         if not available_models:
-            available_models = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
+            available_models = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro"]
             
         model_options = available_models
         if current_model not in model_options:

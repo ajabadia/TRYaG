@@ -50,7 +50,7 @@ class PromptVersion(BaseModel):
             "example": {
                 "version_id": "v1",
                 "content": "Actúa como un experto...",
-                "model": "gemini-1.5-flash",
+                "model": "gemini-2.5-flash",
                 "author": "admin",
                 "notes": "Versión inicial",
                 "status": "active"

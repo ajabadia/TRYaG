@@ -59,7 +59,7 @@ class GeminiService:
             call_type: Tipo de llamada (triage, transcription, etc.).
             prompt_type: Tipo de prompt (triage_gemini, etc.).
             prompt_version_id: Versión del prompt usada.
-            model_name: Nombre del modelo (gemini-1.5-flash, etc.).
+            model_name: Nombre del modelo (gemini-2.5-flash, etc.).
             prompt_content: String o lista (para multimodal) con el contenido.
             generation_config: Configuración específica (temp, tokens).
             metadata: Datos extra para el log.
