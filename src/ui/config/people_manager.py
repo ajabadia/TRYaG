@@ -20,6 +20,15 @@ def render_person_form(person_data=None, key_prefix="person_form"):
             nombre = st.text_input("Nombre *", value=person_data.get("nombre", ""), key=f"{key_prefix}_nombre")
             apellido1 = st.text_input("Primer Apellido *", value=person_data.get("apellido1", ""), key=f"{key_prefix}_ap1")
             apellido2 = st.text_input("Segundo Apellido", value=person_data.get("apellido2", ""), key=f"{key_prefix}_ap2")
+            
+            gender_opts = ["Hombre", "Mujer", "Otro", "No Especificado"]
+            current_gender = person_data.get("gender", "No Especificado")
+            if current_gender not in gender_opts:
+                current_gender = "No Especificado"
+                
+            gender = st.selectbox("Sexo / Género", gender_opts, 
+                                index=gender_opts.index(current_gender),
+                                key=f"{key_prefix}_gender")
         
         with col2:
             # --- Identificaciones (Múltiples) ---
@@ -140,6 +149,7 @@ def render_person_form(person_data=None, key_prefix="person_form"):
                 "nombre": nombre,
                 "apellido1": apellido1,
                 "apellido2": apellido2,
+                "gender": gender,
                 "fecha_nacimiento": datetime.combine(fecha_nac, datetime.min.time()) if fecha_nac else None,
                 "identificaciones": final_ids,
                 "contact_info": final_contacts

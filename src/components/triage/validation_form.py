@@ -55,6 +55,7 @@ def render_validation_form():
             "timestamp": datetime.now().isoformat(),
             "motivo_consulta": datos_paciente.get('texto_medico', ''),
             "edad": datos_paciente.get('edad'),
+            "gender": datos_paciente.get('gender'),
             "dolor": datos_paciente.get('dolor'),
             "antecedentes": datos_paciente.get('antecedentes', ''),
             "alergias": datos_paciente.get('alergias_info_completa', ''),

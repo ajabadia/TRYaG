@@ -75,34 +75,37 @@ def render_admission_management_view():
             st.markdown(f"**Pendientes:** {len(pacientes_pendientes)}")
             
             # 3. Listar y gestionar
+            st.markdown(f"**Pendientes:** {len(pacientes_pendientes)}")
+            
+            # 3. Listar y gestionar
+            from ui.components.common.patient_card import render_patient_card
+            
             for p in pacientes_pendientes:
-                with st.container(border=True):
-                    col_info, col_action = st.columns([4, 1])
-                    
-                    with col_info:
-                        nombre = f"{p.get('nombre')} {p.get('apellido1')} {p.get('apellido2', '')}"
-                        st.markdown(f"### 👤 {nombre}")
-                        
-                        c1, c2, c3 = st.columns(3)
-                        with c1:
-                            st.caption(f"🆔 `{p.get('patient_code')}`")
-                        with c2:
-                            edad = calcular_edad(p.get('fecha_nacimiento'))
-                            st.caption(f"🎂 {edad} años")
-                        with c3:
-                            # Mostrar diagnóstico si viene en las notas
-                            notas = p.get('notas', '')
-                            if "Dx:" in notas:
-                                dx = notas.split("Dx:")[1].strip()
-                                st.caption(f"🩺 **Dx:** {dx}")
-                            else:
-                                st.caption("🩺 Sin diagnóstico previo")
+                def _on_atender(patient):
+                    st.session_state.active_consultation_patient = patient
+                    st.session_state.consultation_step = 1
+                    st.rerun()
 
-                    with col_action:
-                        if st.button("🩺 Atender", key=f"atender_{p.get('patient_code')}", type="primary", use_container_width=True):
-                            st.session_state.active_consultation_patient = p
-                            st.session_state.consultation_step = 1
-                            st.rerun()
+                actions = [{
+                    "label": "🩺 Atender",
+                    "key": "atender",
+                    "type": "primary",
+                    "on_click": _on_atender
+                }]
+                
+                # Mostrar diagnóstico en la card si existe
+                # Podemos inyectarlo en el nombre o usar un campo custom si la card lo soportara,
+                # pero por ahora lo dejamos como parte de la info que la card ya muestra (si lo pasamos en el dict)
+                # La card muestra 'sala_espera_origen' si show_location=True.
+                
+                render_patient_card(
+                    patient=p,
+                    actions=actions,
+                    show_triage_level=False,
+                    show_wait_time=True,
+                    show_location=True,
+                    key_prefix="adm_mgmt_list"
+                )
 
         # --- PASO 1: CONSULTA MÉDICA ---
         elif st.session_state.consultation_step == 1:

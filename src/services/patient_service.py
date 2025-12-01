@@ -153,6 +153,8 @@ def crear_paciente(
     num_identificacion: str,
     tipo_identificacion: str,
     contact_info: Optional[List[Dict[str, Any]]] = None,
+    insurance_info: Optional[Dict[str, Any]] = None,
+    gender: Optional[str] = None,
     usuario: str = "admin",
     force_create: bool = False
 ) -> tuple[Dict[str, Any], Optional[str]]:
@@ -201,9 +203,11 @@ def crear_paciente(
         "apellido1": apellido1.strip(),
         "apellido2": apellido2.strip() if apellido2 else None,
         "fecha_nacimiento": fecha_nacimiento,
+        "gender": gender,
         "num_ss": num_ss,
         "identificaciones": [identificacion],
         "contact_info": contact_info or [],
+        "insurance_info": insurance_info or None,
         "activo": True,
         "created_at": datetime.now(),
         "updated_at": datetime.now()
@@ -254,6 +258,8 @@ def actualizar_paciente_con_auditoria(
     num_identificacion: str,
     tipo_identificacion: str,
     contact_info: Optional[List[Dict[str, Any]]] = None,
+    insurance_info: Optional[Dict[str, Any]] = None,
+    gender: Optional[str] = None,
     usuario: str = "admin",
     force_update: bool = False
 ) -> tuple[Dict[str, Any], Optional[str]]:
@@ -324,9 +330,11 @@ def actualizar_paciente_con_auditoria(
         "apellido1": apellido1.strip(),
         "apellido2": apellido2.strip() if apellido2 else None,
         "fecha_nacimiento": fecha_nacimiento,
+        "gender": gender,
         "num_ss": num_ss,
         "identificaciones": [identificacion],
         "contact_info": contact_info or [],
+        "insurance_info": insurance_info or None,
         "activo": True,
         "created_at": datetime.now(),
         "updated_at": datetime.now()

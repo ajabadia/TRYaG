@@ -17,6 +17,48 @@ from src.db.repositories.people import get_people_repository
 from ui.config.people_manager import person_dialog
 from utils.icons import render_icon
 
+def _update_patient_insurance(paciente, insurance_info):
+    """Actualiza la información de seguro del paciente en BD y sesión."""
+    from services.patient_service import actualizar_paciente_con_auditoria
+    
+    # Preparamos datos para actualizar (manteniendo lo demás igual)
+    # Nota: actualizar_paciente_con_auditoria requiere pasar todos los campos.
+    # Esto es un poco pesado, idealmente tendríamos un patch, pero usaremos lo que hay.
+    
+    # Extraer identificación principal
+    main_id = paciente['identificaciones'][0]
+    
+    try:
+        new_person_data, warning = actualizar_paciente_con_auditoria(
+            patient_code_anterior=paciente['patient_code'],
+            nombre=paciente['nombre'],
+            apellido1=paciente['apellido1'],
+            apellido2=paciente.get('apellido2'),
+            fecha_nacimiento=paciente['fecha_nacimiento'],
+            num_ss=paciente.get('num_ss'),
+            num_identificacion=main_id['value'],
+            tipo_identificacion=main_id['type'],
+            contact_info=paciente.get('contact_info'),
+            insurance_info=insurance_info,
+            gender=paciente.get('gender'),
+            usuario="admission_step",
+            force_update=True # Forzamos porque solo actualizamos seguro
+        )
+        
+        if new_person_data:
+            # Actualizar sesión con el NUEVO objeto (que tiene nuevo _id y está activo)
+            st.session_state.admission_patient_data = new_person_data
+            st.session_state.admission_patient_code = new_person_data['patient_code']
+            st.success("Información de aseguradora actualizada.")
+            if warning:
+                st.warning(warning)
+        else:
+            st.error(f"Error al actualizar: {warning}")
+
+    except ValueError as e:
+        st.error(f"Error de validación: {e}")
+    except Exception as e:
+        st.error(f"Error inesperado: {e}")
 
 def render_step_patient_data() -> bool:
     """
@@ -115,21 +157,104 @@ def render_step_patient_data() -> bool:
             elif search_term:
                 st.caption("Escriba al menos 3 caracteres para buscar.")
 
+            elif search_term:
+                st.caption("Escriba al menos 3 caracteres para buscar.")
+
     else:
         # Estado: Paciente cargado
         paciente = st.session_state.admission_patient_data
         
+        # --- GESTIÓN DE ASEGURADORA (NUEVO) ---
+        # Verificamos si ya tiene info de seguro
+        insurance_info = paciente.get('insurance_info', {})
+        has_insurance = insurance_info.get('has_insurance', False)
+        
+        # Container para gestión de seguro
+        with st.container(border=True):
+            st.markdown("#### 🏥 Cobertura Sanitaria")
+            
+            # 1. ¿Tiene seguro?
+            tiene_seguro = st.radio(
+                "¿El paciente tiene Aseguradora o Mutua?",
+                ["No (Privado)", "Sí"],
+                index=1 if has_insurance else 0,
+                horizontal=True,
+                key="adm_has_insurance_radio"
+            )
+            
+            if tiene_seguro == "Sí":
+                from src.db.repositories.insurers import get_insurers_repository
+                repo_insurers = get_insurers_repository()
+                insurers_list = repo_insurers.get_all(active_only=True)
+                
+                # Preparar opciones
+                options = ["Seleccionar..."] + [i['name'] for i in insurers_list]
+                
+                # Pre-selección
+                current_insurer_name = insurance_info.get('insurer_name')
+                index_sel = 0
+                if current_insurer_name in options:
+                    index_sel = options.index(current_insurer_name)
+                
+                selected_insurer_name = st.selectbox("Seleccione la Compañía", options, index=index_sel, key="adm_insurer_select")
+                
+                if selected_insurer_name != "Seleccionar...":
+                    # Buscar objeto completo
+                    insurer_obj = next((i for i in insurers_list if i['name'] == selected_insurer_name), None)
+                    
+                    if insurer_obj:
+                        # Mostrar Logo si existe
+                        if insurer_obj.get('logo_url'):
+                            st.image(insurer_obj['logo_url'], width=100)
+                            
+                        # Verificar si está admitida
+                        if not insurer_obj.get('is_admitted', True):
+                            st.error(f"⚠️ La compañía **{selected_insurer_name}** NO está concertada con este centro.")
+                            
+                            c_priv, c_rej = st.columns(2)
+                            with c_priv:
+                                if st.button("💶 Pasar a Privado", use_container_width=True):
+                                    # Guardar como privado
+                                    _update_patient_insurance(paciente, {"has_insurance": False, "type": "Privado"})
+                                    st.rerun()
+                            with c_rej:
+                                if st.button("🚫 Rechazar Admisión", type="primary", use_container_width=True):
+                                    st.session_state.admission_decision_mode = 'reject'
+                                    st.rerun()
+                            
+                            # Bloquear continuación normal
+                            return False
+                        else:
+                            # Si es válida y cambió, guardar
+                            if selected_insurer_name != current_insurer_name:
+                                new_info = {
+                                    "has_insurance": True,
+                                    "insurer_id": str(insurer_obj['_id']),
+                                    "insurer_name": insurer_obj['name'],
+                                    "logo_url": insurer_obj.get('logo_url'),
+                                    "type": "Aseguradora" if insurer_obj.get('is_insurer') else "Mutua"
+                                }
+                                _update_patient_insurance(paciente, new_info)
+                                st.rerun()
+            
+            else:
+                # Si seleccionó "No (Privado)" y antes tenía seguro, actualizar
+                if has_insurance:
+                    _update_patient_insurance(paciente, {"has_insurance": False, "type": "Privado"})
+                    st.rerun()
+
         # --- Diálogo de gestión de flujo activo ---
         if 'admission_active_flow' not in st.session_state:
             st.session_state.admission_active_flow = None
         
-        if st.session_state.admission_active_flow:
+        # Solo mostrar gestor si hay flujo activo Y NO hemos decidido continuar
+        if st.session_state.admission_active_flow and not st.session_state.get('admission_continue_active'):
             st.divider()
             from components.common.active_flow_manager import render_active_flow_manager
             
             def _on_continue():
                 st.session_state.admission_continue_active = True
-                pass # El flujo continuará en la vista principal si es necesario
+                st.rerun()
 
             def _on_cancel_search():
                 st.session_state.admission_patient_data = None
@@ -155,34 +280,43 @@ def render_step_patient_data() -> bool:
             )
             return False
 
-        # --- Vista de Paciente Seleccionado (Read Only) ---
-        with st.container(border=True):
-            c_info, c_actions = st.columns([4, 1])
-            with c_info:
-                nombre_completo = f"{paciente.get('nombre')} {paciente.get('apellido1')} {paciente.get('apellido2') or ''}".strip()
-                st.markdown(f"### 👤 {nombre_completo}")
-                
-                ids = []
-                if paciente.get('num_ss'): ids.append(f"**SS:** {paciente.get('num_ss')}")
-                for i in paciente.get('identificaciones', []):
-                    ids.append(f"**{i['type']}:** {i['value']}")
-                
-                st.markdown(" | ".join(ids))
-                
-                fnac = paciente.get('fecha_nacimiento')
-                if isinstance(fnac, datetime): fnac = fnac.date()
-                edad = calcular_edad(datetime.combine(fnac, datetime.min.time())) if fnac else "?"
-                st.caption(f"Fecha Nacimiento: {fnac} ({edad} años)")
-                
-            with c_actions:
-                if st.button("✏️ Editar", key="adm_edit_selected", use_container_width=True):
-                    person_dialog(str(paciente['_id']), on_save=on_person_save)
-                
-                if st.button("🔄 Cambiar", key="adm_change_patient", use_container_width=True):
-                    st.session_state.admission_patient_data = None
-                    st.session_state.admission_patient_validated = False
-                    st.session_state.admission_active_flow = None
-                    st.rerun()
+        # --- Vista de Paciente Seleccionado (Standard Card) ---
+        from ui.components.common.patient_card import render_patient_card
+        
+        def _on_edit(p):
+            person_dialog(str(p['_id']), on_save=on_person_save)
+            
+        def _on_change(p):
+            st.session_state.admission_patient_data = None
+            st.session_state.admission_patient_validated = False
+            st.session_state.admission_active_flow = None
+            st.session_state.admission_continue_active = False # Reset
+            st.rerun()
+
+        actions = [
+            {"label": "✏️ Editar", "key": "edit", "on_click": _on_edit},
+            {"label": "🔄 Cambiar", "key": "change", "on_click": _on_change}
+        ]
+        
+        # Si decidimos continuar, mostramos el estado del flujo en la card
+        flow_status = None
+        if st.session_state.get('admission_continue_active') and st.session_state.admission_active_flow:
+            f = st.session_state.admission_active_flow
+            sala = f.get('sala_atencion_code') or f.get('sala_destino_code') or f.get('sala_triaje_code') or f.get('sala_admision_code')
+            flow_status = {
+                "estado": f.get('estado'),
+                "sala_actual": sala
+            }
+
+        render_patient_card(
+            patient=paciente,
+            actions=actions,
+            show_triage_level=False, # En admisión aún no hay triaje
+            show_wait_time=False,
+            show_location=False,
+            flow_status=flow_status,
+            key_prefix="adm_step2"
+        )
         
         st.success("✅ Paciente seleccionado y validado.")
         st.session_state.admission_patient_validated = True

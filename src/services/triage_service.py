@@ -8,7 +8,7 @@ from src.services.gemini_client import get_gemini_service
 from src.core.prompt_manager import PromptManager
 from src.config import get_model_triage
 
-def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None, triage_result=None, antecedentes=None, alergias=None, user_id="system"):
+def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None, triage_result=None, antecedentes=None, alergias=None, gender=None, criterio_geriatrico=False, criterio_inmunodeprimido=False, user_id="system", extended_history=None, nursing_assessment=None):
     """
     Llama al modelo Gemini de Google para obtener una sugerencia de triaje.
     """
@@ -56,12 +56,47 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
     # 3. Inyectar variables
     motivo_completo = str(motivo)
     if antecedentes:
-        motivo_completo += f"\n\n[ANTECEDENTES]: {antecedentes}"
+        motivo_completo += f"\n\n[ANTECEDENTES BÁSICOS]: {antecedentes}"
     if alergias:
         motivo_completo += f"\n\n[ALERGIAS]: {alergias}"
+    
+    # Inyectar Historia Extendida
+    if extended_history:
+        ext_lines = []
+        for k, v in extended_history.items():
+            if v:
+                label = k.replace('_', ' ').title()
+                ext_lines.append(f"- {label}: {v}")
+        if ext_lines:
+            motivo_completo += "\n\n[HISTORIA CLÍNICA EXTENDIDA]:\n" + "\n".join(ext_lines)
+
+    # Inyectar Valoración Enfermería
+    if nursing_assessment:
+        nur_lines = []
+        for k, v in nursing_assessment.items():
+            if v:
+                label = k.replace('_', ' ').title()
+                nur_lines.append(f"- {label}: {v}")
+        if nur_lines:
+            motivo_completo += "\n\n[VALORACIÓN ENFERMERÍA]:\n" + "\n".join(nur_lines)
+    
+    # Inyectar Contexto Clínico Avanzado
+    contexto_clinico = []
+    if criterio_geriatrico:
+        contexto_clinico.append("PACIENTE GERIÁTRICO (Edad >= 65): Considerar taquicardia leve (>100) como riesgo moderado/alto. Umbrales de dolor pueden ser atípicos.")
+    if criterio_inmunodeprimido:
+        contexto_clinico.append("PACIENTE INMUNODEPRIMIDO/ONCOLÓGICO: Fiebre (>38.0°C) es EMERGENCIA (Nivel 2/Naranja) inmediata. Ignorar ponderación estándar de temperatura.")
+    
+    if contexto_clinico:
+        motivo_completo += "\n\n[CONTEXTO CLÍNICO CRÍTICO]:\n" + "\n".join(contexto_clinico)
+    
+    # Inyectar género en la edad para contexto
+    edad_str = str(edad)
+    if gender:
+        edad_str += f" ({gender})"
         
     final_prompt = base_prompt.replace("{motivo}", motivo_completo)\
-                              .replace("{edad}", str(edad))\
+                              .replace("{edad}", edad_str)\
                               .replace("{dolor}", str(dolor))\
                               .replace("{signos_vitales}", vs_str)
 

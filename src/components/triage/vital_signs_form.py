@@ -1,96 +1,59 @@
-# path: src/components/triage/vital_signs_form.py
 import streamlit as st
 from typing import Dict, Any, Optional, List
 from src.db.repositories.vital_signs_repo import VitalSignsRepository
-from src.components.triage.triage_logic import calculate_worst_case, evaluate_vital_sign
+from src.components.triage.triage_logic import calculate_worst_case, evaluate_vital_sign, calculate_news_score
 
 def get_all_configs(age: int) -> Dict[str, Any]:
-    """Obtiene todas las configuraciones para la edad dada."""
+    """Carga todas las configuraciones de signos vitales para la edad dada."""
     repo = VitalSignsRepository()
-    refs = repo.get_all_references()
     configs = {}
-    for ref in refs:
-        for cfg in ref.configs:
-            if cfg.min_age <= age <= cfg.max_age:
-                configs[ref.key] = cfg
-                break
+    for metric in ["fc", "spo2", "temp", "pas", "pad", "fr", "gcs"]:
+        configs[metric] = repo.get_config(metric, age)
     return configs
 
 def render_vital_sign_input(
+    col, 
+    metric_key: str, 
     label: str, 
-    key: str, 
-    metric: str, 
-    config: Any,
-    widget_type: str = "number",
-    step: float = 1.0, 
-    help_text: str = None
+    unit: str, 
+    min_val: float, 
+    max_val: float, 
+    default: float, 
+    step: float, 
+    help_text: str,
+    config: Optional[Any] = None
 ):
-    """Renderiza un input (slider o number) con feedback visual."""
-    
-    # Configuración por defecto si falla carga
-    min_val = 0.0
-    max_val = 1000.0
-    default_val = None
-    
-    if config:
-        min_val = float(config.val_min)
-        max_val = float(config.val_max)
-        default_val = float(config.default_value)
-    
-    # Obtener valor actual
-    current_val = st.session_state.datos_paciente.get('vital_signs', {}).get(metric)
-    
-    # Inicializar con default si es None
-    if current_val is None and default_val is not None:
-        current_val = default_val
-
-    # Renderizar Widget
-    val = None
-    if widget_type == "slider":
-        # Asegurar rango válido para slider
-        s_min = max(min_val, 0.0) # Evitar negativos raros si no aplica
-        s_max = min(max_val, 300.0) # Cap visual razonable
+    """Helper para renderizar un input de signo vital con feedback visual inmediato."""
+    with col:
+        current_val = st.session_state.datos_paciente.get('vital_signs', {}).get(metric_key)
         
-        # Ajustes específicos por métrica para UX (Rangos visuales útiles, no absolutos de error)
-        if metric == "fc": s_min, s_max = 30.0, 200.0
-        if metric == "spo2": s_min, s_max = 70.0, 100.0
-        if metric == "eva": s_min, s_max = 0.0, 10.0
-        
-        val = st.slider(
-            label, 
-            min_value=float(s_min), 
-            max_value=float(s_max), 
-            value=float(current_val) if current_val is not None else float(s_min),
-            step=step,
-            key=key,
-            help=help_text
-        )
-    else:
+        # Si no hay valor actual, usar None para permitir placeholder o vacío si se desea, 
+        # pero number_input requiere un valor numérico por defecto.
+        # Usamos el default si no existe.
         val = st.number_input(
-            label, 
+            f"{label} ({unit})", 
             min_value=min_val, 
             max_value=max_val, 
-            value=float(current_val) if current_val is not None else None, 
+            value=float(current_val) if current_val is not None else None,
             step=step,
-            key=key,
-            help=help_text
+            key=f"vs_{metric_key}",
+            help=help_text,
+            placeholder="-"
         )
-    
-    # Guardar y Evaluar
-    if 'vital_signs' not in st.session_state.datos_paciente:
-        st.session_state.datos_paciente['vital_signs'] = {}
-    
-    if val is not None:
-        st.session_state.datos_paciente['vital_signs'][metric] = val
         
-        # Feedback Visual Inmediato
-        if config:
-            color, _, label_txt = evaluate_vital_sign(val, config)
+        # Guardar en estado
+        if 'vital_signs' not in st.session_state.datos_paciente:
+            st.session_state.datos_paciente['vital_signs'] = {}
             
-            color_map = {
-                "red": "🔴", "orange": "🟠", "yellow": "🟡", "green": "🟢", "gray": "⚪", "black": "⚫"
-            }
-            st.caption(f"{color_map.get(color, '⚪')} {label_txt}")
+        st.session_state.datos_paciente['vital_signs'][metric_key] = val
+        
+        # Feedback visual inmediato (simulado o calculado)
+        if val is not None and config:
+            # Evaluar
+            prio, color, _ = evaluate_vital_sign(val, config)
+            # Mostrar indicador
+            color_map = {"green": "🟢", "yellow": "🟡", "orange": "🟠", "red": "🔴", "gray": "⚪"}
+            st.caption(f"Nivel: {color_map.get(color, '⚪')}")
 
 def render_vital_signs_form(age: int = 40):
     """Renderiza el formulario completo de signos vitales."""
@@ -122,47 +85,23 @@ def render_vital_signs_form(age: int = 40):
     with st.container(border=True):
         st.markdown('<span class="vital-signs-grid" style="display:none"></span>', unsafe_allow_html=True)
         
-        # Helper para generar help text
-        def get_help(cfg):
-            if not cfg: return None
-            return f"Normal: {cfg.normal_min} - {cfg.normal_max}"
-
-        # Fila 1: Sliders Principales (FC, SpO2, EVA)
+        # Fila 1: FC, SpO2, Temp
         c1, c2, c3 = st.columns(3)
-        with c1:
-            cfg = configs.get("fc")
-            render_vital_sign_input("Frecuencia Cardíaca (ppm)", "vs_fc", "fc", cfg, widget_type="slider", step=1.0, help_text=get_help(cfg))
-        with c2:
-            cfg = configs.get("spo2")
-            render_vital_sign_input("Saturación O2 (%)", "vs_spo2", "spo2", cfg, widget_type="slider", step=1.0, help_text=get_help(cfg))
-        with c3:
-            cfg = configs.get("eva")
-            render_vital_sign_input("Escala Dolor (EVA)", "vs_eva", "eva", cfg, widget_type="slider", step=1.0, help_text=get_help(cfg))
-            
-        st.divider()
+        render_vital_sign_input(c1, "fc", "Frecuencia Cardíaca", "lpm", 0.0, 300.0, 80.0, 1.0, "Latidos por minuto", configs.get("fc"))
+        render_vital_sign_input(c2, "spo2", "Saturación O2", "%", 0.0, 100.0, 98.0, 1.0, "Porcentaje de oxígeno", configs.get("spo2"))
+        render_vital_sign_input(c3, "temp", "Temperatura", "°C", 20.0, 45.0, 36.5, 0.1, "Temperatura axilar/timpánica", configs.get("temp"))
         
-        # Fila 2: Inputs Numéricos (Temp, PAS, PAD, FR, GCS)
-        cols = st.columns(5)
-        with cols[0]:
-            cfg = configs.get("temp")
-            render_vital_sign_input("Temp (°C)", "vs_temp", "temp", cfg, step=0.1, help_text=get_help(cfg))
-        with cols[1]:
-            cfg = configs.get("pas")
-            render_vital_sign_input("PAS (mmHg)", "vs_pas", "pas", cfg, step=1.0, help_text=get_help(cfg))
-        with cols[2]:
-            cfg = configs.get("pad")
-            render_vital_sign_input("PAD (mmHg)", "vs_pad", "pad", cfg, step=1.0, help_text=get_help(cfg))
-        with cols[3]:
-            cfg = configs.get("fr")
-            render_vital_sign_input("FR (rpm)", "vs_fr", "fr", cfg, step=1.0, help_text=get_help(cfg))
-        with cols[4]:
-            cfg = configs.get("gcs")
-            render_vital_sign_input("Glasgow", "vs_gcs", "gcs", cfg, step=1.0, help_text=get_help(cfg))
-            
-        st.divider()
-        
-        # Fila 3: Pupilas y O2
-        c_pup, c_o2 = st.columns([2, 1])
+        # Fila 2: TA (PAS/PAD), FR, GCS
+        c4, c5, c6 = st.columns(3)
+        # PAS
+        render_vital_sign_input(c4, "pas", "Presión Art. Sistólica", "mmHg", 0.0, 300.0, 120.0, 1.0, "Tensión Alta", configs.get("pas"))
+        # FR
+        render_vital_sign_input(c5, "fr", "Frecuencia Respiratoria", "rpm", 0.0, 100.0, 16.0, 1.0, "Respiraciones por minuto", configs.get("fr"))
+        # GCS (Glasgow)
+        render_vital_sign_input(c6, "gcs", "Escala Glasgow", "pts", 3.0, 15.0, 15.0, 1.0, "Nivel de conciencia (3-15)", configs.get("gcs"))
+
+        # Fila 3: Pupilas y O2 y Hidratación
+        c_pup, c_o2, c_hyd = st.columns([2, 1, 2])
         with c_pup:
             pupilas_opts = ["Normal", "Lenta", "Fijas", "Anisocoria", "Puntiformes"]
             current_pupilas = st.session_state.datos_paciente.get('vital_signs', {}).get('pupilas', "Normal")
@@ -190,11 +129,26 @@ def render_vital_signs_form(age: int = 40):
             )
             st.session_state.datos_paciente['vital_signs']['oxigeno_suplementario'] = o2
 
+        with c_hyd:
+             hyd_opts = ["Normal", "Deshidratación Leve", "Deshidratación Moderada", "Shock/Severa"]
+             current_hyd = st.session_state.datos_paciente.get('vital_signs', {}).get('hidratacion', "Normal")
+             hyd = st.selectbox(
+                 "Estado Hidratación",
+                 hyd_opts,
+                 index=hyd_opts.index(current_hyd) if current_hyd in hyd_opts else 0,
+                 key="vs_hyd",
+                 help="Evaluar mucosas, turgencia piel"
+             )
+             st.session_state.datos_paciente['vital_signs']['hidratacion'] = hyd
+
     # --- RESULTADO EN TIEMPO REAL ---
     st.markdown("### 🚦 Resultado de Triaje (Signos Vitales)")
     
-    # Calcular resultado
+    # Calcular resultado Triaje
     result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
+    
+    # Calcular NEWS
+    news_result = calculate_news_score(st.session_state.datos_paciente.get('vital_signs', {}))
     
     final_color = result["final_color"]
     final_label = result["label"]
@@ -207,17 +161,40 @@ def render_vital_signs_form(age: int = 40):
     bg_color = css_colors.get(final_color, "#6c757d")
     text_color = "black" if final_color == "yellow" else "white"
     
-    st.markdown(f"""
-        <div style="background-color: {bg_color}; color: {text_color}; padding: 20px; border-radius: 10px; text-align: center; margin-top: 10px;">
-            <h2 style="margin:0;">{final_label}</h2>
-            <p style="margin:5px 0 0 0; font-size: 1.2em;">Tiempo Máximo de Atención: <strong>{wait_time}</strong></p>
-        </div>
-    """, unsafe_allow_html=True)
+    c_res1, c_res2 = st.columns(2)
+    with c_res1:
+        st.markdown(f"""
+            <div style="background-color: {bg_color}; color: {text_color}; padding: 20px; border-radius: 10px; text-align: center; margin-top: 10px;">
+                <h3 style="margin:0;">Triaje: {final_label}</h3>
+                <p style="margin:5px 0 0 0; font-size: 1em;">Espera Máx: <strong>{wait_time}</strong></p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+    with c_res2:
+        n_color = news_result['color']
+        n_score = news_result['score']
+        n_risk = news_result['risk']
+        bg_color_n = css_colors.get(n_color, "#6c757d")
+        text_color_n = "black" if n_color == "yellow" else "white"
+        
+        st.markdown(f"""
+            <div style="background-color: {bg_color_n}; color: {text_color_n}; padding: 20px; border-radius: 10px; text-align: center; margin-top: 10px;">
+                <h3 style="margin:0;">NEWS2: {n_score}</h3>
+                <p style="margin:5px 0 0 0; font-size: 1em;">Riesgo: <strong>{n_risk}</strong></p>
+            </div>
+        """, unsafe_allow_html=True)
     
     # Detalles (Expandible)
-    with st.expander("Ver detalles de clasificación"):
-        for det in result["details"]:
-            icon = {"green": "🟢", "yellow": "🟡", "orange": "🟠", "red": "🔴", "black": "⚫", "gray": "⚪"}.get(det['color'], '⚪')
-            st.markdown(f"**{det['metric'].upper()}**: {det['value']} -> {icon} {det['label']}")
+    with st.expander("Ver detalles de clasificación y NEWS"):
+        c_det1, c_det2 = st.columns(2)
+        with c_det1:
+            st.markdown("##### Triaje")
+            for det in result["details"]:
+                st.write(f"- {det}")
+        with c_det2:
+            st.markdown("##### NEWS2")
+            for det in news_result["details"]:
+                st.write(f"- {det}")
+            st.caption(f"Acción: {news_result['action']}")
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/vital_signs_form.py</div>', unsafe_allow_html=True)

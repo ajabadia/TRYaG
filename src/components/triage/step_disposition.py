@@ -6,7 +6,7 @@ Permite asignar sala de espera, rechazar o devolver a admisión.
 """
 import streamlit as st
 from datetime import datetime
-from services.patient_flow_service import completar_triaje, rechazar_paciente, reassign_patient_flow
+from services.patient_flow_service import completar_triaje, rechazar_paciente, reassign_patient_flow, save_triage_data
 from services.room_service import obtener_salas_por_tipo
 
 def render_step_disposition():
@@ -19,6 +19,10 @@ def render_step_disposition():
         return False
         
     st.info(f"Triaje completado para: **{p.get('nombre')} {p.get('apellido1')}**")
+    
+    # --- ÓRDENES Y PLANIFICACIÓN (NUEVO) ---
+    from components.triage.disposition_form import render_disposition_form
+    render_disposition_form()
     
     # --- Generación de Informe ---
     from services.report_service import generate_triage_pdf
@@ -78,6 +82,15 @@ def render_step_disposition():
                     st.rerun()
             
             if st.button("Confirmar Derivación a Box", type="primary", use_container_width=True):
+                # Guardar datos completos antes de derivar
+                full_data = {
+                    "datos_paciente": st.session_state.datos_paciente,
+                    "resultado": st.session_state.resultado,
+                    "evaluator_id": "system", # TODO: Usar usuario real
+                    "contingency_mode": st.session_state.get('contingency_mode', False)
+                }
+                save_triage_data(p['patient_code'], full_data)
+                
                 if completar_triaje(p['patient_code'], current_selection):
                     st.success(f"Paciente derivado a {current_selection}")
                     st.session_state.triage_step = 1 # Volver a lista
@@ -126,6 +139,15 @@ def render_step_disposition():
                     st.rerun()
             
             if st.button("Confirmar Derivación a Consulta", type="primary", use_container_width=True):
+                # Guardar datos completos
+                full_data = {
+                    "datos_paciente": st.session_state.datos_paciente,
+                    "resultado": st.session_state.resultado,
+                    "evaluator_id": "system",
+                    "contingency_mode": st.session_state.get('contingency_mode', False)
+                }
+                save_triage_data(p['patient_code'], full_data)
+                
                 if completar_triaje(p['patient_code'], current_cons):
                     st.success(f"Paciente derivado a {current_cons}")
                     st.session_state.triage_step = 1

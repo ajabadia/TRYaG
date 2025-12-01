@@ -84,15 +84,44 @@ class TriageReportGenerator(FPDF):
         self.field("Género", self.patient.get('gender', 'No disponible'))
         self.ln(5)
 
-        # 2. Motivo de Consulta
-        self.section_title("Motivo de Consulta")
+        # 2. Motivo de Consulta y HDA
+        self.section_title("Motivo de Consulta y Enfermedad Actual")
         self.set_font('Helvetica', '', 10)
         motivo = self.record.get('motivo_consulta', 'No disponible')
-        self.multi_cell(0, 6, self._sanitize(motivo if motivo else "No disponible"))
+        self.multi_cell(0, 6, self._sanitize(f"Motivo: {motivo}"))
+        
+        # HDA (ALICIA)
+        hda = []
+        if self.patient.get('hda_aparicion'): hda.append(f"Aparición: {self.patient.get('hda_aparicion')}")
+        if self.patient.get('hda_localizacion'): hda.append(f"Localización: {self.patient.get('hda_localizacion')}")
+        if self.patient.get('hda_intensidad'): hda.append(f"Intensidad: {self.patient.get('hda_intensidad')}")
+        if self.patient.get('hda_caracter'): hda.append(f"Carácter: {self.patient.get('hda_caracter')}")
+        if self.patient.get('hda_irradiacion'): hda.append(f"Irradiación: {self.patient.get('hda_irradiacion')}")
+        if self.patient.get('hda_atenuantes'): hda.append(f"Atenuantes/Agravantes: {self.patient.get('hda_atenuantes')}")
+        
+        if hda:
+            self.ln(2)
+            self.set_font('Helvetica', 'B', 10)
+            self.cell(0, 6, "Historia de la Enfermedad Actual (ALICIA):", ln=True)
+            self.set_font('Helvetica', '', 10)
+            for line in hda:
+                self.multi_cell(0, 6, self._sanitize(f"- {line}"))
+                
+        # Datos Administrativos
+        admin_data = []
+        if self.patient.get('fuente_informacion'): admin_data.append(f"Fuente: {self.patient.get('fuente_informacion')}")
+        if self.patient.get('referencia'): admin_data.append(f"Referencia: {self.patient.get('referencia')}")
+        if self.patient.get('seguro'): admin_data.append(f"Seguro: {self.patient.get('seguro')}")
+        
+        if admin_data:
+            self.ln(2)
+            self.set_font('Helvetica', 'I', 9)
+            self.multi_cell(0, 6, self._sanitize(" | ".join(admin_data)))
+
         self.ln(5)
 
         # 3. Signos Vitales
-        self.section_title("Signos Vitales")
+        self.section_title("Signos Vitales y Escalas")
         
         if not self.vitals:
             self.set_font('Helvetica', 'I', 10)
@@ -113,7 +142,8 @@ class TriageReportGenerator(FPDF):
             metrics_map = {
                 "fc": "Frecuencia Cardíaca", "spo2": "Saturación O2", "temp": "Temperatura",
                 "pas": "Presión Sistólica", "pad": "Presión Diastólica", "fr": "Frec. Respiratoria",
-                "gcs": "Glasgow", "eva": "Dolor (EVA)", "pupilas": "Pupilas"
+                "gcs": "Glasgow", "eva": "Dolor (EVA)", "pupilas": "Pupilas",
+                "oxigeno_suplementario": "Oxígeno Supl.", "hidratacion": "Hidratación"
             }
             
             # Detalles del cálculo (si existen) para obtener colores/labels
@@ -121,11 +151,15 @@ class TriageReportGenerator(FPDF):
             details_dict = {d['metric']: d for d in details}
             
             for key, val in self.vitals.items():
-                if key in ['oxigeno_suplementario', 'notas']: continue
+                if key in ['notas']: continue
                 
                 label = metrics_map.get(key, key.upper())
                 det = details_dict.get(key, {})
                 status = det.get('label', '-')
+                
+                # Formateo especial booleanos
+                if isinstance(val, bool):
+                    val = "Sí" if val else "No"
                 
                 self.cell(col_widths[0], 7, self._sanitize(label), border=1)
                 self.cell(col_widths[1], 7, self._sanitize(str(val)), border=1, align='C')
@@ -134,28 +168,64 @@ class TriageReportGenerator(FPDF):
             
         self.ln(5)
 
-        # 4. Antecedentes (Resumen)
-        self.section_title("Antecedentes Relevantes")
+        # 4. Historia Clínica Integral
+        self.section_title("Historia Clínica Integral")
+        
+        # Antecedentes (Legacy + Extended)
         bg = self.record.get('patient_background', {})
         
-        has_bg_data = False
-        if bg:
-            if bg.get('allergies'): has_bg_data = True
-            if bg.get('pathologies'): has_bg_data = True
-            if bg.get('medications'): has_bg_data = True
-
-        if not bg or not has_bg_data:
-            self.multi_cell(0, 6, "No disponible")
-        else:
-            if bg.get('allergies'):
-                self.field("Alergias", ", ".join([a.get('agent', '') for a in bg.get('allergies', [])]))
-            if bg.get('pathologies'):
-                self.field("Patologías", ", ".join([p.get('name', '') for p in bg.get('pathologies', [])]))
-            if bg.get('medications'):
-                self.field("Medicación", bg.get('medications'))
+        # Combinar legacy con extended si existen
+        allergies = bg.get('allergies', [])
+        pathologies = bg.get('pathologies', [])
+        medications = bg.get('medications', '')
+        
+        if allergies: self.field("Alergias", ", ".join([a.get('agent', '') for a in allergies]))
+        if pathologies: self.field("Antecedentes Personales", ", ".join([p.get('name', '') for p in pathologies]))
+        if medications: self.field("Medicación Habitual", medications)
+        
+        # Campos extendidos (extended_history.py)
+        ext_fields = {
+            "ant_familiares": "Antecedentes Familiares",
+            "ant_psiquiatricos": "Psiquiatría/Salud Mental",
+            "ant_quirurgicos": "Antecedentes Quirúrgicos",
+            "habitos_toxicos": "Hábitos Tóxicos",
+            "nutricion_dieta": "Nutrición y Dieta",
+            "viajes_recientes": "Viajes/Exposición",
+            "sensorial_ayudas": "Déficits Sensoriales",
+            "dolor_cronico": "Historia de Dolor",
+            "hospitalizaciones_previas": "Hospitalizaciones Previas",
+            "situacion_legal": "Situación Legal/Social"
+        }
+        
+        for key, label in ext_fields.items():
+            val = self.patient.get(key)
+            if val:
+                self.field(label, val)
+                
         self.ln(5)
 
-        # 5. Resultado del Triaje
+        # 5. Valoración de Enfermería
+        self.section_title("Valoración de Enfermería")
+        
+        nursing_data = []
+        if self.patient.get('skin_integrity'): nursing_data.append(f"Piel: {self.patient.get('skin_integrity')} ({self.patient.get('skin_color', '')})")
+        if self.patient.get('fall_risk'): nursing_data.append(f"Riesgo Caídas: {self.patient.get('fall_risk')}")
+        if self.patient.get('nut_disfagia'): nursing_data.append("Riesgo Aspiración: Sí")
+        if self.patient.get('id_bracelet'): nursing_data.append("Pulsera ID: Colocada")
+        
+        if nursing_data:
+            for item in nursing_data:
+                self.multi_cell(0, 6, self._sanitize(f"- {item}"))
+        else:
+            self.multi_cell(0, 6, "No registrada")
+            
+        if self.patient.get('belongings'):
+            self.ln(2)
+            self.field("Pertenencias", self.patient.get('belongings'))
+
+        self.ln(5)
+
+        # 6. Resultado del Triaje
         self.section_title("Clasificación de Triaje")
         
         level = self.result.get('final_priority', 0)
@@ -187,6 +257,21 @@ class TriageReportGenerator(FPDF):
         dest = self.record.get('destination', 'Sala de Espera')
         self.cell(0, 8, self._sanitize(f"Destino: {dest}"), ln=True, align='C')
         
+        # Órdenes Iniciales
+        orders = []
+        if self.patient.get('order_diet'): orders.append(f"Dieta: {self.patient.get('order_diet')}")
+        if self.patient.get('order_iv'): orders.append("Acceso IV: Sí")
+        if self.patient.get('order_labs'): orders.append(f"Labs: {', '.join(self.patient.get('order_labs'))}")
+        if self.patient.get('order_meds_stat'): orders.append(f"Meds STAT: {self.patient.get('order_meds_stat')}")
+        
+        if orders:
+            self.ln(5)
+            self.set_font('Helvetica', 'B', 10)
+            self.cell(0, 6, "Órdenes Iniciales:", ln=True)
+            self.set_font('Helvetica', '', 10)
+            for o in orders:
+                self.multi_cell(0, 6, self._sanitize(f"- {o}"))
+
         self.ln(10)
         
         # Firma

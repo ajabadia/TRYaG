@@ -63,7 +63,21 @@ def render_step_attention() -> bool:
 
     # --- Header del Paciente ---
     st.subheader("3️⃣ Acto Clínico")
-    _render_patient_header(paciente, flujo_paciente)
+    
+    from ui.components.common.patient_card import render_patient_header
+    
+    # Adaptar datos para el header
+    # El header espera un objeto triage_result opcional para el nivel.
+    # Podemos pasar el estado del flujo como "nivel" para que se vea destacado si queremos,
+    # o simplemente dejar que el header muestre lo básico.
+    # El header actual muestra: Nombre, ID, Edad, Origen, y Nivel (Badge).
+    
+    # En boxes, el "nivel" podría ser el nivel de triaje si existe.
+    # El objeto `flujo_paciente` tiene info del flujo. `paciente` tiene info demográfica.
+    # Si queremos mostrar el nivel de triaje, deberíamos tenerlo.
+    # Por ahora, usamos el header estándar.
+    
+    render_patient_header(paciente)
 
     # --- Stepper Navigation ---
     steps = {
@@ -97,21 +111,7 @@ def render_step_attention() -> bool:
 
     return True
 
-def _render_patient_header(paciente, flujo):
-    with st.container(border=True):
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            nombre = f"{paciente.get('nombre')} {paciente.get('apellido1')} {paciente.get('apellido2', '')}"
-            st.markdown(f"### 👤 {nombre}")
-            st.caption(f"ID: `{paciente.get('patient_code')}` | SS: {paciente.get('num_ss', 'N/A')}")
-        with col2:
-            edad = calcular_edad(paciente.get('fecha_nacimiento'))
-            st.markdown(f"**Edad:** {edad} años")
-            st.markdown(f"**Sexo:** {paciente.get('sexo', 'N/A')}")
-        with col3:
-            hora_inicio = flujo.get('entrada').strftime('%H:%M') if flujo.get('entrada') else "--:--"
-            st.markdown(f"**Inicio:** {hora_inicio}")
-            st.markdown(f"**Estado:** {flujo.get('estado')}")
+
 
 def _render_step_anamnesis(data):
     st.markdown("#### 📝 Anamnesis y Exploración Física")

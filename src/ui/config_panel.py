@@ -161,7 +161,7 @@ def mostrar_panel_configuracion():
         st.markdown("### :material/tune: Configuración General")
         
         # Sub-tabs de General
-        gen_tabs = ["📱 Aplicación", "📷 Equipamiento", "💓 Signos Vitales", "📋 Opciones Clínicas"]
+        gen_tabs = ["📱 Aplicación", "📷 Equipamiento", "💓 Signos Vitales", "📋 Opciones Clínicas", "🏥 Aseguradoras"]
         
         if has_permission("configuracion", "prompts"):
             gen_tabs.append("📝 Prompts IA")
@@ -182,6 +182,7 @@ def mostrar_panel_configuracion():
         subtab_equip = get_tab("📷 Equipamiento")
         subtab_vitals = get_tab("💓 Signos Vitales")
         subtab_clinical = get_tab("📋 Opciones Clínicas")
+        subtab_insurers = get_tab("🏥 Aseguradoras")
         subtab_prompts = get_tab("📝 Prompts IA")
         subtab_notif = get_tab("🔔 Notificaciones")
         
@@ -196,6 +197,10 @@ def mostrar_panel_configuracion():
         with subtab_clinical:
             from ui.config.clinical_options_manager import render_clinical_options_manager
             render_clinical_options_manager()
+            
+        with subtab_insurers:
+            from ui.config.insurers_manager import render_insurers_manager
+            render_insurers_manager()
             
         if subtab_prompts:
             with subtab_prompts:

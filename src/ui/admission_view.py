@@ -120,14 +120,17 @@ def mostrar_admision():
                 # Resumen rápido
                 patient_code = st.session_state.get('admission_patient_code')
                 paciente = obtener_paciente_por_codigo(patient_code)
-                nombre = f"{paciente.get('nombre')} {paciente.get('apellido1')}"
                 
-                with st.container(border=True):
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        st.markdown(f"**Paciente:** {nombre}")
-                    with c2:
-                        st.markdown(f"**Destino:** {triaje_selected}")
+                from ui.components.common.patient_card import render_patient_card
+                
+                # Mostrar card sin acciones, solo info
+                render_patient_card(
+                    patient=paciente,
+                    show_triage_level=False,
+                    show_wait_time=False,
+                    show_location=False, # La ubicación actual no es relevante, es la destino la que importa
+                    key_prefix="adm_confirm"
+                )
                 
                 # Acciones Principales
                 col_confirm, col_change = st.columns([2, 1])

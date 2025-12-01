@@ -229,6 +229,7 @@ def render_step_patient_selection() -> bool:
             st.session_state.datos_paciente = {
                 "texto_medico": "",
                 "edad": st.session_state.triage_patient.get('edad', 40) if st.session_state.triage_patient else 40,
+                "gender": st.session_state.triage_patient.get('gender'),
                 "dolor": 5,
                 "imagenes": [],
                 "imagenes_confirmadas_ia": [],

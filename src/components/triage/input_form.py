@@ -55,6 +55,8 @@ def render_input_form():
     """
     Renderiza el formulario de entrada de datos del paciente.
     """
+    reset_count = st.session_state.get('reset_count', 0)
+
     # --- CALLBACKS DE INTEGRACIÓN ---
     
     def on_audio_confirmed(audio_wrappers):
@@ -115,6 +117,30 @@ def render_input_form():
 
         is_step1_disabled = st.session_state.analysis_complete
         is_editing = st.session_state.is_editing_text
+        
+        # --- DATOS ADMINISTRATIVOS (NUEVO) ---
+        with st.expander("📋 Datos Administrativos y Logística", expanded=False):
+            c_adm1, c_adm2, c_adm3 = st.columns(3)
+            with c_adm1:
+                st.session_state.datos_paciente['fuente_informacion'] = st.selectbox(
+                    "Fuente de Información", 
+                    ["Paciente", "Familiar/Cuidador", "Servicio de Emergencias (EMS)", "Testigos", "Otro"],
+                    index=0, disabled=is_step1_disabled, key=f"admin_source_{reset_count}"
+                )
+            with c_adm2:
+                st.session_state.datos_paciente['referencia'] = st.text_input(
+                    "Médico/Centro Referente", 
+                    value=st.session_state.datos_paciente.get('referencia', ''),
+                    placeholder="Ej. CAP Norte, Dr. Smith",
+                    disabled=is_step1_disabled, key=f"admin_ref_{reset_count}"
+                )
+            with c_adm3:
+                st.session_state.datos_paciente['seguro'] = st.text_input(
+                    "Situación de Aseguramiento",
+                    value=st.session_state.datos_paciente.get('seguro', ''),
+                    placeholder="Ej. Seguridad Social, Privado...",
+                    disabled=is_step1_disabled, key=f"admin_ins_{reset_count}"
+                )
         
         # --- SECCIÓN 1: ENTRADA DE DATOS MULTIMODAL ---
         
@@ -186,21 +212,51 @@ def render_input_form():
         st.session_state.datos_paciente['texto_medico'] = texto_medico
         is_text_valid = len(texto_medico) >= get_min_chars_motivo()
 
+        # --- HDA DETALLADA (NUEVO) ---
+        with st.expander("🧐 Historia de la Enfermedad Actual (HDA - ALICIA)", expanded=False):
+            st.caption("Desglose estructurado del motivo de consulta.")
+            c_hda1, c_hda2 = st.columns(2)
+            with c_hda1:
+                st.session_state.datos_paciente['hda_aparicion'] = st.text_input("Aparición (Inicio)", value=st.session_state.datos_paciente.get('hda_aparicion', ''), disabled=is_step1_disabled, key=f"hda_onset_{reset_count}")
+                st.session_state.datos_paciente['hda_localizacion'] = st.text_input("Localización", value=st.session_state.datos_paciente.get('hda_localizacion', ''), disabled=is_step1_disabled, key=f"hda_loc_{reset_count}")
+                st.session_state.datos_paciente['hda_intensidad'] = st.text_input("Intensidad", value=st.session_state.datos_paciente.get('hda_intensidad', ''), disabled=is_step1_disabled, key=f"hda_int_{reset_count}")
+            with c_hda2:
+                st.session_state.datos_paciente['hda_caracteristicas'] = st.text_input("Características (Tipo dolor)", value=st.session_state.datos_paciente.get('hda_caracteristicas', ''), disabled=is_step1_disabled, key=f"hda_char_{reset_count}")
+                st.session_state.datos_paciente['hda_irradiacion'] = st.text_input("Irradiación", value=st.session_state.datos_paciente.get('hda_irradiacion', ''), disabled=is_step1_disabled, key=f"hda_rad_{reset_count}")
+                st.session_state.datos_paciente['hda_alivio'] = st.text_input("Alivio/Agravantes", value=st.session_state.datos_paciente.get('hda_alivio', ''), disabled=is_step1_disabled, key=f"hda_agg_{reset_count}")
+            
+            st.divider()
+            c_hda3, c_hda4 = st.columns(2)
+            with c_hda3:
+                st.session_state.datos_paciente['hda_sintomas_asoc'] = st.text_area("Síntomas Acompañantes", value=st.session_state.datos_paciente.get('hda_sintomas_asoc', ''), height=68, placeholder="Fiebre, náuseas...", disabled=is_step1_disabled, key=f"hda_assoc_{reset_count}")
+            with c_hda4:
+                st.session_state.datos_paciente['hda_tratamiento_casa'] = st.text_area("Tratamiento Domiciliario", value=st.session_state.datos_paciente.get('hda_tratamiento_casa', ''), height=68, placeholder="Qué tomó antes de venir...", disabled=is_step1_disabled, key=f"hda_home_tx_{reset_count}")
+
         # --- EDAD (Oculto si existe) ---
         default_age = st.session_state.datos_paciente.get('edad', 40)
         # Si no hay edad en datos_paciente (ej: paciente nuevo sin seleccionar), mostrar input
         if 'edad' not in st.session_state.datos_paciente or st.session_state.datos_paciente['edad'] is None:
              st.session_state.datos_paciente['edad'] = st.number_input("Edad", 0, 120, default_age, disabled=is_step1_disabled, key=f"edad_input_{reset_count}")
         
+        # --- CONTEXTO CLÍNICO (MODULARIZADO) ---
+        from components.triage.clinical_context import render_clinical_context_form
+        render_clinical_context_form(reset_count, disabled=is_step1_disabled)
+
         # --- ANTECEDENTES CLÍNICO (MODULARIZADO) ---
         render_patient_background_form(reset_count, disabled=is_step1_disabled)
+        
+        # --- HISTORIA INTEGRAL (NUEVO) ---
+        from components.triage.extended_history import render_extended_history_form
+        render_extended_history_form(disabled=is_step1_disabled)
+
         if not is_step1_disabled:
             # Pasamos la edad explícitamente para que vital_signs_form pueda cargar la config correcta
             render_vital_signs_form(age=st.session_state.datos_paciente.get('edad'))
             
-            # --- ALERTAS PREDICTIVAS (NUEVO) ---
+            # --- ALERTAS PREDICTIVAS (MODULARIZADO) ---
             # Solo mostrar si hay signos vitales registrados y está habilitado en config
             from src.db.repositories.general_config import get_general_config_repository
+            from components.triage.risk_analysis_panel import render_risk_analysis_panel
             
             # Asegurar config cargada
             if 'general_config' not in st.session_state:
@@ -208,78 +264,8 @@ def render_input_form():
             
             enable_predictive = st.session_state.general_config.get('enable_predictive_alerts', True)
 
-            if st.session_state.datos_paciente.get('vital_signs') and enable_predictive:
-                with st.expander("🛡️ Análisis de Riesgos (Pre-Triaje)", expanded=True):
-                    col_pred_btn, col_pred_res = st.columns([1, 3])
-                    
-                    with col_pred_btn:
-                        if st.button("Verificar Riesgos", help="Analizar signos vitales con IA para detectar riesgos inminentes", key="btn_predictive_check"):
-                            with st.spinner("Analizando riesgos..."):
-                                from services.predictive_service import generar_alertas_predictivas
-                                
-                                # Preparar datos
-                                antecedentes_txt = st.session_state.datos_paciente.get('antecedentes', '')
-                                alergias_txt = st.session_state.datos_paciente.get('alergias_txt', '')
-                                
-                                pred_result, _ = generar_alertas_predictivas(
-                                    edad=st.session_state.datos_paciente.get('edad'),
-                                    vital_signs=st.session_state.datos_paciente.get('vital_signs'),
-                                    antecedentes=antecedentes_txt,
-                                    alergias=alergias_txt
-                                )
-                                st.session_state.predictive_result = pred_result
-                    
-                    with col_pred_res:
-                        if 'predictive_result' in st.session_state and st.session_state.predictive_result:
-                            res = st.session_state.predictive_result
-                            
-                            # Etiqueta de origen IA
-                            st.caption("🤖 Análisis IA Generativa")
-                            
-                            if res.get("status") == "ERROR":
-                                st.error(f"Error en análisis: {res.get('msg')}")
-                            else:
-                                risk = res.get("risk_level", "Low")
-                                alerts = res.get("alerts", [])
-                                
-                                if risk == "High":
-                                    st.error(f"🚨 RIESGO ALTO DETECTADO")
-                                    for alert in alerts:
-                                        st.markdown(f"- **{alert}**")
-                                elif risk == "Medium":
-                                    st.warning(f"⚠️ RIESGO MODERADO")
-                                    for alert in alerts:
-                                        st.markdown(f"- {alert}")
-                                else:
-                                    st.success("✅ Sin riesgos inminentes detectados por la IA.")
-                                    if alerts:
-                                        for alert in alerts:
-                                            st.caption(f"- {alert}")
-                                
-                                # --- VALIDACIÓN HUMANA ---
-                                st.divider()
-                                st.markdown("**¿Es correcta esta predicción?**")
-                                c_val_1, c_val_2 = st.columns(2)
-                                
-                                # Claves únicas para los botones
-                                key_up = "pred_val_up"
-                                key_down = "pred_val_down"
-                                
-                                if st.button("👍 Correcto", key=key_up, use_container_width=True):
-                                    st.toast("Gracias por tu feedback (Positivo)", icon="✅")
-                                    # Aquí se podría guardar en BD
-                                    st.session_state.predictive_feedback = "positive"
-                                    
-                                if st.button("👎 Incorrecto", key=key_down, use_container_width=True):
-                                    st.toast("Gracias por tu feedback (Negativo)", icon="📝")
-                                    # Aquí se podría guardar en BD
-                                    st.session_state.predictive_feedback = "negative"
-                                    
-                                if 'predictive_feedback' in st.session_state:
-                                    if st.session_state.predictive_feedback == "positive":
-                                        st.caption("✅ Validado positivamente")
-                                    else:
-                                        st.caption("❌ Marcado como incorrecto")
+            if st.session_state.datos_paciente.get('vital_signs'):
+                render_risk_analysis_panel(st.session_state.datos_paciente, enable_predictive)
 
         elif 'vital_signs' in st.session_state.datos_paciente:
              st.info("Signos vitales registrados.")
@@ -438,31 +424,36 @@ def render_input_form():
                     configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))
                     triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
                     
-                    # Preparar datos de alergias (Priorizar info completa)
-                    alergias_info = st.session_state.datos_paciente.get('alergias_info_completa')
-                    if not alergias_info:
-                        # Fallback a lógica antigua
-                        alergias_info = st.session_state.datos_paciente.get('alergias_selector', 'No')
-                        if alergias_info != "No":
-                            detalles = st.session_state.datos_paciente.get('alergias_txt', '')
-                            if detalles:
-                                alergias_info += f": {detalles}"
+                    # Verificar Modo Contingencia
+                    from services.contingency_service import is_contingency_active, save_triage_locally
                     
-                    resultado_ia, _ = llamar_modelo_gemini(
-                        texto_completo, 
-                        st.session_state.datos_paciente['edad'], 
-                        st.session_state.datos_paciente['dolor'], 
-                        vital_signs=st.session_state.datos_paciente.get('vital_signs'),
-                        imagen=imagen_pil,
-                        triage_result=triage_result,
-                        antecedentes=st.session_state.datos_paciente.get('antecedentes'),
-                        alergias=alergias_info
-                    )
-                    procesar_respuesta_ia(resultado_ia)
-                    if st.session_state.resultado and st.session_state.resultado.get("status") != "ERROR":
+                    if is_contingency_active():
+                        # Lógica Offline: Usar Worst Case directamente
+                        st.warning("📴 MODO CONTINGENCIA: Análisis IA deshabilitado. Usando protocolo estándar.")
+                        import time
+                        time.sleep(1) # Simular proceso
+                        
+                        st.session_state.resultado = {
+                            "status": "SUCCESS",
+                            "nivel_sugerido": triage_result.get('final_priority', 5), # Fallback a 5 si falla
+                            "razonamiento": [
+                                "Modo Contingencia Activo.",
+                                f"Clasificación basada en signos vitales: {triage_result.get('label')}",
+                                "Protocolo de seguridad activado."
+                            ]
+                        }
+                        
+                        # Guardar localmente
+                        save_triage_locally(st.session_state.datos_paciente, st.session_state.resultado)
                         st.session_state.analysis_complete = True
-                    st.rerun()
-
-
+                        st.rerun()
+                        
+                    else:
+                        # Lógica Online (IA)
+                        # Preparar datos de alergias (Priorizar info completa)
+                        alergias_info = st.session_state.datos_paciente.get('alergias_info_completa')
+                        if not alergias_info:
+                            # Fallback a lógica antigua
+                            alergias_info = st.session_state.datos_paciente.get('alergias_selector', 'No')
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/input_form.py</div>', unsafe_allow_html=True)

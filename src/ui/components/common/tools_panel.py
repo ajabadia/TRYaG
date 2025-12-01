@@ -16,7 +16,7 @@ def render_tools_panel(module_name="General", patient=None, show_pdf=True):
         show_pdf (bool): Si mostrar o no la opción de descarga de PDF.
     """
     with st.expander("🛠️ Herramientas", expanded=False):
-        cols = st.columns([1, 1])
+        cols = st.columns([1, 1, 1])
         
         with cols[0]:
             st.markdown("**Feedback**")
@@ -56,5 +56,21 @@ def render_tools_panel(module_name="General", patient=None, show_pdf=True):
                         st.caption("Sin datos para PDF")
                 else:
                     st.caption("Seleccione paciente")
+
+        with cols[2]:
+            st.markdown("**Sistema**")
+            from services.contingency_service import is_contingency_active, set_contingency_mode, get_unsynced_count
+            
+            is_offline = is_contingency_active()
+            # Toggle para simular desconexión
+            new_state = st.toggle("Modo Contingencia (Offline)", value=is_offline, key=f"toggle_offline_{module_name}")
+            
+            if new_state != is_offline:
+                set_contingency_mode(new_state)
+                st.rerun()
+                
+            unsynced = get_unsynced_count()
+            if unsynced > 0:
+                st.caption(f"⚠️ {unsynced} registros locales")
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/components/common/tools_panel.py</div>', unsafe_allow_html=True)

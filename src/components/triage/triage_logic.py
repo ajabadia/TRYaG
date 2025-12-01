@@ -123,3 +123,134 @@ def evaluate_pupilas(value: str) -> Tuple[str, int, str]:
     elif value == "Puntiformes":
         return "red", 3, "Puntiformes"
     return "gray", 0, "Desconocido"
+
+def calculate_news_score(vital_signs: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Calcula el National Early Warning Score (NEWS2).
+    Retorna score total y desglose.
+    """
+    score = 0
+    details = []
+    
+    # 1. Frecuencia Respiratoria (rpm)
+    fr = vital_signs.get('fr')
+    if fr is not None:
+        try:
+            fr = float(fr)
+            s = 0
+            if fr <= 8: s = 3
+            elif 9 <= fr <= 11: s = 1
+            elif 12 <= fr <= 20: s = 0
+            elif 21 <= fr <= 24: s = 2
+            elif fr >= 25: s = 3
+            score += s
+            if s > 0: details.append(f"FR ({fr}): +{s}")
+        except: pass
+
+    # 2. Saturación de Oxígeno (%)
+    spo2 = vital_signs.get('spo2')
+    if spo2 is not None:
+        try:
+            spo2 = float(spo2)
+            s = 0
+            if spo2 <= 91: s = 3
+            elif 92 <= spo2 <= 93: s = 2
+            elif 94 <= spo2 <= 95: s = 1
+            elif spo2 >= 96: s = 0
+            score += s
+            if s > 0: details.append(f"SpO2 ({spo2}%): +{s}")
+        except: pass
+
+    # 3. Aire u Oxígeno Suplementario
+    o2 = vital_signs.get('oxigeno_suplementario', False)
+    if o2:
+        score += 2
+        details.append("Oxígeno Suplementario: +2")
+
+    # 4. Presión Arterial Sistólica (mmHg)
+    pas = vital_signs.get('pas')
+    if pas is not None:
+        try:
+            pas = float(pas)
+            s = 0
+            if pas <= 90: s = 3
+            elif 91 <= pas <= 100: s = 2
+            elif 101 <= pas <= 110: s = 1
+            elif 111 <= pas <= 219: s = 0
+            elif pas >= 220: s = 3
+            score += s
+            if s > 0: details.append(f"PAS ({pas}): +{s}")
+        except: pass
+
+    # 5. Frecuencia Cardíaca (ppm)
+    fc = vital_signs.get('fc')
+    if fc is not None:
+        try:
+            fc = float(fc)
+            s = 0
+            if fc <= 40: s = 3
+            elif 41 <= fc <= 50: s = 1
+            elif 51 <= fc <= 90: s = 0
+            elif 91 <= fc <= 110: s = 1
+            elif 111 <= fc <= 130: s = 2
+            elif fc >= 131: s = 3
+            score += s
+            if s > 0: details.append(f"FC ({fc}): +{s}")
+        except: pass
+
+    # 6. Nivel de Conciencia (GCS < 15 o AVPU != Alert)
+    # Simplificación: Si GCS < 15 -> +3
+    gcs = vital_signs.get('gcs')
+    if gcs is not None:
+        try:
+            gcs = float(gcs)
+            if gcs < 15:
+                score += 3
+                details.append(f"Conciencia Alterada (GCS {gcs}): +3")
+        except: pass
+
+    # 7. Temperatura (°C)
+    temp = vital_signs.get('temp')
+    if temp is not None:
+        try:
+            temp = float(temp)
+            s = 0
+            if temp <= 35.0: s = 3
+            elif 35.1 <= temp <= 36.0: s = 1
+            elif 36.1 <= temp <= 38.0: s = 0
+            elif 38.1 <= temp <= 39.0: s = 1
+            elif temp >= 39.1: s = 2
+            score += s
+            if s > 0: details.append(f"Temp ({temp}): +{s}")
+        except: pass
+
+    # Interpretación
+    risk = "Bajo"
+    action = "Monitorización estándar"
+    color = "green"
+    
+    if 0 <= score <= 4:
+        risk = "Bajo"
+        action = "Monitorización cada 4-6h"
+        color = "green"
+    elif score == 3 and any("+" in d for d in details): # Un solo parámetro con 3 puntos? (Simplificado: score 3 en un parametro es RED en NEWS, pero aqui sumamos)
+        # NEWS2: Score 3 in any single parameter is Low-Medium risk requiring urgent review?
+        # Simplificamos por score total:
+        pass
+    
+    if 5 <= score <= 6:
+        risk = "Medio"
+        action = "Revisión Urgente (1h)"
+        color = "orange"
+    elif score >= 7:
+        risk = "Alto"
+        action = "Emergencia / UCI / SVA"
+        color = "red"
+
+    return {
+        "score": score,
+        "risk": risk,
+        "action": action,
+        "color": color,
+        "details": details
+    }

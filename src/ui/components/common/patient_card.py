@@ -13,6 +13,7 @@ def render_patient_card(
     show_location: bool = False,
     highlight_alert: bool = True,
     is_in_room: bool = False,
+    flow_status: dict = None,
     key_prefix: str = ""
 ):
     """
@@ -125,6 +126,10 @@ def render_patient_card(
                 st.markdown(f"**{nombre}**")
             
             edad_str = f"{patient.get('edad')} años" if patient.get('edad') is not None else ""
+            gender_str = patient.get('gender', '')
+            if gender_str and gender_str != 'No Especificado':
+                 edad_str += f" • {gender_str}"
+            
             st.caption(f"ID: `{pid}` {('• ' + edad_str) if edad_str else ''}")
             
             if show_location:
@@ -143,14 +148,32 @@ def render_patient_card(
                 
                 # Obtener color según tipo de sala (si está disponible)
                 sala_tipo = patient.get('sala_tipo')
-                # Si no tenemos el tipo explícito, intentamos inferirlo o usar default
-                # (Por ahora solo si viene en el dict)
-                
                 color = get_room_color(sala_tipo)
                 
                 st.markdown(f"📍 <span style='color:{color}; font-weight:bold;'>{loc_display}</span>", unsafe_allow_html=True)
 
+            # Mostrar estado de flujo si se proporciona
+            if flow_status:
+                estado = flow_status.get('estado', 'N/A')
+                sala_actual = flow_status.get('sala_actual', 'N/A')
+                st.markdown(f"🔄 **Estado:** {estado}")
+                if sala_actual and sala_actual != 'N/A':
+                     st.markdown(f"🏥 **Sala Actual:** {sala_actual}")
+
         with c_meta:
+            # --- INFO DE SEGURO ---
+            insurance_info = patient.get('insurance_info', {})
+            if insurance_info and insurance_info.get('has_insurance'):
+                insurer_name = insurance_info.get('insurer_name', 'Aseguradora')
+                logo_url = insurance_info.get('logo_url')
+                
+                if logo_url:
+                    st.image(logo_url, width=60, caption=insurer_name)
+                else:
+                    st.markdown(f"🏥 **{insurer_name}**")
+            elif insurance_info and not insurance_info.get('has_insurance') and insurance_info.get('type') == 'Privado':
+                st.markdown("💶 **Privado**")
+
             if show_wait_time:
                 st.markdown(f"⏱️ **{wait_str}**")
                 if highlight_alert and not is_in_room:
@@ -227,6 +250,9 @@ def render_patient_header(patient, triage_result=None):
                         edad = 'N/A'
                 
                 st.caption(f"**Edad:** {edad} años")
+                gender = patient.get('gender')
+                if gender and gender != 'No Especificado':
+                    st.caption(f"**Sexo:** {gender}")
             with c3:
                 # Mostrar sala de origen si existe
                 sala = patient.get('sala_espera_origen')

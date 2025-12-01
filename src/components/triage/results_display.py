@@ -81,5 +81,64 @@ def render_results_display():
                         st.rerun()
             else:
                 st.success(f"Calificación: **{st.session_state.calificacion_humana}**")
-    
+            
+            # --- INTEROPERABILIDAD (SIMULACIÓN FHIR) ---
+            st.divider()
+            st.markdown("##### 🌍 Interoperabilidad")
+            
+            @st.dialog("📡 Enviar a Historia Clínica (FHIR)", width="large")
+            def dialog_fhir():
+                st.info("Simulando envío de recurso **Encounter** al servidor FHIR del hospital...")
+                
+                import json
+                from datetime import datetime
+                
+                # Simular Payload
+                fhir_payload = {
+                    "resourceType": "Encounter",
+                    "status": "finished",
+                    "class": {
+                        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                        "code": "EMER",
+                        "display": "emergency"
+                    },
+                    "subject": {
+                        "reference": f"Patient/{datos_paciente.get('patient_code', 'UNKNOWN')}",
+                        "display": f"{datos_paciente.get('nombre', 'Paciente')} {datos_paciente.get('apellido1', '')}"
+                    },
+                    "period": {
+                        "start": datetime.now().isoformat(),
+                        "end": datetime.now().isoformat()
+                    },
+                    "reasonCode": [
+                        {
+                            "text": datos_paciente.get('texto_medico', 'No especificado')
+                        }
+                    ],
+                    "priority": {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/v3-ActPriority",
+                                "code": resultado['nivel']['text'],
+                                "display": resultado['nivel']['text']
+                            }
+                        ]
+                    }
+                }
+                
+                st.code(json.dumps(fhir_payload, indent=2), language="json")
+                
+                import time
+                with st.spinner("Conectando con bus de integración..."):
+                    time.sleep(1.5)
+                
+                st.success(f"✅ Éxito. Registro de Triaje enviado y confirmado por el HCE.")
+                st.caption("ID Transacción: `FHIR-ACK-2025-X99283`")
+                
+                if st.button("Cerrar", type="primary", use_container_width=True):
+                    st.rerun()
+
+            if st.button("📤 Enviar Registro y Cerrar Atención", type="primary", use_container_width=True):
+                dialog_fhir()
+
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/results_display.py</div>', unsafe_allow_html=True)

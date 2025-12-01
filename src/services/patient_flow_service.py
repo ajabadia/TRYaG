@@ -255,6 +255,69 @@ def reassign_patient_flow(
     return mover_paciente(patient_code, target, estado, "Reasignación manual")
 
 
+def save_triage_data(patient_code: str, triage_data: Dict[str, Any]) -> bool:
+    """
+    Guarda el registro completo de triaje en la colección 'triage_records'.
+    Incluye: Datos paciente, Signos Vitales, Historia, Enfermería, Órdenes, Resultado IA.
+    """
+    try:
+        db = get_db()
+        collection = db["triage_records"]
+        
+        # Generar ID único
+        audit_id = f"TRG-{datetime.now().strftime('%Y%m%d%H%M%S')}-{patient_code}"
+        
+        record = {
+            "audit_id": audit_id,
+            "timestamp": datetime.now(),
+            "patient_id": patient_code,
+            "patient_data": triage_data.get('datos_paciente', {}),
+            "vital_signs": triage_data.get('datos_paciente', {}).get('vital_signs', {}),
+            "triage_result": triage_data.get('resultado', {}),
+            "evaluator_id": triage_data.get('evaluator_id', 'system'),
+            "prompt_type": "triage_gemini",
+            "is_reevaluation": False, # TODO: Detectar si es reevaluación
+            
+            # Nuevos campos persistidos explícitamente
+            "extended_history": {
+                "ant_familiares": triage_data.get('datos_paciente', {}).get('ant_familiares'),
+                "ant_psiquiatricos": triage_data.get('datos_paciente', {}).get('ant_psiquiatricos'),
+                "ant_quirurgicos": triage_data.get('datos_paciente', {}).get('ant_quirurgicos'),
+                "habitos_toxicos": triage_data.get('datos_paciente', {}).get('habitos_toxicos'),
+                "nutricion_dieta": triage_data.get('datos_paciente', {}).get('nutricion_dieta'),
+                "viajes_recientes": triage_data.get('datos_paciente', {}).get('viajes_recientes'),
+                "sensorial_ayudas": triage_data.get('datos_paciente', {}).get('sensorial_ayudas'),
+                "dolor_cronico": triage_data.get('datos_paciente', {}).get('dolor_cronico'),
+                "hospitalizaciones_previas": triage_data.get('datos_paciente', {}).get('hospitalizaciones_previas'),
+                "situacion_legal": triage_data.get('datos_paciente', {}).get('situacion_legal'),
+            },
+            "nursing_assessment": {
+                "skin_integrity": triage_data.get('datos_paciente', {}).get('skin_integrity'),
+                "skin_color": triage_data.get('datos_paciente', {}).get('skin_color'),
+                "skin_edema": triage_data.get('datos_paciente', {}).get('skin_edema'),
+                "fall_risk": triage_data.get('datos_paciente', {}).get('fall_risk'),
+                "nut_disfagia": triage_data.get('datos_paciente', {}).get('nut_disfagia'),
+                "id_bracelet": triage_data.get('datos_paciente', {}).get('id_bracelet'),
+                "belongings": triage_data.get('datos_paciente', {}).get('belongings'),
+            },
+            "disposition_orders": {
+                "order_diet": triage_data.get('datos_paciente', {}).get('order_diet'),
+                "order_iv": triage_data.get('datos_paciente', {}).get('order_iv'),
+                "order_labs": triage_data.get('datos_paciente', {}).get('order_labs'),
+                "order_meds_stat": triage_data.get('datos_paciente', {}).get('order_meds_stat'),
+                "dis_needs": triage_data.get('datos_paciente', {}).get('dis_needs'),
+                "dis_barriers": triage_data.get('datos_paciente', {}).get('dis_barriers'),
+            },
+            "contingency_mode": triage_data.get('contingency_mode', False)
+        }
+        
+        collection.insert_one(record)
+        return True
+    except Exception as e:
+        print(f"Error saving triage record: {e}")
+        return False
+
+
 # ---------------------------------------------------------------------------
 # Consultas (Lectura)
 # ---------------------------------------------------------------------------
