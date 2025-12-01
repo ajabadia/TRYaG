@@ -11,7 +11,18 @@ def render_travel_history_form(reset_count: int, disabled: bool = False):
             has_animals = st.checkbox("🐾 Contacto con animales exóticos/granja", value=st.session_state.datos_paciente.get('exp_animales', False), disabled=disabled, key=f"exp_anim_{reset_count}", help="Exposición a vectores zoonóticos")
             st.session_state.datos_paciente['exp_animales'] = has_animals
             if has_animals:
-                st.session_state.datos_paciente['exp_animales_det'] = st.text_input("📝 Tipo Animal / Contacto", value=st.session_state.datos_paciente.get('exp_animales_det', ''), key=f"exp_anim_det_{reset_count}", disabled=disabled, help="Especie y tipo de contacto")
+                from src.db.repositories.clinical_options import get_clinical_options_repository
+                repo = get_clinical_options_repository()
+                opt_animals = repo.get_options("animal_contact")
+                
+                st.session_state.datos_paciente['exp_animales_det'] = st.multiselect(
+                    "📝 Tipo Animal / Contacto",
+                    options=[opt.label for opt in opt_animals],
+                    default=st.session_state.datos_paciente.get('exp_animales_det', []) if isinstance(st.session_state.datos_paciente.get('exp_animales_det'), list) else [],
+                    disabled=disabled, key=f"exp_anim_det_{reset_count}",
+                    help="Especie y tipo de contacto"
+                )
+                st.session_state.datos_paciente['exp_animales_otros'] = st.text_input("Otros Animales", value=st.session_state.datos_paciente.get('exp_animales_otros', ''), key=f"exp_anim_oth_{reset_count}", disabled=disabled)
 
         with c_exp2:
             st.session_state.datos_paciente['exp_ocupacional'] = st.text_input("☣️ Riesgo Ocupacional", value=st.session_state.datos_paciente.get('exp_ocupacional', ''), placeholder="Químicos, Sanitario...", disabled=disabled, key=f"exp_occ_{reset_count}", help="Exposición laboral a tóxicos o patógenos")

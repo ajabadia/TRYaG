@@ -1,101 +1,118 @@
 import streamlit as st
-import pandas as pd
-from src.db.repositories.clinical_options import get_clinical_options_repository
-from src.db.models import ClinicalOption
+from src.db.repositories.clinical_options import get_clinical_options_repository, ClinicalOption
 
 def render_clinical_options_manager():
     """
-    Renderiza el gestor de opciones clínicas (CRUD).
+    Renderiza el gestor de Opciones Clínicas.
+    Permite crear, editar y desactivar opciones para los diferentes selectores.
     """
     st.markdown("### 📋 Gestión de Opciones Clínicas")
-    st.info("Aquí puedes administrar las listas desplegables utilizadas en el formulario de antecedentes.")
-    
+    st.info("Aquí puedes administrar los valores disponibles en los desplegables de los formularios de triaje.")
+
     repo = get_clinical_options_repository()
-    
-    # Categorías disponibles (Hardcoded por ahora, o podrían venir de un enum)
-    categories = {
-        "allergy_agent": "Alergias (Agentes)",
-        "pathology": "Patologías Crónicas",
-        "social_habit": "Hábitos Sociales",
+
+    # 1. Selector de Categoría
+    CATEGORIES = {
+        "immuno_onco": "Inmunodeprimido / Oncológico",
+        "allergy_agent": "Alergias (Agentes Comunes)",
+        "allergy_reaction": "Alergias (Reacciones Graves)",
+        "vaccine": "Vacunas",
+        "implant": "Implantes / Dispositivos",
+        "dementia": "Demencia / Deterioro Cognitivo",
+        "mrsa_type": "MRSA / Multirresistentes",
+        "family_cardio": "Antecedentes Familiares: Cardio",
+        "family_cancer": "Antecedentes Familiares: Cáncer",
+        "family_diabetes": "Antecedentes Familiares: Diabetes",
+        "family_genetic": "Antecedentes Familiares: Genética",
+        "food_allergy": "Alergias Alimentarias",
+        "animal_contact": "Contacto Animales",
+        "sensory_auditory": "Déficit Auditivo",
+        "sensory_visual": "Déficit Visual",
+        "sensory_language": "Idioma / Intérprete",
+        "sensory_prosthesis": "Prótesis",
+        "forensic_violence": "Violencia (Tipos)",
+        "forensic_cultural": "Consideraciones Culturales",
+        "forensic_religion": "Preferencias Religiosas",
+        "social_habit": "Hábitos Tóxicos",
         "living_situation": "Situación Convivencia",
         "functional_status": "Estado Funcional"
     }
-    
-    # Selector de categoría
-    selected_cat_key = st.selectbox("Seleccione Categoría", list(categories.keys()), format_func=lambda x: categories[x])
-    
-    # Cargar opciones actuales
+
+    selected_cat_key = st.selectbox(
+        "Selecciona la Categoría a editar",
+        options=list(CATEGORIES.keys()),
+        format_func=lambda x: CATEGORIES[x]
+    )
+
+    # 2. Listado de Opciones Existentes
     options = repo.get_options(selected_cat_key)
     
-    # --- TABLA DE OPCIONES ---
-    if options:
-        data = []
-        for opt in options:
-            data.append({
-                "Etiqueta": opt.label,
-                "Valor Interno": opt.value,
-                "Riesgo": opt.risk_level or "-",
-                "Activo": "✅" if opt.active else "❌",
-                "_obj": opt
-            })
-        
-        df = pd.DataFrame(data)
-        st.dataframe(
-            df[["Etiqueta", "Valor Interno", "Riesgo", "Activo"]], 
-            use_container_width=True,
-            hide_index=True
-        )
-    else:
-        st.info("No hay opciones configuradas para esta categoría.")
-
     st.divider()
-    
-    # --- FORMULARIO DE CREACIÓN / EDICIÓN ---
-    c1, c2 = st.columns(2)
+    c1, c2 = st.columns([2, 1])
     with c1:
-        st.markdown("#### Añadir Nueva Opción")
-        with st.form(key=f"add_opt_{selected_cat_key}"):
-            new_label = st.text_input("Etiqueta (Visible)")
-            new_value = st.text_input("Valor Interno (snake_case)", help="Ej: penicilina_derivados")
-            new_risk = st.selectbox("Nivel de Riesgo", ["", "high"], format_func=lambda x: "Alto Riesgo" if x == "high" else "Normal")
-            
-            if st.form_submit_button("Añadir Opción"):
-                if new_label and new_value:
-                    # Verificar duplicados
-                    existing = repo.get_by_value(selected_cat_key, new_value)
-                    if existing:
-                        st.error(f"El valor '{new_value}' ya existe en esta categoría.")
-                    else:
-                        new_opt = ClinicalOption(
-                            category=selected_cat_key,
-                            value=new_value,
-                            label=new_label,
-                            risk_level=new_risk if new_risk else None
-                        )
-                        # Guardar (usando update_one con upsert como en el seed, o crear un método create en repo)
-                        # Como el repo hereda de BaseRepository, podemos usar create o save.
-                        # Pero BaseRepository.create espera un modelo.
-                        # Vamos a usar el método genérico del repo si existe, o acceder a la colección.
-                        # Mejor añadir un método 'save' al repo o usar create.
-                        # Asumimos que BaseRepository tiene create.
-                        try:
-                            repo.create(new_opt)
-                            st.success("Opción añadida correctamente.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al guardar: {e}")
-                else:
-                    st.warning("Etiqueta y Valor son obligatorios.")
-
+        st.subheader(f"Opciones para: {CATEGORIES[selected_cat_key]}")
     with c2:
-        st.markdown("#### Acciones Rápidas")
-        # Aquí podríamos poner botones para borrar o desactivar seleccionando de una lista
-        if options:
-            opt_to_delete = st.selectbox("Seleccionar opción para eliminar/desactivar", options, format_func=lambda x: x.label)
-            if st.button("🗑️ Eliminar Opción", type="primary"):
-                if opt_to_delete:
-                    repo.delete(opt_to_delete.id)
-                    st.success("Opción eliminada.")
-                    st.rerun()
+        if st.button("➕ Nueva Opción", use_container_width=True):
+            st.session_state.show_add_option_form = True
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/clinical_options_manager.py</div>', unsafe_allow_html=True)
+    # Mostrar tabla simple
+    if not options:
+        st.warning("No hay opciones configuradas para esta categoría.")
+    else:
+        for opt in options:
+            with st.container(border=True):
+                col_a, col_b, col_c = st.columns([3, 1, 1])
+                with col_a:
+                    st.markdown(f"**{opt.label}**")
+                    st.caption(f"Valor interno: `{opt.value}`")
+                    if opt.meta:
+                        st.caption(f"Meta: {opt.meta}")
+                with col_b:
+                    if opt.active:
+                        st.success("Activo")
+                    else:
+                        st.error("Inactivo")
+                with col_c:
+                    # Toggle Active/Inactive (Simulado por ahora, idealmente update en DB)
+                    # Para simplificar, solo mostramos estado. Implementar edición requeriría más UI.
+                    pass
+
+    # 3. Formulario de Añadir (en expander o modal)
+    if st.session_state.get('show_add_option_form', False):
+        with st.form("add_option_form"):
+            st.markdown("#### Añadir Nueva Opción")
+            new_label = st.text_input("Etiqueta Visible (Label)")
+            new_value = st.text_input("Valor Interno (Value - sin espacios, minúsculas)")
+            
+            # Campos extra según categoría
+            meta_data = {}
+            if selected_cat_key == "immuno_onco":
+                c_meta1, c_meta2 = st.columns(2)
+                with c_meta1:
+                    is_imm = st.checkbox("Es Inmunodeprimido")
+                with c_meta2:
+                    is_onc = st.checkbox("Es Oncológico")
+                meta_data = {"is_immuno": is_imm, "is_onco": is_onc}
+            
+            submitted = st.form_submit_button("Guardar")
+            if submitted:
+                if new_label and new_value:
+                    # Crear objeto
+                    new_opt = ClinicalOption(
+                        category=selected_cat_key,
+                        value=new_value,
+                        label=new_label,
+                        meta=meta_data if meta_data else None,
+                        active=True
+                    )
+                    # Guardar en DB
+                    repo.create(new_opt.model_dump(by_alias=True))
+                    st.success("Opción guardada correctamente")
+                    st.session_state.show_add_option_form = False
+                    st.rerun()
+                else:
+                    st.error("Debe rellenar etiqueta y valor.")
+            
+            if st.form_submit_button("Cancelar"):
+                st.session_state.show_add_option_form = False
+                st.rerun()

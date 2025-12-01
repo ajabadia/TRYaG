@@ -41,11 +41,22 @@ def render_surgical_history_form(reset_count: int, disabled: bool = False):
             st.session_state.datos_paciente['ant_implantes'] = implants
             
             if implants:
-                st.session_state.datos_paciente['ant_implantes_det'] = st.text_input(
-                    "ℹ️ ¿Qué dispositivo? (Marcapasos, etc.)",
-                    value=st.session_state.datos_paciente.get('ant_implantes_det', ''),
+                from src.db.repositories.clinical_options import get_clinical_options_repository
+                repo = get_clinical_options_repository()
+                opt_implants = repo.get_options("implant")
+                
+                st.session_state.datos_paciente['ant_implantes_det'] = st.multiselect(
+                    "ℹ️ Dispositivos Portados",
+                    options=[opt.label for opt in opt_implants],
+                    default=st.session_state.datos_paciente.get('ant_implantes_det', []) if isinstance(st.session_state.datos_paciente.get('ant_implantes_det'), list) else [],
                     disabled=disabled, key=f"ant_imp_det_{reset_count}",
-                    help="Especifique el tipo y localización del implante"
+                    help="Seleccione los dispositivos que porta el paciente"
+                )
+                
+                st.session_state.datos_paciente['ant_implantes_otros'] = st.text_input(
+                    "Otros Dispositivos / Detalles",
+                    value=st.session_state.datos_paciente.get('ant_implantes_otros', ''),
+                    disabled=disabled, key=f"ant_imp_other_{reset_count}"
                 )
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/surgical_history.py</div>', unsafe_allow_html=True)

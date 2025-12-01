@@ -32,11 +32,22 @@ def render_safety_alerts_form(reset_count: int, disabled: bool = False):
         st.session_state.datos_paciente['alert_mrsa'] = mrsa
         
         if mrsa:
-            st.session_state.datos_paciente['alert_mrsa_det'] = st.text_input(
-                "📝 Microorganismo / Ubicación",
-                value=st.session_state.datos_paciente.get('alert_mrsa_det', ''),
+            from src.db.repositories.clinical_options import get_clinical_options_repository
+            repo = get_clinical_options_repository()
+            opt_mrsa = repo.get_options("mrsa_type")
+            
+            st.session_state.datos_paciente['alert_mrsa_det'] = st.multiselect(
+                "🦠 Microorganismo Multirresistente",
+                options=[opt.label for opt in opt_mrsa],
+                default=st.session_state.datos_paciente.get('alert_mrsa_det', []) if isinstance(st.session_state.datos_paciente.get('alert_mrsa_det'), list) else [],
                 disabled=disabled, key=f"alert_mrsa_det_{reset_count}",
-                help="Tipo de bacteria y lugar de aislamiento"
+                help="Seleccione el microorganismo aislado"
+            )
+            
+            st.session_state.datos_paciente['alert_mrsa_otros'] = st.text_input(
+                "Ubicación / Otros",
+                value=st.session_state.datos_paciente.get('alert_mrsa_otros', ''),
+                disabled=disabled, key=f"alert_mrsa_other_{reset_count}"
             )
 
         # DNR

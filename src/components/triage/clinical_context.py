@@ -22,11 +22,51 @@ def render_clinical_context_form(reset_count: int, disabled: bool = False):
             st.session_state.datos_paciente['criterio_geriatrico'] = criterio_geriatrico
             
         with col_ctx2:
-            val_immuno = st.session_state.datos_paciente.get('criterio_inmunodeprimido', False)
-            criterio_inmunodeprimido = st.checkbox("🛡️ Inmunodeprimido / Oncológico", value=val_immuno, disabled=disabled, key=f"ctx_immuno_{reset_count}", help="Paciente con sistema inmune comprometido (Cáncer, VIH, Trasplante...)")
-            st.session_state.datos_paciente['criterio_inmunodeprimido'] = criterio_inmunodeprimido
-            
-            if criterio_inmunodeprimido:
-                st.session_state.datos_paciente['criterio_inmunodeprimido_det'] = st.text_input("📝 Detalles Inmunosupresión", value=st.session_state.datos_paciente.get('criterio_inmunodeprimido_det', ''), key=f"ctx_immuno_det_{reset_count}", disabled=disabled, help="Especifique la condición (ej: Quimioterapia activa)")
+            # Lógica Inmunodeprimido / Oncológico
+            st.markdown("**Estado Inmunológico / Oncológico**")
+            c_imm, c_onc = st.columns(2)
+            with c_imm:
+                is_immuno = st.checkbox("🛡️ Inmunodeprimido", value=st.session_state.datos_paciente.get('ctx_is_immuno', False), disabled=disabled, key=f"ctx_is_imm_{reset_count}", help="VIH, Trasplantes, Inmunodeficiencias...")
+                st.session_state.datos_paciente['ctx_is_immuno'] = is_immuno
+            with c_onc:
+                is_onco = st.checkbox("🎗️ Oncológico", value=st.session_state.datos_paciente.get('ctx_is_onco', False), disabled=disabled, key=f"ctx_is_onc_{reset_count}", help="Cáncer activo o en tratamiento")
+                st.session_state.datos_paciente['ctx_is_onco'] = is_onco
+
+            # Cargar opciones si alguno está marcado
+            if is_immuno or is_onco:
+                from src.db.repositories.clinical_options import get_clinical_options_repository
+                repo = get_clinical_options_repository()
+                all_opts = repo.get_options("immuno_onco")
+                
+                # Filtrar opciones según selección
+                filtered_opts = []
+                for opt in all_opts:
+                    meta = opt.meta or {}
+                    if (is_immuno and meta.get('is_immuno')) or (is_onco and meta.get('is_onco')):
+                        filtered_opts.append(opt.label)
+                
+                # Eliminar duplicados y ordenar
+                filtered_opts = sorted(list(set(filtered_opts)))
+
+                st.session_state.datos_paciente['criterio_inmunodeprimido_det'] = st.multiselect(
+                    "Condiciones Específicas",
+                    options=filtered_opts,
+                    default=[x for x in st.session_state.datos_paciente.get('criterio_inmunodeprimido_det', []) if x in filtered_opts] if isinstance(st.session_state.datos_paciente.get('criterio_inmunodeprimido_det'), list) else [],
+                    disabled=disabled,
+                    key=f"ctx_immuno_list_{reset_count}"
+                )
+                
+                st.session_state.datos_paciente['criterio_inmunodeprimido_otros'] = st.text_input(
+                    "Otros / Detalles Adicionales",
+                    value=st.session_state.datos_paciente.get('criterio_inmunodeprimido_otros', ''),
+                    disabled=disabled,
+                    key=f"ctx_immuno_other_{reset_count}"
+                )
+                
+                # Mantener compatibilidad con flag booleano antiguo para lógica interna
+                st.session_state.datos_paciente['criterio_inmunodeprimido'] = True
+            else:
+                st.session_state.datos_paciente['criterio_inmunodeprimido'] = False
+                st.session_state.datos_paciente['criterio_inmunodeprimido_det'] = []
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/clinical_context.py</div>', unsafe_allow_html=True)

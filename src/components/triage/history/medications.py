@@ -42,11 +42,22 @@ def render_medications_form(reset_count: int, disabled: bool = False):
             st.session_state.datos_paciente['med_vacunas'] = vaccines_ok
             
             if vaccines_ok:
-                st.session_state.datos_paciente['med_vacunas_det'] = st.text_input(
-                    "ℹ️ Detalles (Opcional)",
-                    value=st.session_state.datos_paciente.get('med_vacunas_det', ''),
+                from src.db.repositories.clinical_options import get_clinical_options_repository
+                repo = get_clinical_options_repository()
+                opt_vaccines = repo.get_options("vaccine")
+                
+                st.session_state.datos_paciente['med_vacunas_det'] = st.multiselect(
+                    "ℹ️ Vacunas Administradas",
+                    options=[opt.label for opt in opt_vaccines],
+                    default=st.session_state.datos_paciente.get('med_vacunas_det', []) if isinstance(st.session_state.datos_paciente.get('med_vacunas_det'), list) else [],
                     disabled=disabled, key=f"med_vac_det_{reset_count}",
-                    help="Fecha última dosis o vacunas relevantes"
+                    help="Seleccione las vacunas que tiene al día"
+                )
+                
+                st.session_state.datos_paciente['med_vacunas_otros'] = st.text_input(
+                    "Otras Vacunas / Detalles",
+                    value=st.session_state.datos_paciente.get('med_vacunas_otros', ''),
+                    disabled=disabled, key=f"med_vac_other_{reset_count}"
                 )
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/medications.py</div>', unsafe_allow_html=True)

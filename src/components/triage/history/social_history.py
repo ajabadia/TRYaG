@@ -67,11 +67,22 @@ def render_social_history_form(reset_count: int, disabled: bool = False):
             )
             st.session_state.datos_paciente['soc_cognitivo'] = cognitive
             if cognitive:
-                st.session_state.datos_paciente['soc_cognitivo_det'] = st.text_input(
-                    "ℹ️ Grado / Tipo",
-                    value=st.session_state.datos_paciente.get('soc_cognitivo_det', ''),
+                from src.db.repositories.clinical_options import get_clinical_options_repository
+                repo = get_clinical_options_repository()
+                opt_dementia = repo.get_options("dementia")
+                
+                st.session_state.datos_paciente['soc_cognitivo_det'] = st.multiselect(
+                    "ℹ️ Tipo de Deterioro / Demencia",
+                    options=[opt.label for opt in opt_dementia],
+                    default=st.session_state.datos_paciente.get('soc_cognitivo_det', []) if isinstance(st.session_state.datos_paciente.get('soc_cognitivo_det'), list) else [],
                     disabled=disabled, key=f"soc_cog_det_{reset_count}",
-                    help="Tipo de demencia (Alzheimer, vascular...) y estadio (GDS)"
+                    help="Seleccione el diagnóstico conocido"
+                )
+                
+                st.session_state.datos_paciente['soc_cognitivo_otros'] = st.text_input(
+                    "Otros / Estadio (GDS)",
+                    value=st.session_state.datos_paciente.get('soc_cognitivo_otros', ''),
+                    disabled=disabled, key=f"soc_cog_other_{reset_count}"
                 )
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/social_history.py</div>', unsafe_allow_html=True)

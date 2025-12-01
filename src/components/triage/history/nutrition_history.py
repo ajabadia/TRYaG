@@ -20,6 +20,17 @@ def render_nutrition_history_form(reset_count: int, disabled: bool = False):
             if has_weight_loss:
                 st.session_state.datos_paciente['nut_peso_det'] = st.text_input("⚖️ Kg perdidos / Tiempo", value=st.session_state.datos_paciente.get('nut_peso_det', ''), key=f"nut_weight_det_{reset_count}", disabled=disabled, help="Cuantificación de la pérdida")
 
-            st.session_state.datos_paciente['nut_alergias_alim'] = st.text_input("🥜 Alergias/Intolerancias Alimentarias", value=st.session_state.datos_paciente.get('nut_alergias_alim', ''), disabled=disabled, key=f"nut_alg_{reset_count}", help="Gluten, lactosa, frutos secos...")
+            from src.db.repositories.clinical_options import get_clinical_options_repository
+            repo = get_clinical_options_repository()
+            opt_food = repo.get_options("food_allergy")
+            
+            st.session_state.datos_paciente['nut_alergias_alim'] = st.multiselect(
+                "🥜 Alergias/Intolerancias Alimentarias",
+                options=[opt.label for opt in opt_food],
+                default=st.session_state.datos_paciente.get('nut_alergias_alim', []) if isinstance(st.session_state.datos_paciente.get('nut_alergias_alim'), list) else [],
+                disabled=disabled, key=f"nut_alg_{reset_count}",
+                help="Gluten, lactosa, frutos secos..."
+            )
+            st.session_state.datos_paciente['nut_alergias_otros'] = st.text_input("Otras Alergias Alimentarias", value=st.session_state.datos_paciente.get('nut_alergias_otros', ''), key=f"nut_alg_oth_{reset_count}", disabled=disabled)
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/nutrition_history.py</div>', unsafe_allow_html=True)

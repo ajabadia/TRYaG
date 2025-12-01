@@ -48,6 +48,24 @@ def render_allergies_form(reset_count: int, disabled: bool = False):
                 
                 if "ALTO RIESGO" in reaction_type:
                     st.error("⚠️ ALERTA: RIESGO DE ANAFILAXIA - Identificar con pulsera roja")
+                    
+                    # Cargar opciones de riesgo alto
+                    opt_risk = repo.get_options("allergy_reaction")
+                    
+                    st.session_state.datos_paciente['alergias_reaccion_tipo'] = st.multiselect(
+                        "Tipo de Reacción Grave",
+                        options=[opt.label for opt in opt_risk],
+                        default=st.session_state.datos_paciente.get('alergias_reaccion_tipo', []),
+                        disabled=disabled,
+                        key=f"alg_risk_type_{reset_count}"
+                    )
+                    
+                    st.session_state.datos_paciente['alergias_reaccion_otros'] = st.text_input(
+                        "Otros Detalles Riesgo",
+                        value=st.session_state.datos_paciente.get('alergias_reaccion_otros', ''),
+                        disabled=disabled,
+                        key=f"alg_risk_other_{reset_count}"
+                    )
 
             # Construir string completo para IA
             agents_list = selected_agents + ([other_agents] if other_agents else [])
