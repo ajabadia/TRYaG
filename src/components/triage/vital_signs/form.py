@@ -1,88 +1,8 @@
+# path: src/components/triage/vital_signs/form.py
 import streamlit as st
-from typing import Dict, Any, Optional, List
-from src.db.repositories.vital_signs_repo import VitalSignsRepository
-from src.components.triage.triage_logic import calculate_worst_case, evaluate_vital_sign, calculate_news_score
-
-def get_all_configs(age: int) -> Dict[str, Any]:
-    """Carga todas las configuraciones de signos vitales para la edad dada."""
-    repo = VitalSignsRepository()
-    configs = {}
-    for metric in ["fc", "spo2", "temp", "pas", "pad", "fr", "gcs"]:
-        configs[metric] = repo.get_config(metric, age)
-    return configs
-
-def render_vital_sign_input(
-    col, 
-    metric_key: str, 
-    label: str, 
-    unit: str, 
-    min_val: float, 
-    max_val: float, 
-    default: float, 
-    step: float, 
-    help_text: str,
-    config: Optional[Any] = None
-):
-    """Helper para renderizar un input de signo vital con feedback visual inmediato."""
-    with col:
-        current_val = st.session_state.datos_paciente.get('vital_signs', {}).get(metric_key)
-        
-        # Lógica de Tooltip y Default desde Config
-        final_help = help_text
-        input_default = default # Fallback
-        
-        if config:
-            # Construir tooltip enriquecido
-            # config es un dict o objeto pydantic. Asumimos dict por get_config del repo, 
-            # pero el modelo es VitalSignAgeConfig. El repo devuelve dict o objeto?
-            # Revisando vital_signs_repo.py, devuelve el objeto Pydantic o dict?
-            # El repo usa .dict() o devuelve el modelo?
-            # Asumiremos acceso por atributo o clave de forma segura.
-            
-            # Helper para acceso seguro (obj o dict)
-            def get_val(obj, key, default=None):
-                if isinstance(obj, dict): return obj.get(key, default)
-                return getattr(obj, key, default)
-
-            c_min = get_val(config, 'val_min')
-            c_max = get_val(config, 'val_max')
-            n_min = get_val(config, 'normal_min')
-            n_max = get_val(config, 'normal_max')
-            c_def = get_val(config, 'default_value')
-            
-            if c_def is not None:
-                input_default = float(c_def)
-                
-            info_str = f"\n\n📊 Rangos para edad:\n- Normal: {n_min} - {n_max}\n- Mín/Máx: {c_min} - {c_max}\n- Defecto: {c_def}"
-            final_help += info_str
-
-        # Si no hay valor actual, usar el default de la config (o el fallback)
-        val_to_show = float(current_val) if current_val is not None else input_default
-
-        val = st.number_input(
-            f"{label} ({unit})", 
-            min_value=min_val, 
-            max_value=max_val, 
-            value=val_to_show,
-            step=step,
-            key=f"vs_{metric_key}",
-            help=final_help,
-            placeholder="-"
-        )
-        
-        # Guardar en estado
-        if 'vital_signs' not in st.session_state.datos_paciente:
-            st.session_state.datos_paciente['vital_signs'] = {}
-            
-        st.session_state.datos_paciente['vital_signs'][metric_key] = val
-        
-        # Feedback visual inmediato (simulado o calculado)
-        if val is not None and config:
-            # Evaluar
-            prio, color, _ = evaluate_vital_sign(val, config)
-            # Mostrar indicador
-            color_map = {"green": "🟢", "yellow": "🟡", "orange": "🟠", "red": "🔴", "gray": "⚪"}
-            st.caption(f"Nivel: {color_map.get(color, '⚪')}")
+from src.components.triage.triage_logic import calculate_worst_case, calculate_news_score
+from .utils import get_all_configs
+from .input import render_vital_sign_input
 
 def render_vital_signs_form(age: int = 40):
     """Renderiza el formulario completo de signos vitales."""
@@ -114,28 +34,31 @@ def render_vital_signs_form(age: int = 40):
     with st.container(border=True):
         st.markdown('<span class="vital-signs-grid" style="display:none"></span>', unsafe_allow_html=True)
         
-        # Fila 1: FC, SpO2, Temp
+        # Fila 1: Circulación (FC, PAS, PAD)
         c1, c2, c3 = st.columns(3)
-        render_vital_sign_input(c1, "fc", "Frecuencia Cardíaca", "lpm", 0.0, 300.0, 80.0, 1.0, "Latidos por minuto", configs.get("fc"))
-        render_vital_sign_input(c2, "spo2", "Saturación O2", "%", 0.0, 100.0, 98.0, 1.0, "Porcentaje de oxígeno", configs.get("spo2"))
-        render_vital_sign_input(c3, "temp", "Temperatura", "°C", 20.0, 45.0, 36.5, 0.1, "Temperatura axilar/timpánica", configs.get("temp"))
+        render_vital_sign_input(c1, "fc", "💓 Frecuencia Cardíaca", "lpm", 0.0, 300.0, 80.0, 1.0, "Latidos por minuto", configs.get("fc"))
+        render_vital_sign_input(c2, "pas", "🩸 Presión Art. Sistólica", "mmHg", 0.0, 300.0, 120.0, 1.0, "Tensión Alta", configs.get("pas"))
+        render_vital_sign_input(c3, "pad", "🩸 Presión Art. Diastólica", "mmHg", 0.0, 200.0, 80.0, 1.0, "Tensión Baja", configs.get("pad"))
         
-        # Fila 2: TA (PAS/PAD), FR, GCS
+        # Fila 2: Respiratorio y Temperatura (SpO2, FR, Temp)
         c4, c5, c6 = st.columns(3)
-        # PAS
-        render_vital_sign_input(c4, "pas", "Presión Art. Sistólica", "mmHg", 0.0, 300.0, 120.0, 1.0, "Tensión Alta", configs.get("pas"))
-        # FR
-        render_vital_sign_input(c5, "fr", "Frecuencia Respiratoria", "rpm", 0.0, 100.0, 16.0, 1.0, "Respiraciones por minuto", configs.get("fr"))
-        # GCS (Glasgow)
-        render_vital_sign_input(c6, "gcs", "Escala Glasgow", "pts", 3.0, 15.0, 15.0, 1.0, "Nivel de conciencia (3-15)", configs.get("gcs"))
+        render_vital_sign_input(c4, "spo2", "🫧 Saturación O2", "%", 0.0, 100.0, 98.0, 1.0, "Porcentaje de oxígeno", configs.get("spo2"))
+        render_vital_sign_input(c5, "fr", "🫁 Frecuencia Respiratoria", "rpm", 0.0, 100.0, 16.0, 1.0, "Respiraciones por minuto", configs.get("fr"))
+        render_vital_sign_input(c6, "temp", "🌡️ Temperatura", "°C", 20.0, 45.0, 36.5, 0.1, "Temperatura axilar/timpánica", configs.get("temp"))
 
-        # Fila 3: Pupilas y O2 y Hidratación
-        c_pup, c_o2, c_hyd = st.columns([2, 1, 2])
-        with c_pup:
+        # Fila 3: Neurológico y Otros (GCS, Pupilas, Hidratación/O2)
+        # Nota: GCS estaba en fila 2, lo movemos aquí para balancear
+        c7, c8, c9 = st.columns(3)
+        
+        # GCS
+        render_vital_sign_input(c7, "gcs", "🧠 Escala Glasgow", "pts", 3.0, 15.0, 15.0, 1.0, "Nivel de conciencia (3-15)", configs.get("gcs"))
+
+        # Pupilas
+        with c8:
             pupilas_opts = ["Normal", "Lenta", "Fijas", "Anisocoria", "Puntiformes"]
             current_pupilas = st.session_state.datos_paciente.get('vital_signs', {}).get('pupilas', "Normal")
             pupilas = st.selectbox(
-                "Reacción Pupilar", 
+                "👁️ Reacción Pupilar", 
                 pupilas_opts, 
                 index=pupilas_opts.index(current_pupilas) if current_pupilas in pupilas_opts else 0, 
                 key="vs_pupilas",
@@ -149,26 +72,26 @@ def render_vital_signs_form(age: int = 40):
             p_map = {"Normal": "🟢", "Lenta": "🟡", "Fijas": "🟠", "Anisocoria": "🔴", "Puntiformes": "🔴"}
             st.caption(f"Gravedad: {p_map.get(pupilas, '⚪')}")
 
-        with c_o2:
-            o2 = st.checkbox(
-                "Oxígeno Suplementario", 
-                value=st.session_state.datos_paciente.get('vital_signs', {}).get('oxigeno_suplementario', False), 
-                key="vs_o2",
-                help="Marcar si el paciente recibe oxígeno extra"
-            )
-            st.session_state.datos_paciente['vital_signs']['oxigeno_suplementario'] = o2
-
-        with c_hyd:
+        # Hidratación y O2
+        with c9:
              hyd_opts = ["Normal", "Deshidratación Leve", "Deshidratación Moderada", "Shock/Severa"]
              current_hyd = st.session_state.datos_paciente.get('vital_signs', {}).get('hidratacion', "Normal")
              hyd = st.selectbox(
-                 "Estado Hidratación",
+                 "💧 Estado Hidratación",
                  hyd_opts,
                  index=hyd_opts.index(current_hyd) if current_hyd in hyd_opts else 0,
                  key="vs_hyd",
                  help="Evaluar mucosas, turgencia piel"
              )
              st.session_state.datos_paciente['vital_signs']['hidratacion'] = hyd
+             
+             o2 = st.checkbox(
+                "😷 Oxígeno Suplementario", 
+                value=st.session_state.datos_paciente.get('vital_signs', {}).get('oxigeno_suplementario', False), 
+                key="vs_o2",
+                help="Marcar si el paciente recibe oxígeno extra"
+            )
+             st.session_state.datos_paciente['vital_signs']['oxigeno_suplementario'] = o2
 
     # --- RESULTADO EN TIEMPO REAL ---
     st.markdown("### 🚦 Resultado de Triaje (Signos Vitales)")
@@ -226,4 +149,4 @@ def render_vital_signs_form(age: int = 40):
                 st.write(f"- {det}")
             st.caption(f"Acción: {news_result['action']}")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/vital_signs_form.py</div>', unsafe_allow_html=True)
+    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/vital_signs/form.py</div>', unsafe_allow_html=True)

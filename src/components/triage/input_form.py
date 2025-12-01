@@ -18,7 +18,7 @@ from components.common.webcam_manager import render_webcam_manager
 from components.common.audio_recorder import render_audio_recorder
 from ui.components.common.video_recorder import render_video_recorder
 from components.common.file_importer import render_file_importer
-from components.triage.vital_signs_form import render_vital_signs_form, render_vital_sign_input
+from components.triage.vital_signs import render_vital_signs_form, render_vital_sign_input
 from components.triage.patient_background_form import render_patient_background_form
 
 def procesar_respuesta_ia(resultado_ia):
@@ -418,7 +418,7 @@ def render_input_form():
                     imagen_pil = Image.open(imagenes_reales[0]) if imagenes_reales else None
                     
                     # --- CÁLCULO DE TRIAJE AUTOMÁTICO (WORST CASE) ---
-                    from components.triage.vital_signs_form import get_all_configs
+                    from components.triage.vital_signs import get_all_configs
                     from components.triage.triage_logic import calculate_worst_case
                     
                     configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))

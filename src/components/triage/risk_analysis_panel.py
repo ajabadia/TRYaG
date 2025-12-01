@@ -1,6 +1,6 @@
 import streamlit as st
 from services.predictive_service import generar_alertas_predictivas
-from components.triage.vital_signs_form import get_all_configs
+from components.triage.vital_signs import get_all_configs
 from components.triage.triage_logic import calculate_worst_case
 
 def render_risk_analysis_panel(patient_data, enable_predictive=True):
