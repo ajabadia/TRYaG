@@ -31,10 +31,11 @@ class PeopleRepository:
             ]
         })
 
-    def search_by_name(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+    def search_by_name(self, query: str, limit: int = 10, active_only: bool = True) -> List[Dict[str, Any]]:
         """Busca personas por nombre o apellido."""
         regex = {"$regex": query, "$options": "i"}
-        return list(self.collection.find({
+        
+        filter_q = {
             "$or": [
                 {"nombre": regex},
                 {"apellido1": regex},
@@ -44,7 +45,12 @@ class PeopleRepository:
                 {"num_ss": regex},
                 {"patient_code": regex}
             ]
-        }).limit(limit))
+        }
+        
+        if active_only:
+            filter_q["activo"] = True
+            
+        return list(self.collection.find(filter_q).limit(limit))
 
     def create_person(self, person_data: Dict[str, Any]) -> str:
         """Crea un nuevo registro de persona."""

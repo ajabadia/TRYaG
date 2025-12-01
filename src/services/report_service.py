@@ -33,6 +33,15 @@ class TriageReportGenerator(FPDF):
         date_str = timestamp.strftime("%d/%m/%Y %H:%M") if isinstance(timestamp, datetime) else str(timestamp)
         
         self.cell(0, 5, f'Fecha: {date_str} | ID: {self.record.get("audit_id", "N/A")}', ln=True, align='C')
+        
+        # Banner de Contingencia
+        if self.record.get('contingency_mode'):
+            self.ln(2)
+            self.set_font('Helvetica', 'B', 10)
+            self.set_text_color(220, 53, 69) # Rojo
+            self.cell(0, 6, "⚠️ REGISTRO GENERADO EN MODO CONTINGENCIA (OFFLINE)", ln=True, align='C', border=1)
+            self.set_text_color(0) # Reset
+            
         self.ln(10)
 
     def footer(self):
