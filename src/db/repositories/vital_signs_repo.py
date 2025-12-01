@@ -1,5 +1,5 @@
 # path: src/db/repositories/vital_signs_repo.py
-from typing import List, Optional
+from typing import List, Optional, Any
 from src.db.repositories.base import BaseRepository
 from src.db.models import VitalSignReference
 
