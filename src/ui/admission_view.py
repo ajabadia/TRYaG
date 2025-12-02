@@ -6,7 +6,7 @@ Vista principal del flujo de admisión de pacientes.
 Implementa un flujo por pasos (stepper) optimizado.
 """
 import streamlit as st
-from components.common.stepper import render_vertical_stepper
+from components.common.stepper import render_horizontal_stepper
 from components.admission.step_sala_admision import render_step_sala_admision
 from components.admission.step_patient_data import render_step_patient_data
 from components.admission.step_sala_triaje import render_step_sala_triaje
@@ -26,7 +26,6 @@ def mostrar_admision():
     """
     Orquesta el flujo completo de admisión con stepper vertical.
     """
-    st.title("📋 Gestión de Admisión")
 
     # --- LÓGICA DE PERSISTENCIA Y AUTO-AVANCE (SALA ADMISIÓN) ---
     if st.session_state.get('admission_sala_admision_code') and st.session_state.get('admission_step', 0) == 0:
@@ -43,179 +42,177 @@ def mostrar_admision():
         "Asignación y Confirmación" # Paso 3 fusionado
     ]
     
-    # Layout: stepper a la izquierda, contenido a la derecha
-    col_stepper, col_content = st.columns([1, 4])
+    # Renderizar Stepper Horizontal
+    render_horizontal_stepper(steps, st.session_state.admission_step)
     
-    with col_stepper:
-        render_vertical_stepper(steps, st.session_state.admission_step)
+    st.title("📋 Gestión de Admisión")
     
-    with col_content:
-        # --- PASO 0: SELECCIÓN DE SALA DE ADMISIÓN ---
-        if st.session_state.admission_step == 0:
-            # Panel de Herramientas
-            render_tools_panel("Admisión", show_pdf=False)
+    # --- PASO 0: SELECCIÓN DE SALA DE ADMISIÓN ---
+    if st.session_state.admission_step == 0:
+        # Panel de Herramientas
+        render_tools_panel("Admisión", show_pdf=False)
 
-            sala_selected = render_step_sala_admision()
-            
-            if sala_selected:
-                # Auto-avance
-                st.session_state.admission_step = 1
-                st.rerun()
+        sala_selected = render_step_sala_admision()
         
-        # --- PASO 1: DATOS DEL PACIENTE ---
-        elif st.session_state.admission_step == 1:
-            # Cabecera con info de sala y cambio
-            with st.container(border=True):
-                c_info, c_actions = st.columns([4, 1])
-                with c_info:
-                    st.markdown(f"📍 Admisión: **{st.session_state.get('admission_sala_admision_code')}**")
-                with c_actions:
-                    if st.button("Cambiar Sala", key="btn_change_adm_room", use_container_width=True):
-                        st.session_state.admission_sala_admision_code = None
-                        st.session_state.admission_step = 0
-                        st.rerun()
+        if sala_selected:
+            # Auto-avance
+            st.session_state.admission_step = 1
+            st.rerun()
+    
+    # --- PASO 1: DATOS DEL PACIENTE ---
+    elif st.session_state.admission_step == 1:
+        # Cabecera con info de sala y cambio
+        with st.container(border=True):
+            c_info, c_actions = st.columns([4, 1])
+            with c_info:
+                st.markdown(f"📍 Admisión: **{st.session_state.get('admission_sala_admision_code')}**")
+            with c_actions:
+                if st.button("Cambiar Sala", key="btn_change_adm_room", use_container_width=True):
+                    st.session_state.admission_sala_admision_code = None
+                    st.session_state.admission_step = 0
+                    st.rerun()
 
-            patient_validated = render_step_patient_data()
+        patient_validated = render_step_patient_data()
+        
+        st.divider()
+        
+        # Botón de acción principal (Asignar)
+        # Si está validado, mostramos botón primario grande
+        if patient_validated:
+            if st.button("Asignar Sala de Triaje →", type="primary", use_container_width=True):
+                st.session_state.admission_step = 2
+                # Limpiar selección previa
+                st.session_state.admission_sala_triaje_code = None
+                
+                # --- FAST-TRACK: PRE-SELECCIÓN DE SALA DE TRIAJE ---
+                from services.room_service import obtener_salas_por_tipo
+                salas_triaje = [s for s in obtener_salas_por_tipo("triaje") if s.get('subtipo') == 'espera']
+                # Si solo hay una sala de espera de triaje, la pre-seleccionamos
+                if len(salas_triaje) == 1:
+                    st.session_state.admission_sala_triaje_code = salas_triaje[0]['codigo']
+                
+                st.rerun()
+        else:
+            st.info("Seleccione o cree un paciente para continuar.")
+    
+    # --- PASO 2: ASIGNACIÓN O RECHAZO (FUSIONADOS) ---
+    elif st.session_state.admission_step == 2:
+        st.subheader("3. Destino del Paciente")
+        
+        # Si ya se completó, mostrar solo resumen y botón de reinicio
+        if st.session_state.get('admission_complete', False):
+            _render_completion_summary()
+            return
+
+        # --- ESTADO: SALA SELECCIONADA (Confirmación) ---
+        if st.session_state.get('admission_sala_triaje_code'):
+            triaje_selected = st.session_state.admission_sala_triaje_code
+            
+            # Mostrar Confirmación Arriba
+            st.info(f"📍 Sala de triaje seleccionada: **{triaje_selected}**")
             
             st.divider()
+            st.subheader("✅ Confirmar Asignación")
             
-            # Botón de acción principal (Asignar)
-            # Si está validado, mostramos botón primario grande
-            if patient_validated:
-                if st.button("Asignar Sala de Triaje →", type="primary", use_container_width=True):
-                    st.session_state.admission_step = 2
-                    # Limpiar selección previa
+            # Resumen rápido
+            patient_code = st.session_state.get('admission_patient_code')
+            paciente = obtener_paciente_por_codigo(patient_code)
+            
+            from ui.components.common.patient_card import render_patient_card
+            
+            # Mostrar card sin acciones, solo info
+            render_patient_card(
+                patient=paciente,
+                show_triage_level=False,
+                show_wait_time=False,
+                show_location=False, # La ubicación actual no es relevante, es la destino la que importa
+                key_prefix="adm_confirm"
+            )
+            
+            # Acciones Principales
+            col_confirm, col_change = st.columns([2, 1])
+            with col_confirm:
+                # Botón Confirmar (Focus)
+                if st.button("📋 Confirmar y Enviar a Triaje", type="primary", use_container_width=True):
+                    _execute_assignment(triaje_selected)
+            with col_change:
+                if st.button("🔄 Cambiar Sala", use_container_width=True):
                     st.session_state.admission_sala_triaje_code = None
-                    
-                    # --- FAST-TRACK: PRE-SELECCIÓN DE SALA DE TRIAJE ---
-                    from services.room_service import obtener_salas_por_tipo
-                    salas_triaje = [s for s in obtener_salas_por_tipo("triaje") if s.get('subtipo') == 'espera']
-                    # Si solo hay una sala de espera de triaje, la pre-seleccionamos
-                    if len(salas_triaje) == 1:
-                        st.session_state.admission_sala_triaje_code = salas_triaje[0]['codigo']
-                    
                     st.rerun()
-            else:
-                st.info("Seleccione o cree un paciente para continuar.")
-        
-        # --- PASO 2: ASIGNACIÓN O RECHAZO (FUSIONADOS) ---
-        elif st.session_state.admission_step == 2:
-            st.subheader("3. Destino del Paciente")
             
-            # Si ya se completó, mostrar solo resumen y botón de reinicio
-            if st.session_state.get('admission_complete', False):
-                _render_completion_summary()
-                return
+            st.divider()
+            st.markdown("**Otras Acciones:**")
+            col_reject, col_derive = st.columns(2)
+            with col_reject:
+                if st.button("🚫 Rechazar Paciente", type="secondary", use_container_width=True):
+                    st.session_state.admission_decision_mode = 'reject'
+                    st.session_state.admission_sala_triaje_code = None # Limpiar selección
+                    st.rerun()
+            with col_derive:
+                if st.button("👨‍⚕️ Derivar a Consulta", use_container_width=True):
+                    st.session_state.admission_decision_mode = 'derive_consulta'
+                    st.session_state.admission_sala_triaje_code = None
+                    st.rerun()
 
-            # --- ESTADO: SALA SELECCIONADA (Confirmación) ---
-            if st.session_state.get('admission_sala_triaje_code'):
-                triaje_selected = st.session_state.admission_sala_triaje_code
-                
-                # Mostrar Confirmación Arriba
-                st.info(f"📍 Sala de triaje seleccionada: **{triaje_selected}**")
-                
-                st.divider()
-                st.subheader("✅ Confirmar Asignación")
-                
-                # Resumen rápido
-                patient_code = st.session_state.get('admission_patient_code')
-                paciente = obtener_paciente_por_codigo(patient_code)
-                
-                from ui.components.common.patient_card import render_patient_card
-                
-                # Mostrar card sin acciones, solo info
-                render_patient_card(
-                    patient=paciente,
-                    show_triage_level=False,
-                    show_wait_time=False,
-                    show_location=False, # La ubicación actual no es relevante, es la destino la que importa
-                    key_prefix="adm_confirm"
-                )
-                
-                # Acciones Principales
-                col_confirm, col_change = st.columns([2, 1])
-                with col_confirm:
-                    # Botón Confirmar (Focus)
-                    if st.button("📋 Confirmar y Enviar a Triaje", type="primary", use_container_width=True):
-                        _execute_assignment(triaje_selected)
-                with col_change:
-                    if st.button("🔄 Cambiar Sala", use_container_width=True):
-                        st.session_state.admission_sala_triaje_code = None
-                        st.rerun()
-                
-                st.divider()
-                st.markdown("**Otras Acciones:**")
-                col_reject, col_derive = st.columns(2)
-                with col_reject:
-                    if st.button("🚫 Rechazar Paciente", type="secondary", use_container_width=True):
-                        st.session_state.admission_decision_mode = 'reject'
-                        st.session_state.admission_sala_triaje_code = None # Limpiar selección
-                        st.rerun()
-                with col_derive:
-                    if st.button("👨‍⚕️ Derivar a Consulta", use_container_width=True):
-                        st.session_state.admission_decision_mode = 'derive_consulta'
-                        st.session_state.admission_sala_triaje_code = None
-                        st.rerun()
+        # --- ESTADO: MODO RECHAZO ---
+        elif st.session_state.get('admission_decision_mode') == 'reject':
+            st.warning("🚫 Rechazo de Paciente")
+            from components.common.rejection_form import render_rejection_form
+            
+            def _handle_cancel():
+                st.session_state.admission_decision_mode = None
+                st.rerun()
+            
+            render_rejection_form(
+                key_prefix="adm_flow",
+                on_confirm=_execute_rejection,
+                on_cancel=_handle_cancel
+            )
 
-            # --- ESTADO: MODO RECHAZO ---
-            elif st.session_state.get('admission_decision_mode') == 'reject':
-                st.warning("🚫 Rechazo de Paciente")
-                from components.common.rejection_form import render_rejection_form
-                
-                def _handle_cancel():
+        # --- ESTADO: MODO DERIVAR A CONSULTA ---
+        elif st.session_state.get('admission_decision_mode') == 'derive_consulta':
+            st.info("Seleccione la Consulta de destino:")
+            from services.room_service import obtener_salas_por_tipo
+            from components.common.room_card import render_room_grid
+            
+            salas_consulta = obtener_salas_por_tipo("consulta_ingreso")
+            
+            if not salas_consulta:
+                st.warning("No hay consultas disponibles.")
+                if st.button("Volver"):
                     st.session_state.admission_decision_mode = None
                     st.rerun()
-                
-                render_rejection_form(
-                    key_prefix="adm_flow",
-                    on_confirm=_execute_rejection,
-                    on_cancel=_handle_cancel
-                )
-
-            # --- ESTADO: MODO DERIVAR A CONSULTA ---
-            elif st.session_state.get('admission_decision_mode') == 'derive_consulta':
-                st.info("Seleccione la Consulta de destino:")
-                from services.room_service import obtener_salas_por_tipo
-                from components.common.room_card import render_room_grid
-                
-                salas_consulta = obtener_salas_por_tipo("consulta_ingreso")
-                
-                if not salas_consulta:
-                    st.warning("No hay consultas disponibles.")
-                    if st.button("Volver"):
-                        st.session_state.admission_decision_mode = None
-                        st.rerun()
-                else:
-                    selected_consulta = render_room_grid(salas_consulta, None, "sel_consulta")
-                    if selected_consulta:
-                        _execute_assignment(selected_consulta, tipo_destino="consulta", subtipo_destino="atencion")
-                    
-                    if st.button("← Volver a Selección de Triaje"):
-                        st.session_state.admission_decision_mode = None
-                        st.rerun()
-
-            # --- ESTADO: SELECCIÓN DE SALA (Default) ---
             else:
-                st.info("Seleccione la sala de espera de triaje:")
+                selected_consulta = render_room_grid(salas_consulta, None, "sel_consulta")
+                if selected_consulta:
+                    _execute_assignment(selected_consulta, tipo_destino="consulta", subtipo_destino="atencion")
                 
-                triaje_selected = render_step_sala_triaje()
-                
-                # Botones de acción alternativa (antes de seleccionar sala)
-                st.divider()
-                col_rej, col_cons = st.columns(2)
-                with col_rej:
-                    if st.button("🚫 Rechazar Paciente", type="secondary", use_container_width=True):
-                        st.session_state.admission_decision_mode = 'reject'
-                        st.rerun()
-                with col_cons:
-                    if st.button("👨‍⚕️ Derivar a Consulta Directa", use_container_width=True):
-                        st.session_state.admission_decision_mode = 'derive_consulta'
-                        st.rerun()
-                
-                st.divider()
-                if st.button("← Volver a Datos del Paciente"):
-                    st.session_state.admission_step = 1
+                if st.button("← Volver a Selección de Triaje"):
+                    st.session_state.admission_decision_mode = None
                     st.rerun()
+
+        # --- ESTADO: SELECCIÓN DE SALA (Default) ---
+        else:
+            st.info("Seleccione la sala de espera de triaje:")
+            
+            triaje_selected = render_step_sala_triaje()
+            
+            # Botones de acción alternativa (antes de seleccionar sala)
+            st.divider()
+            col_rej, col_cons = st.columns(2)
+            with col_rej:
+                if st.button("🚫 Rechazar Paciente", type="secondary", use_container_width=True):
+                    st.session_state.admission_decision_mode = 'reject'
+                    st.rerun()
+            with col_cons:
+                if st.button("👨‍⚕️ Derivar a Consulta Directa", use_container_width=True):
+                    st.session_state.admission_decision_mode = 'derive_consulta'
+                    st.rerun()
+            
+            st.divider()
+            if st.button("← Volver a Datos del Paciente"):
+                st.session_state.admission_step = 1
+                st.rerun()
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/admission_view.py</div>', unsafe_allow_html=True)
 

@@ -49,18 +49,6 @@ El sistema integra capacidades avanzadas de IA tanto generativa como predictiva.
 
 ### 4.1 Modelos Predictivos (Real ML)
 El sistema utiliza algoritmos de **Random Forest** (Bosques Aleatorios) implementados con Scikit-learn para realizar predicciones operativas. A diferencia de sistemas basados en reglas simples, estos modelos aprenden de los datos históricos.
-
-*   **Predicción de Demanda:** Utiliza `RandomForestRegressor` para estimar la afluencia de pacientes por hora, basándose en patrones históricos de día de la semana y hora.
-*   **Estimación de Tiempos de Espera:** Predice el tiempo de espera individual considerando la carga actual de la sala, el nivel de triaje del paciente y la eficiencia histórica del servicio.
-
-> **Nota sobre Datos Sintéticos:** Para el arranque del sistema (Cold Start), se ha generado un dataset sintético de 1.000 registros (`is_synthetic: true`) que simula patrones realistas de un servicio de urgencias (picos en lunes/viernes, variaciones estacionales, etc.). Esto permite que los modelos sean funcionales desde el primer día.
-
-### 4.2 Análisis Multimodal con Gemini
-
-El sistema integra capacidades avanzadas de IA para asistir en la toma de decisiones clínicas, no para reemplazarlas.
-
-### 4.1 Análisis Multimodal con Gemini
-El núcleo del sistema utiliza modelos **Google Gemini** (Pro/Flash) para procesar información de múltiples fuentes simultáneamente:
 *   **Procesamiento de Lenguaje Natural (NLP):** Analiza la entrevista clínica transcrita y el texto libre para extraer síntomas clave, antecedentes y factores de riesgo sutiles (ej. menciones de "dolor opresivo" o "antecedentes familiares de muerte súbita").
 *   **Reconocimiento Automático del Habla (ASR):** Transcribe en tiempo real la interacción verbal entre enfermero y paciente, permitiendo al profesional mantener contacto visual sin perder datos.
 *   **Visión Computacional:** Analiza imágenes de lesiones (heridas, deformidades) para evaluar gravedad visual (ej. signos de infección, exposición ósea).

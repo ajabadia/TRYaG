@@ -120,21 +120,6 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 ### 7.6 Nuevas Tareas (Pendientes de Ejecución)
 **Objetivo:** Mejoras de usabilidad, estandarización y herramientas de feedback.
 
-- [x] **Refactor UI Input Form (`src/components/triage/input_form.py`):**
-    - [x] Mover botones "Confirmar motivo" y "Editar datos" justo antes del mensaje de "Aviso de Privacidad".
-    - [x] Implementar lógica de bloqueo: al pulsar "Confirmar motivo", deshabilitar/proteger todos los componentes superiores (texto, edad, dolor, archivos).
-    - [x] Al pulsar "Editar datos", volver a habilitar los componentes.
-
-- [x] **Menú por Pasos en Atención:**
-    - [x] Implementar menú de navegación por pasos (similar a Admisión y Triaje) para los flujos de "Atención Box" y "Consulta".
-
-- [x] **Módulo de Reporte de Feedback/Errores:**
-    - **Backend:**
-        - [x] Crear nueva colección/tabla en BD para reportes.
-        - [x] Campos: `module_name`, `timestamp`, `user_id`, `report_type` (error, mejora, comentario), `subtype`, `title`, `body`.
-    - **Frontend:**
-        - [x] Crear componente reutilizable (botón icono sin texto) que abra una modal    - **Integración:**
-        - [x] Añadir botón de prueba en Admisiones -> Paso 1 "Sala de admisión".
         - [x] Visualización en Panel de Auditoría (Debug Mongo) y Datos en Bruto (con card de detalles).
     - [x] **Mejora:** Permitir adjuntar archivos en el reporte (usando `src/components/common/file_importer.py`).
 

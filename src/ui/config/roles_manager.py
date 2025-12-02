@@ -160,7 +160,7 @@ def render_roles_manager():
 
                 st.divider()
                 
-                if st.button("💾 Guardar Cambios", type="primary", use_container_width=True):
+                if st.button("💾 Guardar Cambios", type="primary", use_container_width=True, key=f"save_role_{selected_role['code']}"):
                     # Guardar
                     updates = {
                         "nombre": new_name,

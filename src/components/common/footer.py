@@ -54,7 +54,7 @@ def render_footer(centro_config):
         # Contenedor centrado para el logo y la versión
         st.markdown(
             """
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 15px;">
             """,
             unsafe_allow_html=True
         )
@@ -74,6 +74,6 @@ def render_footer(centro_config):
         version = "v0.1 beta"
         fecha = date.today().strftime("%d/%m/%Y")
         
-        st.caption(f"{version} | {fecha}")
+        st.markdown(f"<span style='color: gray; font-size: 0.8em;'>{version} | {fecha}</span>", unsafe_allow_html=True)
         
         st.markdown("</div>", unsafe_allow_html=True)

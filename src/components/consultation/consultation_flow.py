@@ -36,9 +36,19 @@ def render_consultation_flow(paciente: dict, flujo: dict, on_finish: callable = 
     
     data = st.session_state[session_key]
 
-    # --- Header ---
-    st.markdown(f"### 🩺 Atención: {paciente.get('nombre')} {paciente.get('apellido1')}")
-    st.caption(f"ID: {patient_code} | Edad: {calcular_edad(paciente.get('fecha_nacimiento'))} años")
+    # --- Header con Tarjeta de Paciente ---
+    from ui.components.common.patient_card import render_patient_card
+    
+    render_patient_card(
+        patient=paciente,
+        show_triage_level=True,
+        show_wait_time=True,
+        show_location=True,
+        allow_rejection=True,
+        allow_reassignment=True,
+        allow_finish=True,
+        key_prefix="consultation_flow"
+    )
     
     # --- Stepper ---
     steps = {

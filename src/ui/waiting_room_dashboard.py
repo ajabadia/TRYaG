@@ -11,7 +11,7 @@ def render_waiting_room_dashboard():
     Renderiza el tablero principal de la Sala de Espera.
     Muestra estadísticas y la lista priorizada de pacientes.
     """
-    st.header(":material/chair: Sala de Espera")
+    st.header("🪑 Sala de Espera")
     
     # Panel de Herramientas
     render_tools_panel("Sala de Espera", show_pdf=False)

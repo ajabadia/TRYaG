@@ -1,6 +1,6 @@
 # path: src/ui/boxes_view.py
 # Creado: 2025-11-24
-# Refactorizado: 2025-11-28 (Stepper)
+# Refactorizado: 2025-12-02 (Stepper Horizontal)
 """
 Vista principal para la Gestión de Boxes y Consultas.
 Orquesta el flujo de trabajo del médico:
@@ -9,7 +9,7 @@ Orquesta el flujo de trabajo del médico:
 3. Atención Clínica (si tiene paciente)
 """
 import streamlit as st
-from components.common.stepper import render_vertical_stepper
+from components.common.stepper import render_horizontal_stepper
 from components.boxes import (
     render_step_sala_selection,
     render_step_patient_selection,
@@ -61,18 +61,19 @@ def render_boxes_view():
     # Si no hay sala, forzar paso 0
     if not st.session_state.get('boxes_room_code'):
         st.session_state.boxes_step = 0
-    # Si hay sala pero no paciente (y no estamos en paso 0), paso 1
-    elif st.session_state.get('boxes_room_code') and not st.session_state.get('active_patient_code'):
-        # Verificar si hay paciente activo en sala (médico ocupado)
+    
+    # Si hay sala pero estamos en paso 0, avanzar a paso 1
+    elif st.session_state.get('boxes_room_code') and st.session_state.boxes_step == 0:
+        st.session_state.boxes_step = 1
+        st.rerun()
+
+    # Verificar si hay paciente activo en sala (médico ocupado) para saltar a paso 2
+    # Esto se hace si estamos en paso 1 (seleccionando paciente) pero resulta que ya hay uno
+    if st.session_state.get('boxes_room_code') and st.session_state.boxes_step == 1:
         pacientes_activos = obtener_pacientes_en_sala(st.session_state.boxes_room_code)
         if pacientes_activos:
-             # Si hay paciente activo, deberíamos estar en atención (Paso 2)
-             pass
-        else:
-             if st.session_state.boxes_step > 1: # Si estábamos en atención y terminamos
-                 st.session_state.boxes_step = 1
-             elif st.session_state.boxes_step == 0: # Si venimos de selección de sala
-                 st.session_state.boxes_step = 1
+             st.session_state.boxes_step = 2
+             st.rerun()
 
     # Definir pasos
     steps = [
@@ -81,54 +82,52 @@ def render_boxes_view():
         "Atención Clínica"
     ]
     
-    col_stepper, col_content = st.columns([1, 4])
+    # Renderizar Stepper Horizontal
+    render_horizontal_stepper(steps, st.session_state.boxes_step)
     
-    with col_stepper:
-        st.markdown("<br>", unsafe_allow_html=True) # Espaciador para alinear con header
-        render_vertical_stepper(steps, st.session_state.boxes_step)
+    st.title("🩺 Atención Clínica en Box")
+    
+    # --- PASO 0: SELECCIÓN DE SALA ---
+    if st.session_state.boxes_step == 0:
+        st.markdown("### Seleccione su Box de Atención")
+        render_step_sala_selection()
+        # La transición a paso 1 ocurre cuando se selecciona sala (rerun provocado por el componente)
+        if st.session_state.get('boxes_room_code'):
+                st.session_state.boxes_step = 1
+                st.rerun()
+
+    # --- PASO 1: SELECCIÓN DE PACIENTE ---
+    elif st.session_state.boxes_step == 1:
+        room_code = st.session_state.get('boxes_room_code')
         
-    with col_content:
-        # --- PASO 0: SELECCIÓN DE SALA ---
-        if st.session_state.boxes_step == 0:
-            st.markdown("### Seleccione su Box de Atención")
-            render_step_sala_selection()
-            # La transición a paso 1 ocurre cuando se selecciona sala (rerun provocado por el componente)
-            if st.session_state.get('boxes_room_code'):
-                 st.session_state.boxes_step = 1
-                 st.rerun()
+        def change_room():
+            st.session_state.boxes_room_code = None
+            st.session_state.boxes_step = 0
+            st.rerun()
 
-        # --- PASO 1: SELECCIÓN DE PACIENTE ---
-        elif st.session_state.boxes_step == 1:
-            room_code = st.session_state.get('boxes_room_code')
-            
-            def change_room():
-                st.session_state.boxes_room_code = None
-                st.session_state.boxes_step = 0
+        render_room_header(room_code, "Lista de Pacientes", on_change=change_room)
+
+        # Verificar si hay paciente activo en la sala (Médico ocupado)
+        pacientes_activos = obtener_pacientes_en_sala(room_code)
+        medico_ocupado = len(pacientes_activos) > 0
+        
+        if medico_ocupado:
+            # Si ya hay alguien siendo atendido, saltamos directo a atención
+            st.session_state.boxes_step = 2
+            st.rerun()
+        else:
+            render_step_patient_selection()
+
+    # --- PASO 2: ATENCIÓN CLÍNICA ---
+    elif st.session_state.boxes_step == 2:
+        room_code = st.session_state.get('boxes_room_code')
+        
+        def go_back():
+                st.session_state.boxes_step = 1
                 st.rerun()
-
-            render_room_header(room_code, "Lista de Pacientes", on_change=change_room)
-
-            # Verificar si hay paciente activo en la sala (Médico ocupado)
-            pacientes_activos = obtener_pacientes_en_sala(room_code)
-            medico_ocupado = len(pacientes_activos) > 0
-            
-            if medico_ocupado:
-                # Si ya hay alguien siendo atendido, saltamos directo a atención
-                st.session_state.boxes_step = 2
-                st.rerun()
-            else:
-                render_step_patient_selection()
-
-        # --- PASO 2: ATENCIÓN CLÍNICA ---
-        elif st.session_state.boxes_step == 2:
-            room_code = st.session_state.get('boxes_room_code')
-            
-            def go_back():
-                 st.session_state.boxes_step = 1
-                 st.rerun()
-            
-            render_room_header(room_code, "En Atención", on_back=go_back)
-            
-            render_step_attention()
+        
+        render_room_header(room_code, "En Atención", on_back=go_back)
+        
+        render_step_attention()
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/boxes_view.py</div>', unsafe_allow_html=True)

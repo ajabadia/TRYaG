@@ -14,7 +14,8 @@ def render_patient_card(
     highlight_alert: bool = True,
     is_in_room: bool = False,
     flow_status: dict = None,
-    key_prefix: str = ""
+    key_prefix: str = "",
+    **kwargs
 ):
     """
     Renderiza una tarjeta de paciente unificada y flexible.
@@ -176,7 +177,7 @@ def render_patient_card(
                     elif alert_level == 'warning':
                         st.markdown(":orange[**WARNING**]")
 
-        # Acciones
+        # Acciones Personalizadas
         if actions:
             cols = st.columns(len(actions))
             for i, action in enumerate(actions):
@@ -191,23 +192,165 @@ def render_patient_card(
                     ):
                         if action.get('on_click'):
                             action['on_click'](patient)
-            
-            # Botón de Informe (Modal)
-            if pid != 'N/A':
-                col_pdf, _ = st.columns([1, 3])
-                with col_pdf:
-                    if st.button("📄 Informe", key=f"btn_pdf_{pid}_{key_prefix}", help="Ver y descargar informe", use_container_width=True):
-                        from ui.components.reports.report_viewer import render_report_viewer
-                        from utils.triage_utils import get_triage_record_for_pdf
-                        
-                        record = get_triage_record_for_pdf(pid)
-                        if record:
-                            render_report_viewer(record, patient)
-                        else:
-                            st.toast("⚠️ No hay datos de triaje disponibles para este paciente.", icon="⚠️")
         
-        # Etiqueta de componente
-        st.markdown('<div style="color: #ccc; font-size: 0.6em; text-align: right;">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)
+        # Acciones Estándar (Rechazar, Reasignar, Finalizar)
+        # Se muestran en una fila separada o integradas si no hay acciones personalizadas
+        
+        # Definir qué acciones estándar mostrar
+        std_actions = []
+        if kwargs.get('allow_rejection', False):
+            std_actions.append('reject')
+        if kwargs.get('allow_reassignment', False):
+            std_actions.append('reassign')
+        if kwargs.get('allow_finish', False):
+            std_actions.append('finish')
+            
+        if std_actions:
+            st.divider()
+            c_std = st.columns(len(std_actions))
+            
+            for i, action_type in enumerate(std_actions):
+                with c_std[i]:
+                    if action_type == 'reject':
+                        if st.button("⛔ Rechazar", key=f"btn_reject_{pid}_{key_prefix}", type="secondary", use_container_width=True):
+                            st.session_state[f"show_reject_modal_{pid}"] = True
+                            st.rerun()
+                            
+                    elif action_type == 'reassign':
+                        if st.button("🔄 Cambiar Sala", key=f"btn_reassign_{pid}_{key_prefix}", type="secondary", use_container_width=True):
+                            st.session_state[f"show_reassign_modal_{pid}"] = True
+                            st.rerun()
+                            
+                    elif action_type == 'finish':
+                        if st.button("✅ Finalizar", key=f"btn_finish_{pid}_{key_prefix}", type="primary", use_container_width=True):
+                            st.session_state[f"show_finish_modal_{pid}"] = True
+                            st.rerun()
+
+        # Botón de Informe (Modal)
+        if pid != 'N/A' and kwargs.get('show_report', True):
+            # Generar PDF bajo demanda
+            # Construimos un registro "wrapper" para el generador
+            record_wrapper = {
+                "patient_data": patient,
+                "vital_signs": patient.get('vital_signs', {}),
+                "triage_result": patient.get('triage_result', {}),
+                "timestamp": datetime.now(),
+                "audit_id": pid,
+                "evaluator_id": "Sistema"
+            }
+            
+            try:
+                from services.report_service import generate_triage_pdf
+                import unicodedata
+                import re
+                
+                pdf_bytes = generate_triage_pdf(record_wrapper)
+                
+                raw_name = f"{patient.get('nombre', 'Paciente')}_{patient.get('apellido1', '')}"
+                normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
+                safe_name = re.sub(r'[^\w\-_]', '_', normalized)
+                file_name = f"Informe_{safe_name}_{datetime.now().strftime('%H%M')}.pdf"
+                
+                st.download_button(
+                    label="📄 Informe PDF",
+                    data=pdf_bytes,
+                    file_name=file_name,
+                    mime="application/octet-stream",
+                    use_container_width=True,
+                    key=f"btn_dl_pdf_{pid}_{key_prefix}"
+                )
+            except Exception as e:
+                st.error(f"Error PDF: {e}")
+
+    # --- MODALES DE ACCIONES ESTÁNDAR ---
+    # Renderizar fuera del container principal para evitar problemas de anidamiento visual
+    
+    # 1. Modal Rechazo
+    if st.session_state.get(f"show_reject_modal_{pid}", False):
+        @st.dialog(f"⛔ Rechazar Paciente: {nombre}")
+        def reject_dialog():
+            st.warning("Esta acción finalizará el flujo del paciente y liberará la sala.")
+            motivo = st.text_area("Motivo del rechazo", key=f"reason_reject_{pid}")
+            
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("Cancelar", key=f"cancel_reject_{pid}"):
+                    st.session_state[f"show_reject_modal_{pid}"] = False
+                    st.rerun()
+            with c2:
+                if st.button("Confirmar Rechazo", key=f"confirm_reject_{pid}", type="primary", disabled=not motivo):
+                    from services.patient_flow_service import rechazar_paciente
+                    if rechazar_paciente(pid, motivo):
+                        st.success("Paciente rechazado correctamente.")
+                        st.session_state[f"show_reject_modal_{pid}"] = False
+                        st.rerun()
+                    else:
+                        st.error("Error al rechazar paciente.")
+        reject_dialog()
+
+    # 2. Modal Reasignación
+    if st.session_state.get(f"show_reassign_modal_{pid}", False):
+        @st.dialog(f"🔄 Cambiar Sala: {nombre}")
+        def reassign_dialog():
+            from db.repositories.salas import get_all_salas
+            rooms = get_all_salas()
+            # Filtrar salas activas
+            active_rooms = [r for r in rooms if r.get('activa', True)]
+            
+            # Helper para formatear etiqueta con ocupación
+            def format_room_label(r):
+                cap = r.get('capacidad_sillas', 1) # Asumir 1 si no definido (boxes)
+                # Calcular ocupación real (esto requeriría una consulta extra, por ahora mostramos estático o lo que tenga el objeto)
+                # Si el objeto sala viene de get_all_salas, puede no tener 'plazas_disponibles' calculado dinámicamente.
+                # Por simplicidad y robustez, mostramos nombre y código.
+                return f"{r['nombre']} ({r['codigo']})"
+
+            room_options = {format_room_label(r): r['codigo'] for r in active_rooms}
+            
+            selected_label = st.selectbox("Seleccione Nueva Sala", list(room_options.keys()), key=f"sel_reassign_{pid}")
+            target_code = room_options[selected_label]
+            
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("Cancelar", key=f"cancel_reassign_{pid}"):
+                    st.session_state[f"show_reassign_modal_{pid}"] = False
+                    st.rerun()
+            with c2:
+                if st.button("Confirmar Cambio", key=f"confirm_reassign_{pid}", type="primary"):
+                    from services.patient_flow_service import reassign_patient_flow
+                    if reassign_patient_flow(pid, new_sala_atencion_code=target_code): # Usamos un param genérico o detectamos tipo
+                         st.success("Paciente reasignado correctamente.")
+                         st.session_state[f"show_reassign_modal_{pid}"] = False
+                         st.rerun()
+                    else:
+                         st.error("Error al reasignar paciente.")
+        reassign_dialog()
+
+    # 3. Modal Finalizar
+    if st.session_state.get(f"show_finish_modal_{pid}", False):
+        @st.dialog(f"✅ Finalizar Atención: {nombre}")
+        def finish_dialog():
+            st.info("Finalizar la atención clínica y liberar el box/consulta.")
+            notas = st.text_area("Notas de cierre (opcional)", key=f"notes_finish_{pid}")
+            
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("Cancelar", key=f"cancel_finish_{pid}"):
+                    st.session_state[f"show_finish_modal_{pid}"] = False
+                    st.rerun()
+            with c2:
+                if st.button("Confirmar Finalización", key=f"confirm_finish_{pid}", type="primary"):
+                    from services.patient_flow_service import finalizar_flujo
+                    if finalizar_flujo(pid, motivo="Atención Completada", notas=notas):
+                        st.success("Atención finalizada.")
+                        st.session_state[f"show_finish_modal_{pid}"] = False
+                        st.rerun()
+                    else:
+                        st.error("Error al finalizar atención.")
+        finish_dialog()
+
+    # Etiqueta de componente
+    st.markdown('<div style="color: #ccc; font-size: 0.6em; text-align: right;">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)
 
 from services.patient_service import calcular_edad
 

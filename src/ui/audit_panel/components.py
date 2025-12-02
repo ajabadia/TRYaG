@@ -19,7 +19,7 @@ def render_action_bar(key_prefix, df=None, on_refresh=None, pdf_generator=None, 
     
     # 1. Refrescar
     with col1:
-        if st.button("Refrescar", icon=":material/refresh:", key=f"{key_prefix}_refresh"):
+        if st.button("Refrescar", icon="🔄", key=f"{key_prefix}_refresh"):
             if on_refresh:
                 on_refresh()
             else:
@@ -34,11 +34,11 @@ def render_action_bar(key_prefix, df=None, on_refresh=None, pdf_generator=None, 
                 csv_data, 
                 f"{excel_filename.replace('.xlsx', '.csv')}", 
                 'text/csv', 
-                icon=":material/download:",
+                icon="📥",
                 key=f"{key_prefix}_csv"
             )
         else:
-            st.button("CSV", disabled=True, icon=":material/download:", key=f"{key_prefix}_csv_disabled")
+            st.button("CSV", disabled=True, icon="📥", key=f"{key_prefix}_csv_disabled")
 
     # 3. Excel
     with col3:
@@ -51,15 +51,15 @@ def render_action_bar(key_prefix, df=None, on_refresh=None, pdf_generator=None, 
                 buffer.getvalue(), 
                 excel_filename, 
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
-                icon=":material/download:",
+                icon="📥",
                 key=f"{key_prefix}_excel"
             )
         else:
-            st.button("Excel", disabled=True, icon=":material/download:", key=f"{key_prefix}_excel_disabled")
+            st.button("Excel", disabled=True, icon="📥", key=f"{key_prefix}_excel_disabled")
 
     # 4. Compartir
     with col4:
-        if st.button("Compartir", icon=":material/share:", key=f"{key_prefix}_share", use_container_width=True):
+        if st.button("Compartir", icon="📤", key=f"{key_prefix}_share", use_container_width=True):
             if share_params:
                 st.query_params.clear()
                 for k, v in share_params.items():
@@ -71,7 +71,7 @@ def render_action_bar(key_prefix, df=None, on_refresh=None, pdf_generator=None, 
     # 5. PDF
     with col5:
         if pdf_generator and df is not None and not df.empty:
-            if st.button("Informe PDF", icon=":material/picture_as_pdf:", key=f"{key_prefix}_pdf_btn", use_container_width=True):
+            if st.button("Informe PDF", icon="📄", key=f"{key_prefix}_pdf_btn", use_container_width=True):
                 pdf_bytes = pdf_generator()
                 st.download_button(
                     "Descargar PDF",
@@ -81,7 +81,7 @@ def render_action_bar(key_prefix, df=None, on_refresh=None, pdf_generator=None, 
                     key=f"{key_prefix}_pdf_dl"
                 )
         else:
-            st.button("Informe PDF", disabled=True, icon=":material/picture_as_pdf:", key=f"{key_prefix}_pdf_disabled", use_container_width=True)
+            st.button("Informe PDF", disabled=True, icon="📄", key=f"{key_prefix}_pdf_disabled", use_container_width=True)
 
 def render_filters(df, columns_to_filter, key_prefix):
     """

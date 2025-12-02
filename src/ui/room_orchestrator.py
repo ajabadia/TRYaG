@@ -11,7 +11,7 @@ def mostrar_orquestador_salas():
     """
     Renderiza el orquestador principal con subsecciones.
     """
-    st.header(":material/dashboard: Control de Salas")
+    st.header("📊 Control de Salas")
     st.markdown("Centro de operaciones para gestión, monitoring y análisis de salas.")
     
     # Unread notifications badge
@@ -20,15 +20,15 @@ def mostrar_orquestador_salas():
     
     # Tabs principales
     tab_labels = [
-        ":material/meeting_room: Gestión",
-        ":material/analytics: Dashboard & Métricas"
+        "🚪 Gestión",
+        "📈 Dashboard & Métricas"
     ]
     
     # Añadir badge si hay notificaciones
     if unread > 0:
-        tab_labels.append(f":material/notifications: Notificaciones ({unread})")
+        tab_labels.append(f"🔔 Notificaciones ({unread})")
     else:
-        tab_labels.append(":material/notifications: Notificaciones")
+        tab_labels.append("🔔 Notificaciones")
     
     tabs = st.tabs(tab_labels)
     

@@ -37,86 +37,8 @@ def render_step_patient_selection() -> bool:
         return False
 
     # --- GESTIÓN DE ACCIONES (REASIGNAR / RECHAZAR) ---
-    if 'triage_action_target' not in st.session_state:
-        st.session_state.triage_action_target = None
-    if 'triage_action_type' not in st.session_state:
-        st.session_state.triage_action_type = None
+    # (Delegado a patient_card.py con acciones estándar)
 
-    # Si hay una acción en curso, mostramos su UI y ocultamos la lista
-    if st.session_state.triage_action_target:
-        target_p = st.session_state.triage_action_target
-        action_type = st.session_state.triage_action_type
-        
-        st.divider()
-        st.markdown(f"### Gestionar Paciente: {target_p.get('nombre')} {target_p.get('apellido1')}")
-        
-        if action_type == 'reassign':
-            st.info("Seleccione la sala de espera de destino:")
-            from services.room_service import obtener_salas_por_tipo
-            from components.common.room_card import render_room_grid
-            from services.flow_manager import mover_paciente_a_sala
-            
-            # Obtener salas de espera de triaje
-            salas_espera = [s for s in obtener_salas_por_tipo('triaje') if s.get('subtipo') == 'espera']
-            
-            selected_code = render_room_grid(
-                salas=salas_espera,
-                selected_code=None,
-                button_key_prefix="reassign_triage_grid",
-                cols_per_row=3
-            )
-            
-            if selected_code:
-                try:
-                    mover_paciente_a_sala(
-                        patient_code=target_p['patient_code'],
-                        sala_destino_code=selected_code,
-                        sala_destino_tipo="triaje",
-                        sala_destino_subtipo="espera",
-                        nuevo_estado="EN_ESPERA_TRIAJE",
-                        notas=f"Reasignado desde triaje {room_code}",
-                        usuario=_get_username()
-                    )
-                    st.success(f"✅ Paciente reasignado a {selected_code}")
-                    st.session_state.triage_action_target = None
-                    st.session_state.triage_action_type = None
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error al mover: {e}")
-            
-            if st.button("🔙 Cancelar"):
-                st.session_state.triage_action_target = None
-                st.session_state.triage_action_type = None
-                st.rerun()
-
-        elif action_type == 'reject':
-            st.warning("¿Está seguro de que desea rechazar a este paciente? Se cerrará su flujo actual.")
-            col_confirm, col_cancel = st.columns(2)
-            with col_confirm:
-                if st.button("🗑️ Sí, Rechazar", type="primary", use_container_width=True):
-                    from services.flow_manager import rechazar_paciente
-                    try:
-                        success, msg = rechazar_paciente(
-                            patient_code=target_p['patient_code'],
-                            motivo="Rechazado en triaje",
-                            usuario=_get_username()
-                        )
-                        if success:
-                            st.success("✅ Paciente rechazado correctamente")
-                            st.session_state.triage_action_target = None
-                            st.session_state.triage_action_type = None
-                            st.rerun()
-                        else:
-                            st.error(f"Error al rechazar: {msg}")
-                    except Exception as e:
-                        st.error(f"Error al rechazar: {e}")
-            with col_cancel:
-                if st.button("Cancelar", use_container_width=True):
-                    st.session_state.triage_action_target = None
-                    st.session_state.triage_action_type = None
-                    st.rerun()
-        
-        return False
 
     # --- RECUPERACIÓN DE PACIENTES ---
     from services.flow_manager import obtener_pacientes_en_sala, mover_paciente_a_sala
@@ -274,30 +196,16 @@ def render_step_patient_selection() -> bool:
             "disabled": disable_attend and not is_in_room
         })
 
-        # Botones Extra (Rechazar/Reasignar) - Solo si show_actions=True (que era hardcoded True antes)
-        actions.append({
-            "label": "❌",
-            "key": "reject",
-            "type": "secondary",
-            "on_click": on_reject,
-            "help": "Rechazar"
-        })
-        actions.append({
-            "label": "➡️",
-            "key": "reassign",
-            "type": "secondary",
-            "on_click": on_reassign,
-            "help": "Reasignar"
-        })
-
         render_patient_card(
             patient=p,
             actions=actions,
-            show_triage_level=False, # En selección de triaje aún no tienen nivel (o sí, si vienen re-evaluados, pero asumimos que no para simplificar visualmente o lo mostramos si existe)
+            show_triage_level=False, # En selección de triaje aún no tienen nivel
             show_wait_time=True,
             show_location=True,
             is_in_room=is_in_room,
-            key_prefix="triage_sel"
+            key_prefix="triage_sel",
+            allow_rejection=True,
+            allow_reassignment=True
         )
 
     # Mostrar paciente seleccionado y permitir avanzar

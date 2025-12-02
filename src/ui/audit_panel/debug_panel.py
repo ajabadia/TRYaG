@@ -54,7 +54,11 @@ def render_debug_panel(key_prefix="debug_panel"):
             return
 
         # Crear pestañas para cada colección
-        tabs = st.tabs([f":material/database: {col}" for col in collections])
+        tabs = st.tabs([f"🗄️ {col}" for col in collections])
+        
+        if not tabs:
+            st.warning("No se pudieron crear las pestañas.")
+            return
 
         for i, collection_name in enumerate(collections):
             with tabs[i]:

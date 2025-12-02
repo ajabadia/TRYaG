@@ -186,8 +186,8 @@ def render_room_card(
             button_type = "primary" if is_selected else "secondary"
             button_label = button_label_selected if is_selected else button_label_unselected
             
-            # Deshabilitar si está seleccionada o si está llena
-            is_disabled = is_selected or sala_llena
+            # Deshabilitar solo si está seleccionada (permitir seleccionar aunque esté llena, con aviso)
+            is_disabled = is_selected
             
             if st.button(button_label, key=button_key, 
                        type=button_type, disabled=is_disabled, use_container_width=True):
@@ -197,7 +197,7 @@ def render_room_card(
             
             # Advertencia si está llena
             if sala_llena and not is_selected:
-                st.error("🚫 Sala llena - No disponible")
+                st.warning("⚠️ Sala llena (Capacidad excedida)")
         
         st.markdown('<div style="color: #ccc; font-size: 0.6em; text-align: right; margin-top: 5px;">src/components/common/room_card.py</div>', unsafe_allow_html=True)
     

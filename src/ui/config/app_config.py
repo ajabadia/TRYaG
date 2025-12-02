@@ -25,7 +25,7 @@ def render_app_config():
     general_config = st.session_state.general_config
 
     with st.container(border=True):
-        st.markdown("#### :material/rule: Validación de Formularios")
+        st.markdown("#### 📏 Validación de Formularios")
         col1, col2 = st.columns([3, 1])
         with col1:
             st.markdown("**Caracteres mínimos en 'Motivo de Consulta'**")
@@ -41,7 +41,7 @@ def render_app_config():
                 label_visibility="collapsed",
             )
         st.divider()
-        st.markdown("#### :material/psychology: Modelos de IA")
+        st.markdown("#### 🧠 Modelos de IA")
         st.caption("Gestión de modelos Gemini disponibles y configuración por defecto.")
         
         # --- Sección de Descubrimiento de Modelos ---
@@ -95,29 +95,29 @@ def render_app_config():
         # Botones Guardar / Restaurar
         col_save, col_reset, _ = st.columns([1, 1, 2])
         with col_save:
-            if st.button(":material/save: Guardar Cambios", use_container_width=True, type="primary"):
+            if st.button("💾 Guardar Cambios", use_container_width=True, type="primary"):
                 general_config['min_chars_motivo'] = new_min_chars
                 general_config['default_ai_model'] = new_default_model
                 general_config['enable_predictive_alerts'] = enable_predictive_alerts
                 if save_general_config(general_config):
                     st.session_state.general_config = general_config
-                    st.success(":material/check_circle: Configuración guardada correctamente")
-                    st.info(":material/refresh: Recargando aplicación...")
+                    st.success("✅ Configuración guardada correctamente")
+                    st.info("🔄 Recargando aplicación...")
                     st.rerun()
                 else:
-                    st.error(":material/error: Error al guardar la configuración")
+                    st.error("❌ Error al guardar la configuración")
         with col_reset:
-            if st.button(":material/restore: Restaurar Valores por Defecto", use_container_width=True):
+            if st.button("↩️ Restaurar Valores por Defecto", use_container_width=True):
                 default_config = {"min_chars_motivo": 3}
                 if save_general_config(default_config):
                     st.session_state.general_config = default_config
-                    st.success(":material/check_circle: Configuración restaurada a valores por defecto")
+                    st.success("✅ Configuración restaurada a valores por defecto")
                     st.rerun()
                 else:
-                    st.error(":material/error: Error al restaurar la configuración")
+                    st.error("❌ Error al restaurar la configuración")
         st.divider()
-        st.markdown("##### :material/info: Información")
-        st.caption(":material/database: Configuración almacenada en MongoDB Atlas")
-        st.caption(":material/tips_and_updates: Los cambios se aplican automáticamente al guardar.")
+        st.markdown("##### ℹ️ Información")
+        st.caption("🗄️ Configuración almacenada en MongoDB Atlas")
+        st.caption("💡 Los cambios se aplican automáticamente al guardar.")
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/app_config.py</div>', unsafe_allow_html=True)

@@ -64,20 +64,19 @@ def render_step_attention() -> bool:
     # --- Header del Paciente ---
     st.subheader("3️⃣ Acto Clínico")
     
-    from ui.components.common.patient_card import render_patient_header
+    from ui.components.common.patient_card import render_patient_card
     
-    # Adaptar datos para el header
-    # El header espera un objeto triage_result opcional para el nivel.
-    # Podemos pasar el estado del flujo como "nivel" para que se vea destacado si queremos,
-    # o simplemente dejar que el header muestre lo básico.
-    # El header actual muestra: Nombre, ID, Edad, Origen, y Nivel (Badge).
-    
-    # En boxes, el "nivel" podría ser el nivel de triaje si existe.
-    # El objeto `flujo_paciente` tiene info del flujo. `paciente` tiene info demográfica.
-    # Si queremos mostrar el nivel de triaje, deberíamos tenerlo.
-    # Por ahora, usamos el header estándar.
-    
-    render_patient_header(paciente)
+    # Renderizar tarjeta completa con acciones
+    render_patient_card(
+        patient=paciente,
+        show_triage_level=True,
+        show_wait_time=True,
+        show_location=True,
+        allow_rejection=True,
+        allow_reassignment=True,
+        allow_finish=True, # Permitir finalizar desde la tarjeta
+        key_prefix="box_attention"
+    )
 
     # --- Stepper Navigation ---
     steps = {
@@ -238,25 +237,30 @@ def _finalizar_visita(patient_code, tipo_alta, data, session_key):
             f"Dx: {data['diagnostico']} | "
             f"Tx: {data['tratamiento']}"
         )
-        finalizar_flujo(
+        success, msg = finalizar_flujo(
             patient_code=patient_code,
             tipo_finalizacion=tipo_alta,
             notas=notas_finales,
             usuario=_get_username()
         )
-        # Limpiar sesión
-        if session_key in st.session_state:
-            del st.session_state[session_key]
+        
+        if success:
+            # Limpiar sesión
+            if session_key in st.session_state:
+                del st.session_state[session_key]
+                
+            st.success(f"Visita finalizada: {tipo_alta}")
+            st.rerun()
+        else:
+            st.error(f"Error al finalizar: {msg}")
             
-        st.success(f"Visita finalizada: {tipo_alta}")
-        st.rerun()
     except Exception as e:
         st.error(f"Error al finalizar: {e}")
 
 def _solicitar_ingreso(patient_code, sala_destino, data, session_key):
     try:
         notas_ingreso = f"Solicitud Ingreso. Dx: {data['diagnostico']}. Tx: {data['tratamiento']}"
-        mover_paciente_a_sala(
+        success, msg = mover_paciente_a_sala(
             patient_code=patient_code,
             sala_destino_code=sala_destino,
             sala_destino_tipo="consulta_ingreso",
@@ -265,11 +269,16 @@ def _solicitar_ingreso(patient_code, sala_destino, data, session_key):
             notas=notas_ingreso,
             usuario=_get_username()
         )
-        # Limpiar sesión
-        if session_key in st.session_state:
-            del st.session_state[session_key]
+        
+        if success:
+            # Limpiar sesión
+            if session_key in st.session_state:
+                del st.session_state[session_key]
 
-        st.success("Solicitud de ingreso enviada correctamente.")
-        st.rerun()
+            st.success("Solicitud de ingreso enviada correctamente.")
+            st.rerun()
+        else:
+            st.error(f"Error al solicitar ingreso: {msg}")
+            
     except Exception as e:
         st.error(f"Error al solicitar ingreso: {e}")

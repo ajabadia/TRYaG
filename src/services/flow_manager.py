@@ -270,7 +270,7 @@ def validar_movimiento(
         tuple: (válido: bool, mensaje: str)
     """
     # Orden de tipos
-    orden_tipos = ["admision", "triaje", "boxes", "ingreso"]
+    orden_tipos = ["admision", "triaje", "box", "consulta_ingreso", "ingreso"]
     
     try:
         idx_origen = orden_tipos.index(sala_origen_tipo)

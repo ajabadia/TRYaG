@@ -103,7 +103,9 @@ def render_step_patient_selection() -> bool:
             show_triage_level=True,
             show_wait_time=True,
             show_location=True,
-            key_prefix="boxes_sel"
+            key_prefix="boxes_sel",
+            allow_rejection=True,
+            allow_reassignment=True
         )
             
     return False
@@ -112,7 +114,7 @@ def render_step_patient_selection() -> bool:
 def _llamar_paciente(paciente, room_code):
     """Mueve al paciente a la sala de atención."""
     try:
-        mover_paciente_a_sala(
+        success, msg = mover_paciente_a_sala(
             patient_code=paciente.get('patient_code'),
             sala_destino_code=room_code,
             sala_destino_tipo="box",
@@ -121,7 +123,14 @@ def _llamar_paciente(paciente, room_code):
             notas=f"Llamado a consulta {room_code}",
             usuario=_get_username()
         )
-        st.success(f"Llamando a {paciente.get('nombre')}...")
-        st.rerun()
+        
+        if success:
+            st.success(f"Llamando a {paciente.get('nombre')}...")
+            # Actualización optimista del estado para transición inmediata
+            st.session_state.active_patient_code = paciente.get('patient_code')
+            st.session_state.boxes_step = 2
+            st.rerun()
+        else:
+            st.error(f"No se pudo llamar al paciente: {msg}")
     except Exception as e:
         st.error(f"Error al llamar paciente: {e}")

@@ -73,7 +73,7 @@ def show_loading(message: str = "Recuperando datos..."):
                 """,
                 unsafe_allow_html=True
             )
-            st.info(f":material/sync: {message}", icon="ℹ️")
+            st.info(f"🔄 {message}", icon="ℹ️")
             st.markdown("</div>", unsafe_allow_html=True)
 
 

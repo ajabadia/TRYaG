@@ -270,7 +270,7 @@ def mostrar_gestor_salas():
     # Header con botón de refresco
     col_title, col_refresh = st.columns([4, 1])
     with col_title:
-        st.header(":material/dashboard: Tablero de Control de Salas")
+        st.header("📊 Tablero de Control de Salas")
     with col_refresh:
         if st.button("🔄 Actualizar Datos", type="primary", use_container_width=True):
             st.rerun()

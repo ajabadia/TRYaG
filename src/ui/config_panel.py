@@ -15,7 +15,7 @@ from services.permissions_service import has_permission
 def mostrar_panel_configuracion():
     """Muestra el panel de configuración con pestañas modulares."""
     
-    st.header(":material/settings: Configuración")
+    st.header("⚙️ Configuración")
     
     # Panel de Herramientas
     render_tools_panel("Configuración", show_pdf=False)
@@ -32,10 +32,10 @@ def mostrar_panel_configuracion():
     tabs_map = {}
     
     # Siempre mostrar General si tiene acceso al panel
-    tabs_map["General"] = ":material/tune: General"
+    tabs_map["General"] = "🎛️ General"
     
     if has_permission("configuracion", "centro"):
-        tabs_map["Centro"] = ":material/business: Centro"
+        tabs_map["Centro"] = "🏢 Centro"
 
     selected_tabs = st.tabs(list(tabs_map.values()))
     

@@ -4,7 +4,7 @@ from services.permissions_service import has_permission
 
 def render_general_tab():
     """Renderiza la pestaña de Configuración General."""
-    st.markdown("### :material/tune: Configuración General")
+    st.markdown("### 🎛️ Configuración General")
     
     # Sub-tabs de General
     gen_tabs = ["📱 Aplicación", "📷 Equipamiento", "💓 Signos Vitales", "📋 Opciones Clínicas", "🏥 Aseguradoras"]

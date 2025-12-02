@@ -96,25 +96,32 @@ def render_triage_analysis(df_audit, key_prefix="triage"):
     # Tab 3: Dolor por Nivel
     with tab3:
         st.markdown("#### Relación Dolor - Nivel de Triaje")
-        chart_type_dolor = st.radio("Tipo de Gráfico", ["Barras (Promedio)", "Scatter (Dispersión)"], 
-                                    key=f"{key_prefix}_chart_dolor", horizontal=True)
         
-        if chart_type_dolor == "Barras (Promedio)":
-            dolor_por_nivel = df_audit.groupby('nivel_corregido')['dolor'].mean().sort_values(ascending=False)
-            st.bar_chart(dolor_por_nivel, use_container_width=True)
-        else:  # Scatter
-            st.scatter_chart(df_audit, x='nivel_corregido', y='dolor', color='nivel_corregido', 
-                           use_container_width=True)
-        
-        st.divider()
-        st.markdown("##### Distribuciones Complementarias")
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**Distribución de Edad**")
-            st.bar_chart(df_audit['edad'].value_counts().sort_index(), use_container_width=True)
-        with c2:
-            st.markdown("**Distribución de Dolor (EVA)**")
-            st.bar_chart(df_audit['dolor'].value_counts().sort_index(), use_container_width=True)
+        if 'dolor' not in df_audit.columns or df_audit['dolor'].isnull().all():
+            st.warning("No hay datos de dolor registrados para generar estos gráficos.")
+        else:
+            chart_type_dolor = st.radio("Tipo de Gráfico", ["Barras (Promedio)", "Scatter (Dispersión)"], 
+                                        key=f"{key_prefix}_chart_dolor", horizontal=True)
+            
+            if chart_type_dolor == "Barras (Promedio)":
+                dolor_por_nivel = df_audit.groupby('nivel_corregido')['dolor'].mean().sort_values(ascending=False)
+                st.bar_chart(dolor_por_nivel, use_container_width=True)
+            else:  # Scatter
+                st.scatter_chart(df_audit, x='nivel_corregido', y='dolor', color='nivel_corregido', 
+                               use_container_width=True)
+            
+            st.divider()
+            st.markdown("##### Distribuciones Complementarias")
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown("**Distribución de Edad**")
+                if 'edad' in df_audit.columns and not df_audit['edad'].isnull().all():
+                    st.bar_chart(df_audit['edad'].value_counts().sort_index(), use_container_width=True)
+                else:
+                    st.info("Datos de edad no disponibles.")
+            with c2:
+                st.markdown("**Distribución de Dolor (EVA)**")
+                st.bar_chart(df_audit['dolor'].value_counts().sort_index(), use_container_width=True)
     
     # Tab 4: Calidad de Sugerencias
     with tab4:

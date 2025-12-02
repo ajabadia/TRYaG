@@ -32,13 +32,11 @@ def render_ml_predictions_panel():
                 if result.get("status") == "success":
                     st.success(result.get("msg"))
                     # Recargar servicio de predicción
-                    from services.ml_predictive_service import get_ml_service
                     get_ml_service().load_models()
                 else:
                     st.error(f"Error: {result.get('msg')}")
                     
     with col_status:
-        from services.ml_predictive_service import get_ml_service
         service = get_ml_service()
         if service.models_loaded:
             st.success("✅ Modelos Activos (RandomForest)")
@@ -330,9 +328,9 @@ def render_anomaly_detection_tab(ml_service):
                                 f"(Esperado: {anomaly['demanda_esperada']}, Real: {anomaly['demanda_real']})"
                             )
 
-# Footer de depuración
-if __name__ == "__main__":
-    pass
-else:
     st.markdown("---")
     st.caption(f"📍 `src/ui/ml_predictions_panel.py`")
+
+# Footer de depuración
+if __name__ == "__main__":
+    render_ml_predictions_panel()

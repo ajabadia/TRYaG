@@ -130,15 +130,15 @@ def mostrar_panel_analisis(
     # 3️⃣ Pestañas principales de visualización
     # ---------------------------------------------------------------------
     tab_resumen, tab_evol, tab_triaje, tab_concordancia, tab_files, tab_trans, tab_relacional, tab_prompts, tab_feedback = st.tabs([
-        ":material/target: Resumen General",
-        ":material/trending_up: Evolución Temporal",
-        ":material/local_hospital: Análisis de Triaje",
-        ":material/science: Validación Científica",
-        ":material/folder: Análisis de Archivos",
-        ":material/mic: Análisis de Transcripciones",
-        ":material/link: Análisis Relacional",
-        ":material/smart_toy: Análisis de Prompts",
-        ":material/bug_report: Análisis de Feedback",
+        "🎯 Resumen General",
+        "📈 Evolución Temporal",
+        "🏥 Análisis de Triaje",
+        "🧪 Validación Científica",
+        "📂 Análisis de Archivos",
+        "🎙️ Análisis de Transcripciones",
+        "🔗 Análisis Relacional",
+        "📜 Análisis de Prompts",
+        "🐛 Análisis de Feedback",
     ])
 
     with tab_resumen:

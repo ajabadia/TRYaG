@@ -20,7 +20,7 @@ from ui.components.common.tools_panel import render_tools_panel
 
 def mostrar_registro_auditoria_v2():
     """Muestra el panel de auditoría V2."""
-    st.header(":material/assignment_ind: Panel de Auditoría y Supervisión (V2 Modular)")
+    st.header("📋 Panel de Auditoría y Supervisión (V2 Modular)")
     
     # Panel de Herramientas
     render_tools_panel("Auditoría", show_pdf=False)
@@ -28,10 +28,11 @@ def mostrar_registro_auditoria_v2():
     if "num_audit_records_to_show" not in st.session_state:
         st.session_state.num_audit_records_to_show = PAGE_SIZE
 
-    tab_datos, tab_analisis, tab_debug = st.tabs([
-        ":material/table_chart: Datos en Bruto",
-        ":material/analytics: Análisis Gráfico",
-        ":material/developer_board: Debug MongoDB"
+    tab_datos, tab_analisis, tab_predicciones, tab_debug = st.tabs([
+        "📉 Datos en Bruto",
+        "📈 Análisis Gráfico",
+        "🧠 Predicciones IA",
+        "🛠️ Debug MongoDB"
     ])
 
     try:
@@ -145,6 +146,10 @@ def mostrar_registro_auditoria_v2():
                 df_feedback,
                 key_prefix="v2_analisis",
             )
+
+        with tab_predicciones:
+            from ui.ml_predictions_panel import render_ml_predictions_panel
+            render_ml_predictions_panel()
 
         with tab_datos:
             mostrar_panel_datos_brutos_v2(

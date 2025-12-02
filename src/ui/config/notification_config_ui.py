@@ -298,7 +298,7 @@ def render_notification_config_panel():
     Renderiza el panel completo de configuración de notificaciones.
     Combina SMTP y Webhooks.
     """
-    st.header(":material/notifications: Configuración de Notificaciones")
+    st.header("🔔 Configuración de Notificaciones")
     st.markdown("Configura cómo el sistema enviará notificaciones automáticas.")
     
     # Tabs para separar SMTP y Webhook

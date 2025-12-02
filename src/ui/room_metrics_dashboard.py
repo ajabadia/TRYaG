@@ -20,7 +20,7 @@ from services.export_service import generate_metrics_pdf, generate_excel_export
 def render_metrics_dashboard():
     """Renderiza el dashboard de métricas de errores de salas."""
     
-    st.header(":material/analytics: Dashboard de Métricas - Gestión de Salas")
+    st.header("📈 Dashboard de Métricas - Gestión de Salas")
     st.markdown("Análisis histórico de errores detectados y correcciones aplicadas.")
     
     # Sincronizar errores actuales

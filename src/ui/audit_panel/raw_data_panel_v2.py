@@ -26,11 +26,11 @@ def mostrar_panel_datos_brutos_v2(df_audit_base, df_files, df_trans, df_feedback
     # Pestañas con sus respectivos renderizados
     # -----------------------------------------------------------------
     tab_registros_padre, tab_log_ficheros, tab_log_trans, tab_log_prompts, tab_feedback = st.tabs([
-        ":material/list_alt: Registros de Auditoría",
-        ":material/folder_open: Log de Ficheros Importados",
-        ":material/transcribe: Log de Transcripciones",
-        ":material/history_edu: Log de Prompts",
-        ":material/bug_report: Feedback & Errores",
+        "📋 Registros de Auditoría",
+        "📂 Log de Ficheros Importados",
+        "🎙️ Log de Transcripciones",
+        "📜 Log de Prompts",
+        "🐛 Feedback & Errores",
     ])
 
     with tab_registros_padre:
