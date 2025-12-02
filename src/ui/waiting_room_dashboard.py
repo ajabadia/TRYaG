@@ -44,4 +44,4 @@ def render_waiting_room_dashboard():
     else:
         st.info("La sala de espera está vacía. ¡Buen trabajo!")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/waiting_room_dashboard.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/waiting_room_dashboard.py</div>', unsafe_allow_html=True)

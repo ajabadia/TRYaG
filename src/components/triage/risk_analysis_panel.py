@@ -249,8 +249,6 @@ def render_risk_analysis_panel(patient_data, enable_predictive=True):
                     interview_data=interview_data
                 )
                 
-                render_recommendations_card(recs)
-                
                 st.divider()
                 st.markdown("**¿Es correcta esta predicción?**")
                 c_val_1, c_val_2 = st.columns(2)
@@ -269,4 +267,7 @@ def render_risk_analysis_panel(patient_data, enable_predictive=True):
                     else:
                         st.caption("❌ Marcado como incorrecto")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/risk_analysis_panel.py</div>', unsafe_allow_html=True)
+                st.divider()
+                render_recommendations_card(recs)
+
+    st.markdown('<div class="debug-footer">src/components/triage/risk_analysis_panel.py</div>', unsafe_allow_html=True)

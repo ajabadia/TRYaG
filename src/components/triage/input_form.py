@@ -6,20 +6,21 @@ import os
 import streamlit as st
 from PIL import Image
 from datetime import datetime
-
-from services.triage_service import llamar_modelo_gemini
-from services.simulated_ia import simulacion_ia
 from utils.icons import render_icon
-from utils.file_handler import save_file_to_temp, cleanup_temp_files, calculate_md5, TempFileWrapper
-from core.transcription_handler import get_transcription
 from config import get_min_chars_motivo
-from components.triage.media_cards import render_media_card
-from components.common.webcam_manager import render_webcam_manager
 from components.common.audio_recorder import render_audio_recorder
-from ui.components.common.video_recorder import render_video_recorder
+from components.common.webcam_manager import render_webcam_manager
+from components.common.video_recorder import render_video_recorder
 from components.common.file_importer import render_file_importer
-from components.triage.vital_signs import render_vital_signs_form, render_vital_sign_input
+from components.triage.media_cards import render_media_card
+from utils.file_handler import TempFileWrapper, calculate_md5
+from core.transcription_handler import get_transcription
 from components.triage.patient_background_form import render_patient_background_form
+from components.triage.vital_signs import render_vital_signs_form
+from utils.ui_utils import load_css
+from services.simulated_ia import simulacion_ia
+from services.triage_service import llamar_modelo_gemini
+
 
 def procesar_respuesta_ia(resultado_ia, algo_result=None):
     """
@@ -178,7 +179,7 @@ def render_input_form():
                 if st.button("❌ Cerrar", key="hist_close_btn", use_container_width=True):
                     st.rerun()
             
-            st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/input_form.py</div>', unsafe_allow_html=True)
+            st.markdown('<div class="debug-footer">src/components/triage/input_form.py</div>', unsafe_allow_html=True)
 
         # Botones de acción
         with col_btns[0]:
@@ -274,19 +275,6 @@ def render_input_form():
 
 
         if st.session_state.datos_paciente.get('imagenes'):
-            with st.container(border=True):
-                c_info_icon, c_info_text, c_refresh = st.columns([1, 15, 4])
-                with c_info_icon:
-                    render_icon("info", size=20, color="#17a2b8")
-                with c_info_text:
-                    st.info("Marca 'Analizar con IA' en los archivos que deseas enviar.")
-                with c_refresh:
-                    if st.button("🔄 Actualizar", key="btn_refresh_media", help="Recargar lista de archivos", use_container_width=True):
-                        st.rerun()
-                
-                # CSS para Grid Responsivo (Scoped)
-                # Cargar CSS externo
-                from utils.ui_utils import load_css
                 load_css("src/assets/css/components/forms.css")
                 
                 # Marcador para CSS Scoped
@@ -404,10 +392,17 @@ def render_input_form():
                     
                     # --- CÁLCULO DE TRIAJE AUTOMÁTICO (WORST CASE) ---
                     from components.triage.vital_signs import get_all_configs
-                    from components.triage.triage_logic import calculate_worst_case
+                    from components.triage.triage_logic import calculate_worst_case, calculate_ptr_score
                     
                     configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))
                     triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
+                    
+                    # --- CÁLCULO PTR (NUEVO) ---
+                    ptr_result = calculate_ptr_score(
+                        st.session_state.datos_paciente.get('vital_signs', {}),
+                        st.session_state.datos_paciente
+                    )
+                    triage_result['ptr_result'] = ptr_result
                     
                     # Verificar Modo Contingencia
                     from services.contingency_service import is_contingency_active, save_triage_locally
@@ -506,4 +501,4 @@ def render_input_form():
                                     st.rerun()
                             st.stop()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/input_form.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/input_form.py</div>', unsafe_allow_html=True)

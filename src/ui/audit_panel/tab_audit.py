@@ -97,4 +97,4 @@ def render_tab_audit(df_audit_base, df_files, start_date, end_date):
             with st.container(height=800, border=False):
                 render_audit_details(selected_records, df_files)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/audit_panel/tab_audit.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/audit_panel/tab_audit.py</div>', unsafe_allow_html=True)

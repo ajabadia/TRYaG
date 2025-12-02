@@ -46,4 +46,4 @@ def render_feedback_button(module_name="General", location="header"):
     if st.button("🐞", key=f"feedback_btn_{module_name}", help="Reportar error o sugerencia"):
         feedback_form(module_name)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/common/feedback_button.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/common/feedback_button.py</div>', unsafe_allow_html=True)

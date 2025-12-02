@@ -34,4 +34,4 @@ def render_hda_form(reset_count: int, disabled: bool = False):
         with c_hda4:
             st.session_state.datos_paciente['hda_tratamiento_casa'] = st.text_area("🏠 Tratamiento Domiciliario", value=st.session_state.datos_paciente.get('hda_tratamiento_casa', ''), height=68, placeholder="Qué tomó antes de venir...", disabled=disabled, key=f"hda_home_tx_{reset_count}", help="Medicamentos o medidas tomadas en casa")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/hda_form.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/hda_form.py</div>', unsafe_allow_html=True)

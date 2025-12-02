@@ -101,4 +101,4 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
                 del st.session_state[f"{key_prefix}_videos"]
             st.rerun()
 
-    st.markdown('<div class="debug-footer">src/ui/components/common/video_recorder.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/common/video_recorder.py</div>', unsafe_allow_html=True)

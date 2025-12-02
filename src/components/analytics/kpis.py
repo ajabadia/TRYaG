@@ -73,3 +73,5 @@ def render_kpis(df_audit, df_files, df_trans):
         most_common_lang = "N/A"
     with col8:
         st.metric("Idioma Principal", most_common_lang)
+
+    st.markdown('<div class="debug-footer">src/components/analytics/kpis.py</div>', unsafe_allow_html=True)

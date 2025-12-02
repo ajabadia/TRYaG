@@ -26,4 +26,4 @@ def render_pain_history_form(reset_count: int, disabled: bool = False):
         with c_pain2:
             st.session_state.datos_paciente['pain_opioides'] = st.checkbox("💊 Uso crónico de Opioides", value=st.session_state.datos_paciente.get('pain_opioides', False), disabled=disabled, key=f"pain_op_{reset_count}", help="Tolerancia a analgésicos opioides")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/pain_history.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/history/pain_history.py</div>', unsafe_allow_html=True)

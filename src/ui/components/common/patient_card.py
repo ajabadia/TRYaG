@@ -410,4 +410,4 @@ def render_patient_header(patient, triage_result=None):
                 st.caption("Triaje en curso...")
     # Nota: Este componente es pequeño y se usa repetidamente, quizás no queramos el footer en cada tarjeta individual
     # pero si el usuario lo pide explícitamente en "todos los archivos", lo ponemos.
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)

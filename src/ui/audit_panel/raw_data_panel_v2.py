@@ -48,4 +48,4 @@ def mostrar_panel_datos_brutos_v2(df_audit_base, df_files, df_trans, df_feedback
     with tab_feedback:
         render_feedback_list_v2(df_feedback)
     
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/audit_panel/raw_data_panel_v2.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/audit_panel/raw_data_panel_v2.py</div>', unsafe_allow_html=True)

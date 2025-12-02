@@ -112,3 +112,5 @@ def render_prompt_analysis(key_prefix="prompt_analysis"):
         df_author = df.groupby('author').size().reset_index(name='count')
         fig_author = px.bar(df_author, x='author', y='count', title='Versiones creadas por Autor', color='count')
         st.plotly_chart(fig_author, use_container_width=True, key=f"{key_prefix}_bar_author")
+
+    st.markdown('<div class="debug-footer">src/components/analytics/prompt_analysis.py</div>', unsafe_allow_html=True)

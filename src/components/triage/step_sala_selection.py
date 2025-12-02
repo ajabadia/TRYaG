@@ -6,7 +6,7 @@ Paso 1 del Asistente de Triaje: Selección de Sala.
 """
 import streamlit as st
 from services.room_service import obtener_salas_por_tipo
-from components.common.room_card import render_room_grid
+from components.common.room_card import render_room_list
 
 def render_step_sala_selection() -> bool:
     """
@@ -41,8 +41,8 @@ def render_step_sala_selection() -> bool:
                 st.rerun()
         return True
 
-    # Renderizar grid de salas usando componente reutilizable
-    selected = render_room_grid(
+    # Renderizar lista de salas usando componente reutilizable
+    selected = render_room_list(
         salas=salas,
         selected_code=st.session_state.triage_room_code,
         button_key_prefix="triage_sala"

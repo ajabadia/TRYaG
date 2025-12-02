@@ -38,4 +38,4 @@ def render_psych_history_form(reset_count: int, disabled: bool = False):
             )
             st.session_state.datos_paciente['psy_medicacion_otros'] = st.text_input("Otra Medicación Psicotrópica", value=st.session_state.datos_paciente.get('psy_medicacion_otros', ''), key=f"psy_meds_oth_{reset_count}", disabled=disabled)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/psych_history.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/history/psych_history.py</div>', unsafe_allow_html=True)

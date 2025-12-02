@@ -80,4 +80,4 @@ def render_tools_panel(module_name="General", patient=None, show_pdf=True):
                 st.session_state.training_mode = new_training
                 st.rerun()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/components/common/tools_panel.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/components/common/tools_panel.py</div>', unsafe_allow_html=True)

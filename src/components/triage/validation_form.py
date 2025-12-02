@@ -30,6 +30,16 @@ def render_validation_form():
         resultado = st.session_state.resultado
         datos_paciente = st.session_state.datos_paciente
         
+        # Prepare reasons string handling both dicts and strings
+        razones_raw = resultado.get('razones', [])
+        razones_text_list = []
+        for r in razones_raw:
+            if isinstance(r, dict):
+                razones_text_list.append(r.get('text', ''))
+            else:
+                razones_text_list.append(str(r))
+        razones_str = " | ".join(razones_text_list)
+        
         # --- MOSTRAR NIVEL SUGERIDO (Prominente) ---
         nivel_info = resultado.get('nivel', {})
         nivel_texto = nivel_info.get('text', 'N/A')
@@ -39,7 +49,7 @@ def render_validation_form():
             f"""
             <div style="background-color: {nivel_color}; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
                 <h3 style="margin:0;">IA Sugiere: {nivel_texto}</h3>
-                <p style="margin:5px 0 0 0;">{ " | ".join(resultado.get('razones', [])) }</p>
+                <p style="margin:5px 0 0 0;">{ razones_str }</p>
             </div>
             """, 
             unsafe_allow_html=True
@@ -63,7 +73,7 @@ def render_validation_form():
             "import_files": len(datos_paciente.get('imagenes', [])),
             "ia_files": len(datos_paciente.get('imagenes_confirmadas_ia', [])),
             "sugerencia_ia": nivel_texto,
-            "razones_ia": " | ".join(resultado.get('razones', [])),
+            "razones_ia": razones_str,
             "calificacion_humana": st.session_state.get('calificacion_humana', 'No calificado'),
             "patient_code": st.session_state.triage_patient.get('patient_code') if st.session_state.get('triage_patient') else None
         }
@@ -169,4 +179,4 @@ def render_validation_form():
                      st.session_state.triage_step = 3 # Ir a paso de derivación
                      st.rerun()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/validation_form.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/validation_form.py</div>', unsafe_allow_html=True)

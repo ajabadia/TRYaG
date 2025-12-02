@@ -41,6 +41,19 @@ def render_step_triage_process() -> bool:
     # Plegar entrada si ya hay análisis
     with st.expander("📝 **1. Entrada de Datos**", expanded=not analysis_done):
         render_input_form()
+        
+        # --- AUTO-SAVE HOOK ---
+        # Guardar borrador si hay cambios en datos clave
+        if st.session_state.get('triage_record_id'):
+            from services.triage_service import update_triage_draft
+            # Recopilar datos actuales
+            current_data = {
+                "vital_signs": st.session_state.datos_paciente.get('vital_signs'),
+                "sintomas_detectados": [], # Pendiente extraer
+                # Podríamos guardar más cosas aquí
+            }
+            # Actualizar silenciosamente (sin rerun)
+            update_triage_draft(st.session_state.triage_record_id, current_data)
     
     st.divider()
     
@@ -61,5 +74,5 @@ def render_step_triage_process() -> bool:
             st.info("Por favor, califique la respuesta de la IA en el paso anterior para continuar.")
     
     # Retornar si la validación está completa
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/step_triage_process.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/step_triage_process.py</div>', unsafe_allow_html=True)
     return st.session_state.get('validation_complete', False)

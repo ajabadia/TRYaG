@@ -69,4 +69,4 @@ def render_clinical_context_form(reset_count: int, disabled: bool = False):
                 st.session_state.datos_paciente['criterio_inmunodeprimido'] = False
                 st.session_state.datos_paciente['criterio_inmunodeprimido_det'] = []
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/clinical_context.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/clinical_context.py</div>', unsafe_allow_html=True)

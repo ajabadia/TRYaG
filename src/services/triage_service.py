@@ -4,9 +4,91 @@
 Servicio para la lógica de triaje con Gemini.
 """
 import json
+from datetime import datetime
+from typing import List, Dict, Any, Optional
 from services.gemini_client import get_gemini_service
 from core.prompt_manager import PromptManager
 from config import get_model_triage
+from db.repositories.triage import get_triage_repository
+from db.models import TriageRecord, AIReason, AIResponse
+
+def _parse_ai_reasons(razones_raw: Any) -> List[AIReason]:
+    """
+    Parsea las razones de la IA usando una estrategia robusta:
+    1. JSON Array
+    2. Separado por pipes (|)
+    3. Texto único
+    """
+    reasons_text = []
+    
+    # Estrategia 1: JSON Array
+    if isinstance(razones_raw, list):
+        reasons_text = [str(r) for r in razones_raw]
+    elif isinstance(razones_raw, str):
+        razones_raw = razones_raw.strip()
+        # Intentar detectar JSON en markdown
+        if "```json" in razones_raw:
+            try:
+                import re
+                match = re.search(r'```json\s*(\[.*?\])\s*```', razones_raw, re.DOTALL)
+                if match:
+                    reasons_text = json.loads(match.group(1))
+            except:
+                pass
+        
+        # Intentar JSON directo
+        if not reasons_text and razones_raw.startswith("[") and razones_raw.endswith("]"):
+            try:
+                reasons_text = json.loads(razones_raw)
+            except:
+                pass
+        
+        # Estrategia 2: Pipe separator
+        if not reasons_text and "|" in razones_raw:
+            reasons_text = [r.strip() for r in razones_raw.split("|") if r.strip()]
+            
+        # Estrategia 3: Fallback a texto único
+        if not reasons_text and razones_raw:
+            reasons_text = [razones_raw]
+            
+    # Convertir a objetos AIReason
+    return [AIReason(text=r, included_in_decision=True) for r in reasons_text]
+
+def create_draft_triage(patient_id: str, user_id: str) -> str:
+    """Crea un borrador de triaje para un paciente."""
+    repo = get_triage_repository()
+    # Verificar si ya existe uno activo
+    existing = repo.find_one({"patient_id": patient_id, "status": "draft"})
+    if existing:
+        return str(existing["_id"])
+        
+    record = TriageRecord(
+        audit_id=f"DRAFT-{datetime.now().strftime('%Y%m%d%H%M%S')}", # ID temporal
+        patient_id=patient_id,
+        evaluator_id=user_id,
+        status="draft",
+        sugerencia_ia={}, # Vacío inicial
+        timestamp=datetime.now()
+    )
+    # Guardar como dict para evitar validación estricta inicial si faltan campos
+    return repo.create(record.model_dump(by_alias=True, exclude_none=True))
+
+def get_active_draft(patient_id: str) -> Optional[Dict]:
+    """Obtiene el borrador activo de un paciente."""
+    repo = get_triage_repository()
+    return repo.find_one({"patient_id": patient_id, "status": "draft"})
+
+def update_triage_draft(triage_id: str, data: Dict[str, Any]):
+    """Actualiza un borrador de triaje."""
+    repo = get_triage_repository()
+    repo.update(triage_id, data)
+
+def finalize_triage_draft(triage_id: str, final_data: Dict[str, Any]):
+    """Finaliza un borrador convirtiéndolo en completado."""
+    repo = get_triage_repository()
+    final_data["status"] = "completed"
+    final_data["timestamp"] = datetime.now() # Actualizar fecha al finalizar
+    repo.update(triage_id, final_data)
 
 def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None, triage_result=None, antecedentes=None, alergias=None, gender=None, criterio_geriatrico=False, criterio_inmunodeprimido=False, criterio_inmunodeprimido_det=None, user_id="system", extended_history=None, nursing_assessment=None):
     """
@@ -145,5 +227,13 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
             "status": "EXCLUDED",
             "msg": f"⚠️ ALERTA: La IA ha clasificado el caso como no traumatológico. {response_data.get('razonamiento', [''])[0]}"
         }, final_prompt
+
+    # PARSEO DE RAZONES (NUEVO)
+    # Convertir razones raw a objetos AIReason
+    raw_reasons = response_data.get("razones", [])
+    parsed_reasons = _parse_ai_reasons(raw_reasons)
+    
+    # Serializar para devolver al frontend (que espera dicts, no pydantic models directamente)
+    response_data["razones"] = [r.model_dump() for r in parsed_reasons]
 
     return response_data, final_prompt

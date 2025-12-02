@@ -52,4 +52,12 @@ div[data-testid="stButton"] > button:hover {
     background-color: #218838;
     color: white;
 }
-*/
+/* Debug Footer */
+.debug-footer {
+    color: #888;
+    font-size: 0.7em;
+    text-align: right;
+    margin-top: 5px;
+    display: none;
+    /* Hidden by default */
+}

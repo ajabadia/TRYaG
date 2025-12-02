@@ -55,4 +55,4 @@ def render_sensory_history_form(reset_count: int, disabled: bool = False):
             )
             st.session_state.datos_paciente['sens_protesis_otros'] = st.text_input("Otras Prótesis", value=st.session_state.datos_paciente.get('sens_protesis_otros', ''), key=f"sens_prot_oth_{reset_count}", disabled=disabled)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/sensory_history.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/history/sensory_history.py</div>', unsafe_allow_html=True)

@@ -11,7 +11,7 @@ def check_counts():
     db = get_database()
     
     collections = {
-        "audit_logs": db.audit_logs,
+        "audit_log": db.audit_log,
         "vital_signs_references": db.vital_signs_references,
         "patient_flow": db.patient_flow,
         "people": db.people,

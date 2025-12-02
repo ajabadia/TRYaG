@@ -68,4 +68,4 @@ def render_safety_alerts_form(reset_count: int, disabled: bool = False):
                 help="Referencia al documento legal"
             )
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/safety_alerts.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/history/safety_alerts.py</div>', unsafe_allow_html=True)

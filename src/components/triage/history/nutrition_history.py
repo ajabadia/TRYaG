@@ -49,4 +49,4 @@ def render_nutrition_history_form(reset_count: int, disabled: bool = False):
             )
             st.session_state.datos_paciente['nut_alergias_otros'] = st.text_input("Otras Alergias Alimentarias", value=st.session_state.datos_paciente.get('nut_alergias_otros', ''), key=f"nut_alg_oth_{reset_count}", disabled=disabled)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/nutrition_history.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/history/nutrition_history.py</div>', unsafe_allow_html=True)

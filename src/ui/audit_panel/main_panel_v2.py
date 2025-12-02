@@ -162,4 +162,4 @@ def mostrar_registro_auditoria_v2():
     except Exception as e:
         st.error(f"Error al cargar datos de auditoría: {e}")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/audit_panel/main_panel_v2.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/audit_panel/main_panel_v2.py</div>', unsafe_allow_html=True)

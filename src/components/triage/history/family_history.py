@@ -61,4 +61,4 @@ def render_family_history_form(reset_count: int, disabled: bool = False):
             )
             st.session_state.datos_paciente['ant_fam_genetica_otros'] = st.text_input("Otras Genéticas", value=st.session_state.datos_paciente.get('ant_fam_genetica_otros', ''), key=f"af_gen_oth_{reset_count}", disabled=disabled)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/family_history.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/history/family_history.py</div>', unsafe_allow_html=True)

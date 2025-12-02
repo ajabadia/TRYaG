@@ -117,7 +117,7 @@ def render_admission_management_view():
                 on_finish=_on_consultation_finish
             )
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/admission_management_view.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/admission_management_view.py</div>', unsafe_allow_html=True)
 
 def _on_consultation_finish():
     """Callback al finalizar la consulta."""

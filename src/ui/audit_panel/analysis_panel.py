@@ -2,10 +2,6 @@
 Orquestador principal del panel de análisis gráfico unificado.
 Ensambla componentes modulares de análisis.
 """
-"""
-Orquestador principal del panel de análisis gráfico unificado.
-Ensambla componentes modulares de análisis.
-"""
 
 import streamlit as st
 import pandas as pd
@@ -161,3 +157,5 @@ def mostrar_panel_analisis(
     with tab_feedback:
         from components.analytics.feedback_analysis import render_feedback_analysis
         render_feedback_analysis(df_feedback_filtered, key_prefix=f"{key_prefix}_feedback")
+
+    st.markdown('<div class="debug-footer">src/ui/audit_panel/analysis_panel.py</div>', unsafe_allow_html=True)

@@ -313,4 +313,4 @@ def _render_card_footer(file_obj, index, file_md5, is_transcribable, disabled=Fa
             st.session_state.deleted_filenames.add(file_obj.name)
             st.rerun()
     
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/media_cards.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/media_cards.py</div>', unsafe_allow_html=True)

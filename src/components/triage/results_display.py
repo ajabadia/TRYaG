@@ -57,15 +57,80 @@ def render_results_display():
                                 st.warning(f"⚠️ Imagen no disponible: {f.name}")
                             else:
                                 st.image(img_source, width=150, caption=f.name)
+                
+                # --- PTR DISPLAY ---
+                if "ptr_result" in resultado:
+                    ptr = resultado["ptr_result"]
+                    st.divider()
+                    st.markdown(f"#### 🧮 PTR: {ptr['score']}")
+                    st.caption(f"Nivel: {ptr['level_text']}")
+                    
+                    # Barra de progreso visual (Max estimado 20)
+                    st.progress(min(ptr['score'] / 20, 1.0))
+                    
+                    with st.expander("Detalles del Cálculo"):
+                        for det in ptr['details']:
+                            st.text(f"• {det}")
 
             with c2:
                 st.markdown("### Explicabilidad")
-                for r in resultado["razones"]:
-                    c_info_icon, c_info_text = st.columns([1, 20])
-                    with c_info_icon:
-                        render_icon("info", size=16, color="#17a2b8")
-                    with c_info_text:
-                        st.info(f"{r}")
+                
+                razones = resultado.get("razones", [])
+                
+                # Función callback para actualizar feedback
+                def update_reason_feedback(idx, field, value):
+                    st.session_state.resultado["razones"][idx][field] = value
+                    # Actualizar borrador en BD
+                    if st.session_state.get('triage_record_id'):
+                        from services.triage_service import update_triage_draft
+                        # Convertir razones a formato compatible (lista de dicts)
+                        update_triage_draft(st.session_state.triage_record_id, {
+                            "razones_ia": st.session_state.resultado["razones"]
+                        })
+
+                for i, r in enumerate(razones):
+                    # Manejo de compatibilidad (si r es string)
+                    if isinstance(r, str):
+                        r = {"text": r, "human_eval": None, "included_in_decision": True}
+                        st.session_state.resultado["razones"][i] = r
+                    
+                    text = r.get("text", "")
+                    eval_val = r.get("human_eval")
+                    included = r.get("included_in_decision", True)
+                    
+                    # Contenedor visual para cada razón
+                    with st.container(border=True):
+                        c_info_icon, c_info_text = st.columns([1, 15])
+                        with c_info_icon:
+                            render_icon("info", size=16, color="#17a2b8")
+                        with c_info_text:
+                            st.markdown(f"**{text}**")
+                        
+                        # Controles de evaluación
+                        c_eval, c_include = st.columns([2, 2])
+                        with c_eval:
+                            # Botones tipo toggle
+                            col_up, col_down = st.columns(2)
+                            with col_up:
+                                if st.button("👍", key=f"up_{i}", type="primary" if eval_val == "positive" else "secondary", use_container_width=True):
+                                    update_reason_feedback(i, "human_eval", "positive")
+                                    st.rerun()
+                            with col_down:
+                                if st.button("👎", key=f"down_{i}", type="primary" if eval_val == "negative" else "secondary", use_container_width=True):
+                                    update_reason_feedback(i, "human_eval", "negative")
+                                    # Si es negativo, sugerir no incluir
+                                    update_reason_feedback(i, "included_in_decision", False)
+                                    st.rerun()
+                        
+                        with c_include:
+                            if st.checkbox("Tener en cuenta", value=included, key=f"inc_{i}"):
+                                if not included: # Cambio de False a True
+                                    update_reason_feedback(i, "included_in_decision", True)
+                                    st.rerun()
+                            else:
+                                if included: # Cambio de True a False
+                                    update_reason_feedback(i, "included_in_decision", False)
+                                    st.rerun()
 
             st.divider()
             st.markdown("##### Califique la respuesta")
@@ -141,4 +206,4 @@ def render_results_display():
             if st.button("📤 Enviar Registro y Cerrar Atención", type="primary", use_container_width=True):
                 dialog_fhir()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/results_display.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/results_display.py</div>', unsafe_allow_html=True)

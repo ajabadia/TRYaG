@@ -59,4 +59,4 @@ def render_file_importer(key_prefix="files", on_files_ready=None, disabled=False
         if st.button("❌ Cancelar", key=f"{key_prefix}_cancel", use_container_width=True, disabled=disabled):
             st.rerun()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/common/file_importer.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/common/file_importer.py</div>', unsafe_allow_html=True)

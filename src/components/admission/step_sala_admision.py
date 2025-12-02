@@ -6,7 +6,7 @@ Paso 1 del flujo de admisión: Selección de Sala de Admisión.
 """
 import streamlit as st
 from services.room_service import obtener_salas_por_tipo
-from components.common.room_card import render_room_grid
+from components.common.room_card import render_room_list
 
 
 def render_step_sala_admision() -> bool:
@@ -39,8 +39,8 @@ def render_step_sala_admision() -> bool:
                 st.rerun()
         return True
 
-    # Renderizar grid de salas usando componente reutilizable
-    selected = render_room_grid(
+    # Renderizar lista de salas usando componente reutilizable
+    selected = render_room_list(
         salas=salas_adm,
         selected_code=st.session_state.admission_sala_admision_code,
         button_key_prefix="sel_adm"

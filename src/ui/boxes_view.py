@@ -130,4 +130,4 @@ def render_boxes_view():
         
         render_step_attention()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/boxes_view.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/boxes_view.py</div>', unsafe_allow_html=True)

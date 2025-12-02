@@ -75,3 +75,5 @@ def render_file_analysis(df_files, key_prefix="file_analysis"):
             st.metric("Máximo", f"{files_per_audit['num_files'].max()}")
     else:
         st.info("No hay datos de audit_id disponibles.")
+
+    st.markdown('<div class="debug-footer">src/components/analytics/file_analysis.py</div>', unsafe_allow_html=True)

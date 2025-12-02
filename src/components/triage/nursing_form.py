@@ -135,4 +135,4 @@ def render_nursing_assessment_form(disabled: bool = False):
 
             st.session_state.datos_paciente['family_notified'] = st.checkbox("Familiares Notificados", value=st.session_state.datos_paciente.get('family_notified', False), disabled=disabled, key=f"safe_fam_{reset_count}")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/nursing_form.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/nursing_form.py</div>', unsafe_allow_html=True)

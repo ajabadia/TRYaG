@@ -70,7 +70,7 @@ def render_step_final_disposition():
     # --- Opción 1: Boxes (Urgencias) ---
     with tab_espera:
         st.markdown("Asignar a una sala de espera de Boxes.")
-        from components.common.room_card import render_room_grid
+        from components.common.room_card import render_room_list
         
         current_selection = st.session_state.get('selected_espera_code')
         
@@ -107,7 +107,7 @@ def render_step_final_disposition():
                 else:
                     st.error("Error al derivar paciente.")
         else:
-            # Mostrar Grid
+            # Mostrar List
             # Obtener salas de espera de boxes (tipo box, subtipo espera)
             salas_box = obtener_salas_por_tipo("box")
             salas_espera = [s for s in salas_box if s.get('subtipo') == 'espera']
@@ -115,11 +115,10 @@ def render_step_final_disposition():
             if not salas_espera:
                 st.warning("No hay salas de espera de boxes configuradas.")
             else:
-                selected_espera = render_room_grid(
+                selected_espera = render_room_list(
                     salas=salas_espera,
                     selected_code=st.session_state.get('selected_espera_code'),
-                    button_key_prefix="disp_espera",
-                    cols_per_row=3
+                    button_key_prefix="disp_espera"
                 )
                 
                 if selected_espera:
@@ -129,7 +128,7 @@ def render_step_final_disposition():
     # --- Opción 2: Consulta / Ingreso ---
     with tab_consulta:
         st.markdown("Derivar a Consulta Externa o Ingreso.")
-        from components.common.room_card import render_room_grid
+        from components.common.room_card import render_room_list
         
         current_cons = st.session_state.get('selected_consulta_code')
         
@@ -176,11 +175,10 @@ def render_step_final_disposition():
             if not salas_consulta_espera:
                 st.warning("No hay salas de consulta/ingreso configuradas.")
             else:
-                selected_consulta = render_room_grid(
+                selected_consulta = render_room_list(
                     salas=salas_consulta_espera,
                     selected_code=st.session_state.get('selected_consulta_code'),
-                    button_key_prefix="disp_consulta",
-                    cols_per_row=3
+                    button_key_prefix="disp_consulta"
                 )
                 
                 if selected_consulta:

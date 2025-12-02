@@ -31,4 +31,4 @@ def render_obgyn_history_form(reset_count: int, disabled: bool = False):
                     help="Semanas de gestación (G) y partos previos (P)"
                 )
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/obgyn_history.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/history/obgyn_history.py</div>', unsafe_allow_html=True)

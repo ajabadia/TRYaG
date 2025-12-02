@@ -111,3 +111,5 @@ def render_feedback_analysis(df_feedback, key_prefix="feedback_analysis"):
                 markers=True
             )
             st.plotly_chart(fig_evol, use_container_width=True, key=f"{key_prefix}_line_evol")
+
+    st.markdown('<div class="debug-footer">src/components/analytics/feedback_analysis.py</div>', unsafe_allow_html=True)

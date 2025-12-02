@@ -214,7 +214,7 @@ def mostrar_admision():
                 st.session_state.admission_step = 1
                 st.rerun()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/admission_view.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/admission_view.py</div>', unsafe_allow_html=True)
 
 
 def _render_completion_summary():

@@ -19,7 +19,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/shift_manager.py** | Gestión de Turnos (Básico). | - | Obsoleto |
 | **src/ui/shift_manager_advanced.py** | Gestión de Turnos (Avanzado). | `src/app.py` | Activo |
 | **src/ui/ml_predictions_panel.py** | Panel de Predicciones ML. | `src/app.py` | Activo |
-| **src/ui/loading_indicator.py** | Componente visual de carga. | Varios | Activo |
+| **src/ui/loading_indicator.py** | Componente visual de carga. | Varios | Eliminado |
 | **src/ui/connection_status.py** | Indicador de estado de conexión. | `src/app.py` | Activo |
 | **src/ui/audit_panel/main_panel.py** | Panel de Auditoría (Orquestador). | `src/app.py` | Activo |
 | **src/ui/audit_panel/raw_data_panel.py** | Panel de Datos en Bruto (Auditoría). | `src/ui/audit_panel/main_panel.py` | Activo |
@@ -133,6 +133,18 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/core/data_handler.py** | Manejador de datos core. | Varios | Activo |
 | **src/core/prompt_manager.py** | Gestor de prompts. | Varios | Activo |
 | **src/core/transcription_handler.py** | Manejador de transcripciones. | Varios | Activo |
+| **src/components/triage/admin_data_form.py** | Formulario de datos administrativos. | `src/components/triage/input_form.py` | Activo |
+| **src/components/triage/clinical_context.py** | Formulario de contexto clínico. | `src/components/triage/input_form.py` | Activo |
+| **src/components/triage/disposition_form.py** | Formulario de disposición (Legacy). | - | Obsoleto |
+| **src/components/triage/extended_history.py** | Historia clínica integral. | `src/components/triage/input_form.py` | Activo |
+| **src/components/triage/guided_interview.py** | Entrevista guiada inteligente. | `src/components/triage/input_form.py` | Activo |
+| **src/components/triage/hda_form.py** | Formulario de Historia de la Enfermedad Actual. | `src/components/triage/input_form.py` | Activo |
+| **src/components/triage/nursing_form.py** | Valoración de enfermería. | `src/components/triage/step_triage_process.py` | Activo |
+| **src/components/triage/patient_background_form.py** | Antecedentes del paciente. | `src/components/triage/input_form.py` | Activo |
+| **src/components/triage/ptr_logic.py** | Lógica de Puntuación Total de Riesgo (PTR). | `src/components/triage/input_form.py` | Activo |
+| **src/components/triage/risk_analysis_panel.py** | Panel de análisis de riesgos y alertas. | `src/components/triage/input_form.py` | Activo |
+| **src/components/triage/step_final_disposition.py** | Paso de disposición final (Nuevo). | `src/ui/main_view.py` | Activo |
+| **src/components/triage/triage_logic.py** | Lógica core de triaje (NEWS2, Worst Case). | `src/components/triage/input_form.py` | Activo |
 | **src/scripts/check_models.py** | Script de comprobación de modelos. | CLI | Script |
 | **src/scripts/complete_phase1_setup.py** | Script de setup fase 1. | CLI | Script |
 | **src/scripts/consolidate_db.py** | Script de consolidación de DB. | CLI | Script |
@@ -141,16 +153,16 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/scripts/migrate_salas_config.py** | Script de migración de salas. | CLI | Script |
 | **src/scripts/migrate_subtipo.py** | Script de migración de subtipos. | CLI | Script |
 | **src/templates/email_templates.py** | Plantillas de email. | `src/services/notification_service.py` | Activo |
-| **src/ui/audit_panel/feedback_list_v2.py** | Versión 2 de lista de feedback. | - | Backup/WIP |
-| **src/ui/audit_panel/main_panel_v2.py** | Versión 2 de panel principal. | - | Backup/WIP |
-| **src/ui/audit_panel/raw_data_panel_v2.py** | Versión 2 de panel de datos brutos. | - | Backup/WIP |
-| **src/ui/audit_panel/tab_audit_v2.py** | Versión 2 de pestaña auditoría. | - | Backup/WIP |
-| **src/ui/audit_panel/tab_files_v2.py** | Versión 2 de pestaña archivos. | - | Backup/WIP |
+| **src/ui/audit_panel/feedback_list_v2.py** | Versión 2 de lista de feedback. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
+| **src/ui/audit_panel/main_panel_v2.py** | Versión 2 de panel principal. | `src/app.py` | Activo |
+| **src/ui/audit_panel/raw_data_panel_v2.py** | Versión 2 de panel de datos brutos. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
+| **src/ui/audit_panel/tab_audit_v2.py** | Versión 2 de pestaña auditoría. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
+| **src/ui/audit_panel/tab_files_v2.py** | Versión 2 de pestaña archivos. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
 | **src/components/common/body_map.py** | Mapa corporal interactivo. | `src/components/triage/guided_interview.py` | Activo |
 | **src/components/triage/recommendations_card.py** | Tarjeta de recomendaciones de autocuidado. | `src/components/triage/risk_analysis_panel.py` | Activo |
 | **src/services/recommendation_service.py** | Servicio de generación de recomendaciones. | `src/components/triage/risk_analysis_panel.py` | Activo |
 | **src/components/analytics/concordance_analysis.py** | Análisis de concordancia IA vs Humano. | `src/ui/audit_panel/analysis_panel.py` | Activo |
-| **src/ui/audit_panel/tab_transcriptions_v2.py** | Versión 2 de pestaña transcripciones. | - | Backup/WIP |
+| **src/ui/audit_panel/tab_transcriptions_v2.py** | Versión 2 de pestaña transcripciones. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
 | **src/scripts/generate_synthetic_data.py** | Script de generación de datos sintéticos. | CLI | Script |
 | **src/services/ml_training_service.py** | Servicio de entrenamiento de modelos ML. | `src/ui/ml_predictions_panel.py` | Activo |
 | **generate_synthetic_data.py** | Script raíz de generación de datos (Bypass gitignore). | CLI | Script |

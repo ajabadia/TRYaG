@@ -127,9 +127,12 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - [x] **Etiquetas de Depuración:** Recorrer todos los archivos `.py` con interfaz gráfica y añadir al final un footer discreto con la ruta del archivo (ej: `src/ui/main_view.py`).
     - [x] **Mapa de Archivos (`FILE_MAP.md`):**
         - [x] Crear estructura inicial con archivos principales.
-        - [x] **Pendiente:** Completar el mapa con **TODOS** los archivos del proyecto (no solo los principales), incluyendo utilidades, configuraciones y scripts.
+        - [x] **Completado:** Completar el mapa con **TODOS** los archivos del proyecto (no solo los principales), incluyendo utilidades, configuraciones y scripts.
         - Analizar dependencias de invocación antes de editar.
         - Marcar como "POSIBLE DEPRECADO" si un archivo no tiene invocaciones detectadas.
+    - [ ] **Modo Desarrollador (Toggle):**
+        - Implementar opción en `Configuración > General` para habilitar/deshabilitar "Modo Desarrollador".
+        - Controlar visibilidad de los footers de archivo mediante CSS (clase `.debug-footer` + inyección de estilos condicional) para evitar lógica condicional en cada archivo.
 
 - [x] **Mejoras Módulo Webcam:**
     - [x] Permitir tomar múltiples fotos en una misma sesión.
@@ -181,6 +184,12 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - Corregir `NameError` (cookies) y orden de inicialización.
     - Restaurar estructura de archivo corrupta.
 
+### 7.10 Limpieza y Mantenimiento
+**Objetivo:** Eliminar código muerto y dependencias obsoletas.
+
+- [ ] **Revisión de Componentes UI:**
+    - [x] Revisar necesidad de `src/ui/loading_indicator.py` y eliminar si es posible (queremos quitarlo).
+
 ## 🚀 TRYaGE 2.0: Advanced Triage System Implementation
 **Objetivo:** Implementación del nuevo sistema de triaje clínico avanzado (Signos vitales, Reevaluación, IA).
 
@@ -210,16 +219,92 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 ## 🚀 FASE 8: Preparación para Producción (Futuro)
 **Objetivo:** Reemplazar simulaciones con implementaciones reales y robustecer el sistema.
 
-- [ ] **8.1 Machine Learning Real:**
-    - Reemplazar `ml_predictive_service.py` simulado con modelos reales (Scikit-learn).
-    - Entrenar modelos con datos históricos de MongoDB.
-- [ ] **8.2 Dashboard Multi-Centro Real:**
-    - Conectar dashboard a datos agregados reales.
-    - Implementar selectores de centros dinámicos.
-- [ ] **8.3 Video Nativo:**
-    - Implementar grabación de video real usando MediaRecorder API (Custom Component).
-- [ ] **8.4 Testing y Calidad:**
-    - Implementar tests unitarios y de integración.
-    - CI/CD pipelines básicos.
+- [x] **8.1 Machine Learning Real:**
+    - [x] Reemplazar `ml_predictive_service.py` simulado con modelos reales (Scikit-learn).
+    - [x] Entrenar modelos con datos históricos de MongoDB (Implementado en `ml_training_service.py`).
+- [x] **8.2 Dashboard Multi-Centro Real:**
+    - [x] UI Implementada (`multi_center_dashboard.py`).
+    - [x] Conectar dashboard a datos agregados reales (Implementado en `multi_center_service.py`).
+    - [x] Implementar selectores de centros dinámicos.
+- [x] **8.3 Video Nativo:**
+    - [x] Implementar grabación de video real usando MediaRecorder API (o alternativa robusta `st.file_uploader`).
+- [x] **8.4 Testing y Calidad:**
+    - [x] Estructura de tests (`tests/` folder).
+    - [x] Implementar cobertura de tests unitarios y de integración (PTR y ML Service).
+    - [ ] CI/CD pipelines básicos.
+
+- [x] **8.5 Mejora de Simulación Offline (Contingencia):**
+    - [x] Mejorar `src/services/simulated_ia.py` para usar reglas más complejas (Árbol de Decisión).
+    - [x] Implementar lógica de discriminadores y modificadores.
+    - JSON actual de referencia:
+      ```json
+      {
+        "exclusion_keywords": ["pecho", "respirar", "fiebre", "mareo", "vomito", "abdomen", "desmayo"],
+        "rules": [
+          {"keywords": ["abierta", "hueso", "sangre"], "level": 2, "reason": "Posible fractura abierta o lesión vascular."},
+          {"keywords": ["deformidad", "movilidad"], "level": 3, "reason": "Signos de fractura o luxación con compromiso funcional."}
+        ],
+        "pain_threshold": 8,
+        "pain_level_cap": 3,
+        "age_threshold": 75,
+        "age_level_cap": 3,
+        "default_level": 4,
+        "default_reason": "Patología traumatológica sin signos de riesgo vital inmediato."
+      }
+      ```
+
+- [ ] **8.6 Modularización y Configuración de PTR:** (Verificar si requiere actualización en FUNCTIONAL.md)
+    - Migrar multiplicadores hardcoded de `ptr_logic.py` a colección `triage_config` en MongoDB.
+    - Crear interfaz de administración para modificar pesos y reglas.
+    - Implementar versionado de configuraciones PTR.
+    - **Requisito Contingencia:** Sistema de sincronización/caché local para asegurar que los multiplicadores estén disponibles offline (duplicación en `localStorage` o JSON local).
+
+- [ ] **8.7 Versionado y Auditoría de Respuestas IA:**
+    - **Schema:** Migrar de `sugerencia_ia` (string único) a `ai_responses` (array de objetos) en `triage_records`.
+    - **Estructura:** `{ "response": "...", "status": "accepted"|"rejected"|"discarded", "timestamp": "...", "model_version": "..." }`.
+    - **UI Triaje:** Permitir "regenerar" respuesta sin perder la anterior, marcando la previa como "descartada".
+    - **Análisis (`triage_analysis.py`):**
+        - Adaptar métricas para analizar la "Tasa de Rechazo" (1ª respuesta vs final).
+        - Nuevo gráfico: "Distribución de respuestas descartadas" (¿Qué sugiere la IA cuando se equivoca?).
+        - Comparativa: `ai_responses[status='accepted']` vs `decision_humana`.
+
+- [ ] **8.8 Reporte Clínico Integral (PDF):**
+    - **Objetivo:** Generar un documento legal/clínico completo del episodio de triaje.
+    - **Contenido Requerido:**
+        - **Administrativo:** Datos paciente, hora llegada, centro.
+        - **Clínico:** Signos vitales, PTR (detalle), Valoración enfermería.
+        - **Entrevista:** Resumen entrevista guiada, Historia enfermedad actual.
+        - **Antecedentes:** Historial clínico integral recuperado.
+        - **Multimodal:** Referencia a imágenes/audios adjuntos (thumbnails si es posible).
+        - **IA:** Análisis completo, justificación y sugerencia.
+        - **IA:** Análisis completo, justificación y sugerencia.
+        - **Cierre:** Validación humana, destino, firma digital (timestamp/usuario).
+    - **Requisitos Técnicos:**
+        - **Fuente de Datos:** Recuperar toda la información directamente de la Base de Datos (MongoDB), no de la sesión volátil.
+        - **Visualización:** Renderizar dinámicamente solo los campos informados (evitar mostrar campos vacíos o "N/A" para limpiar el reporte).
+    - **Nota de Implementación:** Si es necesario modificar el esquema de BD (ej: convertir campos planos a arrays o reestructurar objetos) para facilitar esta tarea o la 8.11, **hacerlo sin miedo**. Estamos en fase de piloto con datos de prueba.
+
+- [ ] **8.9 Integración IoT Dispositivos Médicos (Simulación):** (Verificar si requiere actualización en FUNCTIONAL.md)
+    - **Objetivo:** Simular la conectividad con dispositivos de electromedicina en el box de triaje.
+    - **Configuración de Sala:** Añadir selectores en `Configuración > Salas` para asignar dispositivos (Monitor Multiparamétrico, Tensiómetro BT, Pulsioxímetro).
+    - **Interfaz de Triaje:** Botón "Capturar Signos Vitales" que simule la lectura automática.
+    - **Dispositivos a Simular:**
+        - Monitor de Signos Vitales (Connex/Welch Allyn style) -> FC, SpO2, TA, Temp.
+        - Pulsioxímetro de dedo (Bluetooth LE).
+        - Termómetro digital.
+    - **Implementación:** Mockup de "Conectando...", delay aleatorio, y relleno automático de campos en `input_form.py`.
 
 
+- [ ] **8.10 Grupos de Centros (Multi-Tenant):**
+    - **Objetivo:** Permitir la agrupación lógica de centros (ej: "Zona Norte", "Hospitales Privados") para gestión y reportes consolidados.
+    - **Modelo de Datos:** Crear colección `center_groups` con referencias a `centros`.
+    - **Configuración:** Nueva sección en `Configuración > Centro` para crear grupos y asignar centros.
+    - **Dashboard:** Filtros por "Grupo de Centros" en el Dashboard Multi-Centro.
+
+- [ ] **8.11 Recuperación de Triaje Interrumpido:**
+    - **Objetivo:** Permitir retomar un triaje dejado a medias (ej: corte de luz, cierre accidental).
+    - **Estrategia:**
+        - Crear registro en BD (`triage_records` con estado "draft" o "in_progress") al iniciar el proceso.
+        - Implementar "Auto-save" o guardado por bloques lógicos (al avanzar de paso).
+        - **UI:** En la lista de pacientes, mostrar indicador "Triaje en curso" y permitir "Reanudar".
+    - **Nota de Implementación:** Aprovechar la flexibilidad actual para ajustar el modelo de datos (`TriageRecord`) si se requiere para soportar estados intermedios o estructuras más complejas.

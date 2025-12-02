@@ -146,4 +146,4 @@ def mostrar_atencion_box():
         st.session_state.active_patient_code = None
         render_waiting_list(selected_box)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/attention_view.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/attention_view.py</div>', unsafe_allow_html=True)

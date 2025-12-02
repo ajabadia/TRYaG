@@ -53,4 +53,4 @@ def mostrar_panel_configuracion():
         with tab_centro:
             render_centro_tab(st.session_state.centro_config)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config_panel.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/config_panel.py</div>', unsafe_allow_html=True)

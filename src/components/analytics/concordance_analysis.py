@@ -123,4 +123,4 @@ def render_concordance_analysis(df_audit, key_prefix="concordance"):
         * **Negativo (-)**: La IA asignó un nivel más alto (menos grave) que el humano. (Sub-triaje).
         """)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/analytics/concordance_analysis.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/analytics/concordance_analysis.py</div>', unsafe_allow_html=True)

@@ -167,3 +167,5 @@ def render_triage_analysis(df_audit, key_prefix="triage"):
                            use_container_width=True, hide_index=True)
         else:
             st.success("✅ No se han encontrado discrepancias entre la IA y las decisiones humanas.")
+
+    st.markdown('<div class="debug-footer">src/components/analytics/triage_analysis.py</div>', unsafe_allow_html=True)

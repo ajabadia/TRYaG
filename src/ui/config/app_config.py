@@ -92,6 +92,14 @@ def render_app_config():
             value=general_config.get('enable_predictive_alerts', True),
             help="Si está desactivado, se ocultará el botón de análisis de riesgos para ahorrar tokens."
         )
+        
+        st.divider()
+        st.markdown("#### 🛠️ Utilidades")
+        developer_mode = st.checkbox(
+            "Modo Desarrollador",
+            value=general_config.get('developer_mode', False),
+            help="Muestra información técnica adicional, como la ruta de los archivos fuente."
+        )
         # Botones Guardar / Restaurar
         col_save, col_reset, _ = st.columns([1, 1, 2])
         with col_save:
@@ -99,6 +107,7 @@ def render_app_config():
                 general_config['min_chars_motivo'] = new_min_chars
                 general_config['default_ai_model'] = new_default_model
                 general_config['enable_predictive_alerts'] = enable_predictive_alerts
+                general_config['developer_mode'] = developer_mode
                 if save_general_config(general_config):
                     st.session_state.general_config = general_config
                     st.success("✅ Configuración guardada correctamente")
@@ -120,4 +129,4 @@ def render_app_config():
         st.caption("🗄️ Configuración almacenada en MongoDB Atlas")
         st.caption("💡 Los cambios se aplican automáticamente al guardar.")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/app_config.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/config/app_config.py</div>', unsafe_allow_html=True)

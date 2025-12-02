@@ -52,3 +52,5 @@ def render_evolution(df_audit, df_files, key_prefix="evolution"):
                 st.bar_chart(files_por_dia, use_container_width=True)
         else:
             st.info("No hay datos de archivos disponibles.")
+
+    st.markdown('<div class="debug-footer">src/components/analytics/evolution.py</div>', unsafe_allow_html=True)

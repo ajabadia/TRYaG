@@ -110,4 +110,4 @@ def render_extended_history_form(disabled: bool = False):
             if st.button("🔄 Refrescar Datos", key=f"refresh_hist_{reset_count}", help="Actualizar vista previa con los últimos cambios"):
                 st.rerun()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/extended_history.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/extended_history.py</div>', unsafe_allow_html=True)

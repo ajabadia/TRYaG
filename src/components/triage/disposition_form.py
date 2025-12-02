@@ -58,4 +58,4 @@ def render_disposition_form(disabled: bool = False):
                 disabled=disabled, key=f"dis_barriers_{reset_count}"
             )
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/disposition_form.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/disposition_form.py</div>', unsafe_allow_html=True)

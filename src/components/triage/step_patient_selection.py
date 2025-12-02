@@ -143,27 +143,50 @@ def render_step_patient_selection() -> bool:
                     except: pass
                 st.session_state.datos_paciente['edad'] = calcular_edad(fn)
             
+            # --- GESTIÓN DE BORRADORES (DRAFTS) ---
+            from services.triage_service import create_draft_triage, get_active_draft
+            
+            patient_code = patient.get('patient_code')
+            user_id = _get_username()
+            
+            # 1. Buscar borrador existente
+            draft = get_active_draft(patient_code)
+            
+            if draft:
+                st.toast(f"📂 Recuperando triaje en curso para {patient.get('nombre')}...")
+                # Cargar datos del borrador en sesión
+                st.session_state.triage_record_id = str(draft['_id'])
+                # Restaurar datos si existen en el borrador (pendiente implementar mapeo completo)
+                # Por ahora, confiamos en que el usuario rellene, o mapeamos lo básico si guardamos partials
+                if 'vital_signs' in draft and draft['vital_signs']:
+                     st.session_state.datos_paciente['vital_signs'] = draft['vital_signs']
+            else:
+                # 2. Crear nuevo borrador
+                draft_id = create_draft_triage(patient_code, user_id)
+                st.session_state.triage_record_id = draft_id
+
             # --- AUTO-ADVANCE ---
             # En lugar de solo seleccionar, avanzamos directamente al paso 2
             st.session_state.triage_step = 2
             
-            # Inicializar estado de triaje limpio
-            st.session_state.datos_paciente = {
-                "texto_medico": "",
-                "edad": st.session_state.triage_patient.get('edad', 40) if st.session_state.triage_patient else 40,
-                "gender": st.session_state.triage_patient.get('gender'),
-                "dolor": 5,
-                "imagenes": [],
-                "imagenes_confirmadas_ia": [],
-                "vital_signs": {}
-            }
-            st.session_state.resultado = None
-            st.session_state.calificacion_humana = None
-            st.session_state.validation_complete = False
-            st.session_state.analysis_complete = False
-            st.session_state.is_editing_text = True
-            st.session_state.show_text_error = False
-            st.session_state.modal_image_selection = {}
+            # Inicializar estado de triaje limpio (si no es resume)
+            if not draft:
+                st.session_state.datos_paciente = {
+                    "texto_medico": "",
+                    "edad": st.session_state.triage_patient.get('edad', 40) if st.session_state.triage_patient else 40,
+                    "gender": st.session_state.triage_patient.get('gender'),
+                    "dolor": 5,
+                    "imagenes": [],
+                    "imagenes_confirmadas_ia": [],
+                    "vital_signs": {}
+                }
+                st.session_state.resultado = None
+                st.session_state.calificacion_humana = None
+                st.session_state.validation_complete = False
+                st.session_state.analysis_complete = False
+                st.session_state.is_editing_text = True
+                st.session_state.show_text_error = False
+                st.session_state.modal_image_selection = {}
             
             st.rerun()
 
@@ -215,5 +238,5 @@ def render_step_patient_selection() -> bool:
         # O si se seleccionó desde otro lado.
         pass
         
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/step_patient_selection.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/step_patient_selection.py</div>', unsafe_allow_html=True)
     return False

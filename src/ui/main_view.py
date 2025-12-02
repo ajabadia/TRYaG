@@ -257,4 +257,4 @@ def mostrar_asistente_triaje():
         else:
             render_step_final_disposition()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/main_view.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/main_view.py</div>', unsafe_allow_html=True)

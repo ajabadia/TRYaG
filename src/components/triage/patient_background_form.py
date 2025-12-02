@@ -93,4 +93,4 @@ def render_patient_background_form(reset_count: int, disabled: bool = False):
         else:
             st.caption("No hay datos registrados.")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/patient_background_form.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/patient_background_form.py</div>', unsafe_allow_html=True)

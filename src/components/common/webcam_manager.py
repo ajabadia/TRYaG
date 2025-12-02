@@ -172,4 +172,4 @@ def render_webcam_manager(key_prefix="webcam", on_close=None, disabled=False):
             
             st.rerun()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/common/webcam_manager.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/common/webcam_manager.py</div>', unsafe_allow_html=True)

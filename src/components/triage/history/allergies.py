@@ -86,4 +86,4 @@ def render_allergies_form(reset_count: int, disabled: bool = False):
         st.session_state.datos_paciente['alergias_selector'] = has_allergies
         st.session_state.datos_paciente['alergias_info_completa'] = alergias_str
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/allergies.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/history/allergies.py</div>', unsafe_allow_html=True)

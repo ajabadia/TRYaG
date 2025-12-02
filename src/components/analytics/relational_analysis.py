@@ -73,3 +73,5 @@ def render_relational_analysis(df_files, df_trans, key_prefix="relational"):
             st.bar_chart(pivot, use_container_width=True)
     else:
         st.info("Faltan datos temporales para mostrar la evolución.")
+
+    st.markdown('<div class="debug-footer">src/components/analytics/relational_analysis.py</div>', unsafe_allow_html=True)

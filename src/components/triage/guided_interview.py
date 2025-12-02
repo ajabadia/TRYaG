@@ -165,7 +165,7 @@ def render_guided_interview(disabled: bool = False, key_suffix: str = "0"):
         if st.button("✅ Actualizar Resumen", type="primary", use_container_width=True, disabled=disabled):
             _update_summary(key_suffix)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/guided_interview.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/guided_interview.py</div>', unsafe_allow_html=True)
 
 def _update_summary(key_suffix: str):
     """Genera el resumen final de todas las secciones y actualiza el campo de texto."""

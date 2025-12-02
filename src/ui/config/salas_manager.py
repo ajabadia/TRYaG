@@ -15,7 +15,7 @@ from db.repositories.salas import (
 
 from utils.ui_utils import ROOM_TYPE_COLORS, get_room_color
 
-def render_sala_card(sala: dict):
+def render_sala_card(sala: dict, centro_id: str):
     """Renderiza una tarjeta de sala con acciones de edición y borrado."""
     tipo = sala.get("tipo", "sin_tipo")
     color = get_room_color(tipo)
@@ -28,7 +28,7 @@ def render_sala_card(sala: dict):
             st.caption(f"Capacidad: {sala.get('capacidad', '-')}, Activa: {sala.get('activa', True)}")
         with col2:
             if st.button("✏️", key=f"edit_{sala.get('codigo')}"):
-                edit_sala_dialog(sala)
+                edit_sala_dialog(sala, centro_id)
             if st.button("🗑️", key=f"del_{sala.get('codigo')}"):
                 if st.confirm(f"¿Eliminar la sala {sala.get('codigo')}?"):
                     if delete_sala(sala.get('codigo')):
@@ -118,6 +118,6 @@ def render_salas_manager(centro_id: str, existing_salas: list = None):
         st.subheader(f"{tipo.title()}")
         salas_tipo = [s for s in all_salas if s.get('tipo') == tipo]
         for sala in salas_tipo:
-            render_sala_card(sala)
+            render_sala_card(sala, centro_id)
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/salas_manager.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/config/salas_manager.py</div>', unsafe_allow_html=True)

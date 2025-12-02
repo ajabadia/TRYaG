@@ -56,40 +56,58 @@ def simulacion_ia(motivo, edad, dolor, prompt_content=None):
                 "msg": f"⚠️ ALERTA: Detectado síntoma '{word}' no compatible con Traumatología. Derivar a Urgencias Generales."
             }
 
-    # 3. LÓGICA DE TRIAJE
-    nivel = config.get("default_level", 4)
+    # 3. LÓGICA DE TRIAJE (ÁRBOL DE DECISIÓN)
+    # Estructura: Signos Vitales -> Exclusiones -> Discriminadores -> Modificadores
+    
+    nivel = 5 # Default: No Urgente
     razonamiento = []
+    
+    # A. Signos Vitales Críticos (Simulado - en producción vendría de datos reales)
+    # Si el dolor es extremo, sube prioridad
+    pain_threshold = config.get("pain_threshold", 8)
+    if dolor >= pain_threshold:
+        nivel = min(nivel, 3)
+        razonamiento.append(f"Dolor severo ({dolor}/10) indica urgencia.")
 
-    # Reglas por keywords
+    # B. Árbol de Reglas (Discriminadores)
+    # Las reglas se evalúan en orden de prioridad (Nivel 1 -> Nivel 5)
     rules = config.get("rules", [])
+    # Ordenar reglas por nivel ascendente (1 es más prioritario que 5)
+    rules.sort(key=lambda x: x.get("level", 5))
+    
+    matched_rule = False
     for rule in rules:
         keywords = rule.get("keywords", [])
         rule_level = rule.get("level", 4)
         rule_reason = rule.get("reason", "")
+        required_symptoms = rule.get("required_symptoms", []) # Futuro: Combinación de síntomas
         
+        # Chequeo de keywords
         for kw in keywords:
             if kw in motivo:
-                if rule_level < nivel: # Prioridad a menor nivel (más urgente)
+                # Si encontramos una regla de mayor prioridad (menor nivel numérico)
+                if rule_level < nivel:
                     nivel = rule_level
-                    if rule_reason not in razonamiento:
-                        razonamiento.append(rule_reason)
-                break # Solo aplicar una vez por regla
+                    razonamiento.append(f"Regla coincidente: '{kw}' -> {rule_reason}")
+                    matched_rule = True
+                break # Salir de keywords, pasar a siguiente regla
+        
+        # Si ya encontramos una regla de Nivel 1 o 2, paramos (Short-circuit)
+        if matched_rule and nivel <= 2:
+            break
 
-    # Factor Dolor
-    pain_threshold = config.get("pain_threshold", 8)
-    pain_cap = config.get("pain_level_cap", 3)
-    if dolor >= pain_threshold:
-        nivel = min(nivel, pain_cap)
-        razonamiento.append(f"Nivel de dolor reportado alto ({dolor}/10).")
-    
-    # Factor Edad
+    # C. Modificadores Contextuales
+    # Edad
     age_threshold = config.get("age_threshold", 75)
-    age_cap = config.get("age_level_cap", 3)
     if edad > age_threshold:
-        nivel = min(nivel, age_cap)
-        razonamiento.append("Paciente geriátrico (riesgo aumentado de complicaciones).")
+        old_level = nivel
+        nivel = max(1, nivel - 1) # Sube un nivel de urgencia (resta 1), tope 1
+        if nivel < old_level:
+            razonamiento.append(f"Ajuste por edad (> {age_threshold} años): Se eleva prioridad.")
 
+    # Default
     if not razonamiento:
+        nivel = config.get("default_level", 4)
         razonamiento.append(config.get("default_reason", "Patología traumatológica sin signos de riesgo vital inmediato."))
 
     niveles_info = {
@@ -100,4 +118,22 @@ def simulacion_ia(motivo, edad, dolor, prompt_content=None):
         5: {"color": "blue", "text": "NIVEL V - NO URGENTE"}
     }
 
-    return {"status": "SUCCESS", "nivel": niveles_info.get(nivel, niveles_info[4]), "razones": razonamiento}
+    # Construir respuesta
+    razones_list = []
+    # Añadir contexto básico
+    razones_list.append(f"Paciente de {edad} años.")
+    razones_list.append(f"Dolor nivel {dolor}/10.")
+    
+    # Añadir razonamiento del árbol
+    razones_list.extend(razonamiento)
+        
+    return {
+        "nivel_sugerido": nivel,
+        "nivel": {
+            "text": niveles_info.get(nivel, niveles_info[4])["text"],
+            "color": niveles_info.get(nivel, niveles_info[4])["color"]
+        },
+        "razones": razones_list, # Ahora devolvemos lista directamente
+        "razonamiento": razones_list, # Legacy support
+        "status": "SUCCESS"
+    }

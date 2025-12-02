@@ -48,15 +48,51 @@ El sistema implementa un modelo de flujo de pacientes basado en estados ("Log-ba
 El sistema integra capacidades avanzadas de IA tanto generativa como predictiva.
 
 ### 4.1 Modelos Predictivos (Real ML)
-El sistema utiliza algoritmos de **Random Forest** (Bosques Aleatorios) implementados con Scikit-learn para realizar predicciones operativas. A diferencia de sistemas basados en reglas simples, estos modelos aprenden de los datos históricos.
-*   **Procesamiento de Lenguaje Natural (NLP):** Analiza la entrevista clínica transcrita y el texto libre para extraer síntomas clave, antecedentes y factores de riesgo sutiles (ej. menciones de "dolor opresivo" o "antecedentes familiares de muerte súbita").
-*   **Reconocimiento Automático del Habla (ASR):** Transcribe en tiempo real la interacción verbal entre enfermero y paciente, permitiendo al profesional mantener contacto visual sin perder datos.
-*   **Visión Computacional:** Analiza imágenes de lesiones (heridas, deformidades) para evaluar gravedad visual (ej. signos de infección, exposición ósea).
+El sistema utiliza algoritmos de **Random Forest** (Bosques Aleatorios) implementados con Scikit-learn para realizar predicciones operativas. La arquitectura se divide en dos servicios principales:
 
-### 4.2 Lógica de Puntuación de Riesgo (PTR)
-El sistema evoluciona de un triaje basado puramente en reglas ("Peor Caso") a un modelo de **Puntuación Total de Riesgo (PTR)** ponderado:
-*   Cada signo vital desviado suma puntos según su gravedad y relevancia clínica (ej. la saturación de oxígeno tiene un multiplicador x3 frente a la temperatura x1).
-*   La IA ajusta estos multiplicadores según el contexto del paciente (ej. en pacientes geriátricos, la frecuencia cardíaca tiene mayor peso).
+1.  **Servicio de Entrenamiento (`MLTrainingService`):**
+    *   Ejecuta procesos offline para entrenar modelos utilizando datos históricos almacenados en MongoDB (`triage_records`).
+    *   Genera y serializa modelos (`.joblib`) para:
+        *   **Predicción de Demanda:** Basado en hora del día y día de la semana.
+        *   **Tiempo de Espera:** Basado en carga actual y nivel de triaje.
+
+2.  **Servicio Predictivo (`MLPredictiveService`):**
+    *   Carga los modelos serializados en memoria para realizar inferencias en tiempo real.
+    *   Provee estimaciones de tiempo de espera para pacientes y recomendaciones de staffing para gestores.
+
+Además, el sistema integra capacidades de IA Generativa para:
+*   **Procesamiento de Lenguaje Natural (NLP):** Analiza la entrevista clínica transcrita y el texto libre.
+*   **Reconocimiento Automático del Habla (ASR):** Transcribe en tiempo real la interacción verbal.
+*   **Visión Computacional:** Analiza imágenes de lesiones para evaluar gravedad visual.
+
+### 4.2 Lógica de Puntuación de Riesgo (PTR) - Dinámica
+El sistema implementa un modelo de **Puntuación Total de Riesgo (PTR)** totalmente configurable y almacenado en base de datos. Esto permite a los administradores clínicos ajustar los pesos, umbrales y multiplicadores sin necesidad de intervención técnica.
+
+La configuración se gestiona desde el panel de administración (`Configuración > Triaje (PTR)`), permitiendo definir:
+*   **Multiplicador Base:** Peso general de la métrica.
+*   **Reglas:** Umbrales específicos (ej: `< 90`) y los puntos base que otorgan (0-3).
+*   **Modificadores de Contexto:** Multiplicadores alternativos para poblaciones especiales (Geriátrico, Inmunodeprimido).
+
+#### 4.2.1 Lógica de Puntuación (Legacy/Ejemplo de Configuración por Defecto)
+A continuación se detalla la configuración inicial por defecto del sistema (equivalente a la lógica hardcoded anterior):
+
+#### Tabla de Multiplicadores y Pesos (Default)
+| Parámetro | Multiplicador Base | Ajuste Contextual |
+| :--- | :---: | :--- |
+| **GCS (Conciencia)** | **x4** | - |
+| **SpO2 (Saturación)** | **x3** | - |
+| **Tensión Arterial** | **x3** | - |
+| **Frecuencia Respiratoria** | **x2** | - |
+| **Frecuencia Cardíaca** | **x1** | **x2** si paciente Geriátrico (>75 años) |
+| **Temperatura** | **x1** | **x3** si Inmunodeprimido/Oncológico |
+| **Dolor (EVA)** | **x1** | - |
+
+#### Interpretación del Score
+La suma total de puntos determina el nivel de riesgo sugerido y el código de color:
+*   **> 15 puntos:** Nivel I/II (Rojo/Naranja) - Riesgo Vital Inmediato.
+*   **8 - 15 puntos:** Nivel II/III (Naranja/Amarillo) - Urgencia.
+*   **3 - 7 puntos:** Nivel III/IV (Amarillo/Verde) - Urgencia Menor.
+*   **< 3 puntos:** Nivel IV/V (Verde/Azul) - No Urgente.
 
 ### 4.3 Alertas Predictivas
 Mediante el análisis de patrones en los datos históricos y clínicos, el sistema genera alertas proactivas:
@@ -250,6 +286,14 @@ Antes de activar un prompt, los administradores pueden validarlo en un entorno s
 *   **Ejecución Aislada:** El sistema ejecuta el prompt seleccionado (Borrador) contra el modelo real sin afectar a pacientes reales.
 *   **Visualización JSON:** Muestra la respuesta cruda de la IA para verificar la estructura y contenido.
 
+### 5.10 Dashboard Multi-Centro (Red Global)
+**Objetivo:** Visión consolidada y comparativa de todos los centros de la red asistencial.
+
+*   **Vista General:** KPIs agregados en tiempo real (Total Pacientes, Salas Activas, Tiempos de Espera).
+*   **Comparativas:** Gráficos de barras para analizar carga de trabajo y ocupación entre centros.
+*   **Alertas Globales:** Sistema centralizado de detección de saturación o bloqueos en cualquier punto de la red.
+*   **Tecnología:** Alimentado por `MultiCenterService` que agrega datos directamente de la base de datos central.
+
 ---
 
 ## 6. Modos Avanzados de Operación
@@ -277,6 +321,9 @@ Garantiza la continuidad operativa ante fallos de conexión a internet o caída 
 *   **Backend Logic:** Python (Servicios modulares en `src/services`).
 *   **Base de Datos:** MongoDB (Colecciones: `people`, `patient_flow`, `triage_records`, `config`, `clinical_options`).
 *   **IA:** Google Vertex AI / Gemini API.
+*   **Testing:** Suite de pruebas automatizadas (`pytest`) cubriendo:
+    *   **Unitarios:** Lógica de negocio crítica (PTR, ML).
+    *   **Integración:** Conectividad con base de datos y servicios externos.
 
 ---
 

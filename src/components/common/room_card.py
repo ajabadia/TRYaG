@@ -252,3 +252,43 @@ def render_room_grid(
                     selected_sala_code = sala_code
     
     return selected_sala_code
+
+
+def render_room_list(
+    salas: list,
+    selected_code: Optional[str],
+    button_key_prefix: str,
+    on_select_callback: Optional[callable] = None,
+    **card_kwargs
+) -> Optional[str]:
+    """
+    Renderiza una lista vertical de cards de salas.
+    
+    Args:
+        salas: Lista de salas a mostrar
+        selected_code: Código de la sala seleccionada (si hay)
+        button_key_prefix: Prefijo para las keys de los botones
+        on_select_callback: Función a ejecutar cuando se selecciona una sala
+        **card_kwargs: Argumentos adicionales para render_room_card
+    
+    Returns:
+        str: Código de la sala seleccionada si se pulsó algún botón, None en caso contrario
+    """
+    selected_sala_code = None
+    
+    for sala in salas:
+        sala_code = sala.get('codigo')
+        is_selected = (sala_code == selected_code)
+        
+        button_clicked = render_room_card(
+            sala=sala,
+            is_selected=is_selected,
+            button_key=f"{button_key_prefix}_{sala_code}",
+            on_select_callback=on_select_callback,
+            **card_kwargs
+        )
+        
+        if button_clicked:
+            selected_sala_code = sala_code
+            
+    return selected_sala_code

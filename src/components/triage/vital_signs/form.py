@@ -140,4 +140,4 @@ def render_vital_signs_form(age: int = 40):
                 st.write(f"- {det}")
             st.caption(f"Acción: {news_result['action']}")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/vital_signs/form.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/vital_signs/form.py</div>', unsafe_allow_html=True)

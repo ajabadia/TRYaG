@@ -189,4 +189,4 @@ def render_debug_panel(key_prefix="debug_panel"):
     except Exception as e:
         st.error(f"Error al conectar con MongoDB: {e}")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/audit_panel/debug_panel.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/audit_panel/debug_panel.py</div>', unsafe_allow_html=True)

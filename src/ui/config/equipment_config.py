@@ -58,4 +58,4 @@ def render_equipment_config():
             }
             st.success("✅ Configuración de equipo guardada correctamente.")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/config/equipment_config.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/config/equipment_config.py</div>', unsafe_allow_html=True)

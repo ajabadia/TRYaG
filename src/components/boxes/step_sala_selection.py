@@ -5,7 +5,7 @@ Paso 1 de Gestión de Boxes: Selección de Sala de Atención (Consulta/Box).
 """
 import streamlit as st
 from services.room_service import obtener_salas_por_tipo
-from components.common.room_card import render_room_grid
+from components.common.room_card import render_room_list
 
 def render_step_sala_selection() -> bool:
     """
@@ -31,8 +31,8 @@ def render_step_sala_selection() -> bool:
     if 'boxes_room_code' not in st.session_state:
         st.session_state.boxes_room_code = None
 
-    # Renderizar grid de salas
-    selected = render_room_grid(
+    # Renderizar lista de salas
+    selected = render_room_list(
         salas=salas_atencion,
         selected_code=st.session_state.boxes_room_code,
         button_key_prefix="boxes_sala"

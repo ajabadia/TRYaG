@@ -32,5 +32,5 @@ def render_step_disposition():
             st.session_state.triage_step = 5
             st.rerun()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/step_disposition.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/step_disposition.py</div>', unsafe_allow_html=True)
     return True

@@ -14,6 +14,9 @@ def render_general_tab():
 
     if has_permission("configuracion", "general"):
         gen_tabs.append("🔔 Notificaciones")
+
+    # PTR Config (Phase 8.6)
+    gen_tabs.append("🚑 Triaje (PTR)")
         
     gen_subtabs = st.tabs(gen_tabs)
     
@@ -31,6 +34,7 @@ def render_general_tab():
     subtab_insurers = get_tab("🏥 Aseguradoras")
     subtab_prompts = get_tab("📝 Prompts IA")
     subtab_notif = get_tab("🔔 Notificaciones")
+    subtab_ptr = get_tab("🚑 Triaje (PTR)")
     
     with subtab_equip:
         from ui.config.equipment_config import render_equipment_config
@@ -57,6 +61,11 @@ def render_general_tab():
         with subtab_notif:
             from ui.config.notification_config_ui import render_notification_config_panel
             render_notification_config_panel()
+
+    if subtab_ptr:
+        with subtab_ptr:
+            from ui.config.ptr_config_panel import render_ptr_config_panel
+            render_ptr_config_panel()
 
     with subtab_app:
         from ui.config.app_config import render_app_config

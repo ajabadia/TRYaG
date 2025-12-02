@@ -191,6 +191,20 @@ class TriageRangeConfig(BaseModel):
 # TRIAGE RECORDS (antes audit_records)
 # ============================================================================
 
+class AIReason(BaseModel):
+    """Razón individual proporcionada por la IA."""
+    text: str = Field(..., description="Texto de la razón")
+    human_eval: Optional[Literal["positive", "negative"]] = Field(default=None, description="Evaluación humana")
+    included_in_decision: bool = Field(default=True, description="Si se tuvo en cuenta para la decisión final")
+
+class AIResponse(BaseModel):
+    """Respuesta completa de la IA (para historial/versionado)."""
+    timestamp: datetime = Field(default_factory=datetime.now)
+    sugerencia_ia: Dict[str, Any] = Field(..., description="Respuesta cruda de la IA")
+    razones_parsed: List[AIReason] = Field(default_factory=list)
+    model_version: Optional[str] = None
+    status: Literal["accepted", "rejected", "discarded"] = Field(default="discarded")
+
 class TriageRecord(BaseModel):
     """Registro de un triaje realizado."""
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
@@ -206,7 +220,11 @@ class TriageRecord(BaseModel):
     sintomas_detectados: List[str] = Field(default_factory=list)
     
     # Resultado Triaje
-    sugerencia_ia: Dict[str, Any] = Field(..., description="Respuesta completa de la IA")
+    status: Literal["draft", "completed"] = Field(default="completed", description="Estado del registro")
+    sugerencia_ia: Optional[Dict[str, Any]] = Field(default=None, description="Respuesta completa de la IA (última activa)")
+    razones_ia: List[AIReason] = Field(default_factory=list, description="Lista de razones desglosadas")
+    ai_responses: List[AIResponse] = Field(default_factory=list, description="Historial de respuestas IA")
+    
     nivel_sugerido: Optional[int] = Field(default=None, ge=1, le=5, description="Nivel sugerido por IA (1-5)")
     color_sugerido: Optional[str] = Field(default=None, description="Color sugerido (Rojo, Naranja, etc.)")
     
@@ -505,3 +523,39 @@ class Sala(BaseModel):
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str, datetime: lambda v: v.isoformat()}
 
+
+# ============================================================================
+# PTR CONFIGURATION
+# ============================================================================
+
+class PTRRule(BaseModel):
+    """Regla individual para cálculo de PTR."""
+    operator: Literal["<", "<=", ">", ">=", "==", "between"] = Field(..., description="Operador de comparación")
+    value: float = Field(..., description="Valor de referencia (o límite inferior si es between)")
+    value_max: Optional[float] = Field(default=None, description="Límite superior si es between")
+    points: float = Field(..., description="Puntos a sumar si se cumple la regla")
+    description: Optional[str] = Field(default=None, description="Descripción para auditoría (ej: 'GCS < 9')")
+
+class PTRConfig(BaseModel):
+    """Configuración de puntuación para una métrica del PTR."""
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    metric_key: str = Field(..., description="Clave de la métrica (gcs, spo2, pas, fr, fc, temp, dolor)")
+    name: str = Field(..., description="Nombre visible (ej: Frecuencia Cardíaca)")
+    
+    # Configuración Base
+    base_multiplier: float = Field(default=1.0, description="Multiplicador base para los puntos")
+    
+    # Reglas de Puntuación (Thresholds)
+    rules: List[PTRRule] = Field(default_factory=list, description="Lista de reglas para asignar puntos base")
+    
+    # Modificadores de Contexto
+    geriatric_multiplier: Optional[float] = Field(default=None, description="Multiplicador si es geriátrico (None = no aplica)")
+    immuno_multiplier: Optional[float] = Field(default=None, description="Multiplicador si es inmunodeprimido (None = no aplica)")
+    
+    updated_at: datetime = Field(default_factory=datetime.now)
+    updated_by: str = Field(default="admin")
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}

@@ -48,7 +48,7 @@ El sistema inyectará instrucciones específicas al modelo Gemini si estos flags
 
 ## 3. 🧠 Lógica de Ponderación de Variables (Motor Gemini)
 
-**Objetivo:** Sustituir la lógica simple de "peor caso" por un sistema de puntuación ponderada (PTR) similar al *Manchester Triage System* o *MEWS*.
+**Objetivo:** Sustituir la lógica simple de "peor caso" por un sistema de puntuación ponderada (PTR) similar al *Manchester Triage System* o *MEWS*. ✅ **IMPLEMENTADO (Paralelo a NEWS2)**
 
 ### Sistema de Puntuación
 La IA calculará el **PTR (Puntuación Total de Riesgo)** basándose en la suma de:

@@ -81,3 +81,5 @@ def render_transcription_analysis(df_trans, key_prefix="transcription"):
             st.bar_chart(edit_data.set_index('Estado'), use_container_width=True)
     else:
         st.info("No hay datos de edición disponibles.")
+
+    st.markdown('<div class="debug-footer">src/components/analytics/transcription_analysis.py</div>', unsafe_allow_html=True)

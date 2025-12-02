@@ -125,4 +125,4 @@ def render_audio_recorder(key_prefix="audio", on_audio_ready=None, disabled=Fals
             
             st.rerun()
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/common/audio_recorder.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/common/audio_recorder.py</div>', unsafe_allow_html=True)

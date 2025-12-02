@@ -101,4 +101,4 @@ def render_feedback_list(df_feedback, start_date=None, end_date=None):
                             else:
                                 st.warning("Archivo no encontrado")
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/ui/audit_panel/feedback_list.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/audit_panel/feedback_list.py</div>', unsafe_allow_html=True)

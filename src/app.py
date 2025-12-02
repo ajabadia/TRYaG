@@ -14,7 +14,7 @@ from utils.icons import get_icon_path, render_icon
 from services.permissions_service import get_available_tabs
 from ui.connection_status import check_database_connection
 from ui.config.config_loader import load_centro_config
-from ui.loading_indicator import render_loading_container
+
 from components.common.user_selector import render_user_selector
 from ui.main_view import mostrar_asistente_triaje
 
@@ -91,11 +91,29 @@ def mostrar_app_principal():
     # Initialize background services (after DB check)
     init_background_services()
 
+    from ui.config.config_loader import load_general_config
+    if 'general_config' not in st.session_state:
+        st.session_state.general_config = load_general_config()
+    
     centro_config = load_centro_config()
 
     # Load global CSS
     from utils.ui_utils import load_css
     load_css("src/assets/css/styles.css")
+    
+    # Check Developer Mode
+    general_config = st.session_state.get('general_config', {})
+    if general_config.get('developer_mode', False):
+        st.markdown(
+            """
+            <style>
+            .debug-footer {
+                display: block !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
     # Header with logo and centre name
     col_logo, col_title = st.columns([1, 8])
@@ -136,7 +154,7 @@ def mostrar_app_principal():
             )
 
     # Initialize loading container (justo después del header)
-    render_loading_container()
+
 
     # -----------------------------------------------------------------------
     # User Selector & Permissions Logic

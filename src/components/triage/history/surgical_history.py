@@ -59,4 +59,4 @@ def render_surgical_history_form(reset_count: int, disabled: bool = False):
                     disabled=disabled, key=f"ant_imp_other_{reset_count}"
                 )
 
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 5px;">src/components/triage/history/surgical_history.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/triage/history/surgical_history.py</div>', unsafe_allow_html=True)
