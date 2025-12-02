@@ -145,7 +145,8 @@ def render_quick_shift_creator():
         selected_user = st.selectbox(
             "Usuario",
             options=list(user_options.keys()),
-            format_func=lambda x: user_options[x]
+            format_func=lambda x: user_options[x],
+            key="quick_shift_user"
         )
         
         fecha_desde = st.date_input("Fecha Desde", value=date.today())
@@ -156,7 +157,8 @@ def render_quick_shift_creator():
         selected_sala = st.selectbox(
             "Sala",
             options=list(sala_options.keys()),
-            format_func=lambda x: sala_options[x]
+            format_func=lambda x: sala_options[x],
+            key="quick_shift_sala"
         )
         
         fecha_hasta = st.date_input("Fecha Hasta", value=date.today())

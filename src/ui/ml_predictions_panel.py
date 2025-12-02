@@ -47,7 +47,7 @@ def render_ml_predictions_panel():
 
     st.divider()
 
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Demanda", "⏱️ Tiempos de Espera", "👥 Staffing", "🔍 Anomalías"])
+    tabs = st.tabs(["📊 Demanda", "⏱️ Tiempos de Espera", "👥 Staffing", "🔍 Anomalías"])
     
     with tabs[0]:
         render_demand_prediction_tab(ml_service)
