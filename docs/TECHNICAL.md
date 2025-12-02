@@ -26,6 +26,8 @@ El proyecto sigue una arquitectura modular basada en componentes y servicios, se
     *   `repositories/`: Implementación del patrón Repository para cada entidad (Pacientes, Centros, Configuración).
 *   **`ui/`**: Componentes de interfaz de usuario (Vistas, Paneles).
 *   **`components/`**: Widgets reutilizables (Selectores, Tarjetas, Visores).
+    *   `common/body_map.py`: Mapa corporal interactivo con Plotly.
+    *   `analytics/concordance_analysis.py`: Módulo de validación científica (Pandas).
 *   **`utils/`**: Funciones de utilidad (Iconos, PDFs, Imágenes).
 
 ### Patrones de Diseño

@@ -41,6 +41,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/config/salas_manager.py** | UI para gestión de salas (CRUD). | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/staff_conflicts_viewer.py** | Visualizador de conflictos de personal. | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/usuarios_manager.py** | UI para gestión de usuarios del sistema. | `src/ui/config_panel.py` | Activo |
+| **src/ui/config/vital_signs_config.py** | UI para configuración de rangos de signos vitales. | `src/ui/config/general_tab.py` | Activo |
 | **src/components/triage/input_form.py** | Formulario de entrada de datos (Triaje). | `src/components/triage/step_triage_process.py` | Activo |
 | **src/components/triage/step_triage_process.py** | Paso de proceso de triaje. | `src/ui/main_view.py` | Activo |
 | **src/components/triage/media_cards.py** | Tarjetas de visualización de medios. | `src/components/triage/input_form.py` | Activo |
@@ -145,4 +146,11 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/audit_panel/raw_data_panel_v2.py** | Versión 2 de panel de datos brutos. | - | Backup/WIP |
 | **src/ui/audit_panel/tab_audit_v2.py** | Versión 2 de pestaña auditoría. | - | Backup/WIP |
 | **src/ui/audit_panel/tab_files_v2.py** | Versión 2 de pestaña archivos. | - | Backup/WIP |
+| **src/components/common/body_map.py** | Mapa corporal interactivo. | `src/components/triage/guided_interview.py` | Activo |
+| **src/components/triage/recommendations_card.py** | Tarjeta de recomendaciones de autocuidado. | `src/components/triage/risk_analysis_panel.py` | Activo |
+| **src/services/recommendation_service.py** | Servicio de generación de recomendaciones. | `src/components/triage/risk_analysis_panel.py` | Activo |
+| **src/components/analytics/concordance_analysis.py** | Análisis de concordancia IA vs Humano. | `src/ui/audit_panel/analysis_panel.py` | Activo |
 | **src/ui/audit_panel/tab_transcriptions_v2.py** | Versión 2 de pestaña transcripciones. | - | Backup/WIP |
+| **src/scripts/generate_synthetic_data.py** | Script de generación de datos sintéticos. | CLI | Script |
+| **src/services/ml_training_service.py** | Servicio de entrenamiento de modelos ML. | `src/ui/ml_predictions_panel.py` | Activo |
+| **generate_synthetic_data.py** | Script raíz de generación de datos (Bypass gitignore). | CLI | Script |

@@ -18,12 +18,38 @@ def render_ml_predictions_panel():
     
     ml_service = get_ml_service()
     
-    tabs = st.tabs([
-        "📈 Predicción de Demanda",
-        "⏱️ Tiempos de Espera",
-        "👥 Recomendaciones de Personal",
-        "🔍 Detección de Anomalías"
-    ])
+    st.markdown("### 🤖 Panel de Control ML")
+    
+    col_actions, col_status = st.columns([1, 1])
+    
+    with col_actions:
+        if st.button("🔄 Re-entrenar Modelos", help="Entrenar modelos con datos actuales"):
+            with st.spinner("Entrenando modelos Random Forest..."):
+                from services.ml_training_service import MLTrainingService
+                trainer = MLTrainingService()
+                result = trainer.train_all()
+                
+                if result.get("status") == "success":
+                    st.success(result.get("msg"))
+                    # Recargar servicio de predicción
+                    from services.ml_predictive_service import get_ml_service
+                    get_ml_service().load_models()
+                else:
+                    st.error(f"Error: {result.get('msg')}")
+                    
+    with col_status:
+        from services.ml_predictive_service import get_ml_service
+        service = get_ml_service()
+        if service.models_loaded:
+            st.success("✅ Modelos Activos (RandomForest)")
+            st.caption("Predicciones basadas en datos históricos.")
+        else:
+            st.warning("⚠️ Modelos No Cargados")
+            st.caption("Usando heurística de respaldo.")
+
+    st.divider()
+
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Demanda", "⏱️ Tiempos de Espera", "👥 Staffing", "🔍 Anomalías"])
     
     with tabs[0]:
         render_demand_prediction_tab(ml_service)
@@ -303,3 +329,10 @@ def render_anomaly_detection_tab(ml_service):
                                 f"Desviación de {anomaly['desviacion']} pacientes "
                                 f"(Esperado: {anomaly['demanda_esperada']}, Real: {anomaly['demanda_real']})"
                             )
+
+# Footer de depuración
+if __name__ == "__main__":
+    pass
+else:
+    st.markdown("---")
+    st.caption(f"📍 `src/ui/ml_predictions_panel.py`")

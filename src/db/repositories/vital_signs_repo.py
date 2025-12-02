@@ -7,7 +7,7 @@ class VitalSignsRepository(BaseRepository[VitalSignReference]):
     """Repositorio para gestionar referencias de signos vitales."""
     
     def __init__(self):
-        super().__init__(collection_name="vital_sign_references")
+        super().__init__(collection_name="vital_signs_references")
     
     def get_by_key(self, key: str) -> Optional[VitalSignReference]:
         """Obtiene la configuración de un signo vital por su clave interna."""
