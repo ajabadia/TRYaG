@@ -206,6 +206,52 @@ def render_risk_analysis_panel(patient_data, enable_predictive=True):
                     
                 # --- VALIDACIÓN HUMANA ---
                 st.divider()
+                
+                # --- RECOMENDACIONES DE AUTOCUIDADO (NUEVO) ---
+                from services.recommendation_service import RecommendationService
+                from components.triage.recommendations_card import render_recommendations_card
+                
+                # Determinar nivel de prioridad para recomendaciones
+                rec_priority = 4 # Default Verde
+                
+                # Prioridad del Algoritmo (más preciso si existe)
+                if "ALGO" in results and results["ALGO"].get("status") == "SUCCESS":
+                    # Si guardamos la prioridad numérica en el futuro, usarla. 
+                    # Por ahora inferimos del riesgo
+                    r_algo = results["ALGO"].get("risk_level")
+                    if r_algo == "High": rec_priority = 2
+                    elif r_algo == "Medium": rec_priority = 3
+                    else: rec_priority = 4
+                
+                # Prioridad de IA (si no hay algo o es más grave)
+                if "AI" in results:
+                    r_ai = results["AI"].get("risk_level")
+                    ai_prio = 4
+                    if r_ai == "High": ai_prio = 2
+                    elif r_ai == "Medium": ai_prio = 3
+                    
+                    # Usar el más grave (menor número)
+                    rec_priority = min(rec_priority, ai_prio)
+
+                # Obtener datos para recomendaciones
+                main_symptom = patient_data.get('texto_medico', '')
+                pain_level = patient_data.get('vital_signs', {}).get('pain', 0)
+                # Intentar obtener dolor de datos del paciente si no está en vital_signs (ej: entrevista)
+                if not pain_level and 'dolor' in patient_data:
+                    pain_level = patient_data['dolor']
+                
+                interview_data = st.session_state.get('gi_responses', {})
+                
+                recs = RecommendationService.get_recommendations(
+                    triage_level=rec_priority,
+                    main_symptom=main_symptom,
+                    pain_level=pain_level,
+                    interview_data=interview_data
+                )
+                
+                render_recommendations_card(recs)
+                
+                st.divider()
                 st.markdown("**¿Es correcta esta predicción?**")
                 c_val_1, c_val_2 = st.columns(2)
                 

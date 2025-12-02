@@ -1,6 +1,6 @@
 # path: src/services/feedback_service.py
 from datetime import datetime
-from db.connection import get_database
+from db import get_database
 
 import os
 import hashlib

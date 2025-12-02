@@ -1,6 +1,6 @@
 
 from typing import List, Dict, Optional
-from db.connection import get_database
+from db import get_database
 from db.models import ClinicalOption
 
 class ClinicalOptionsRepository:

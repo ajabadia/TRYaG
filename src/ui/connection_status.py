@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from db.connection import get_client
+from db import get_client
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
 def check_database_connection():

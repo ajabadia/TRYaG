@@ -6,7 +6,7 @@ Implementa el modelo de registro por sala con flow_id único.
 """
 from datetime import datetime
 from typing import Optional, Dict, Any, List, Tuple
-from db.connection import get_database
+from db import get_database, MongoDBSession
 
 
 def generar_flow_id() -> str:

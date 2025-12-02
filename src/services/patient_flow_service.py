@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List
 
 # Imports internos
-from db.connection import get_database
+from db import get_database
 from db.models import PatientFlow
 from ui.config.config_loader import load_centro_config, save_centro_config
 

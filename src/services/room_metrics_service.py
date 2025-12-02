@@ -6,7 +6,7 @@ Registra errores detectados, correcciones realizadas y estadísticas.
 """
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
-from db.connection import get_database
+from db import get_database
 
 
 def registrar_error_detectado(

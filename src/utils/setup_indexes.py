@@ -3,7 +3,7 @@
 """
 Utilidad para crear índices en MongoDB desde la aplicación.
 """
-from db.connection import get_database
+from db import get_database
 
 
 def crear_indices_patient_flow():

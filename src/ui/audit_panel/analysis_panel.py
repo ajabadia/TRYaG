@@ -2,6 +2,10 @@
 Orquestador principal del panel de análisis gráfico unificado.
 Ensambla componentes modulares de análisis.
 """
+"""
+Orquestador principal del panel de análisis gráfico unificado.
+Ensambla componentes modulares de análisis.
+"""
 
 import streamlit as st
 import pandas as pd
@@ -16,6 +20,7 @@ from components.analytics import (
     render_transcription_analysis,
     render_relational_analysis,
 )
+from components.analytics.concordance_analysis import render_concordance_analysis
 from .components import render_date_selector, render_action_bar
 
 def generate_pdf_analisis(df_analisis, filters_text):
@@ -124,10 +129,11 @@ def mostrar_panel_analisis(
     # ---------------------------------------------------------------------
     # 3️⃣ Pestañas principales de visualización
     # ---------------------------------------------------------------------
-    tab_resumen, tab_evol, tab_triaje, tab_files, tab_trans, tab_relacional, tab_prompts, tab_feedback = st.tabs([
+    tab_resumen, tab_evol, tab_triaje, tab_concordancia, tab_files, tab_trans, tab_relacional, tab_prompts, tab_feedback = st.tabs([
         ":material/target: Resumen General",
         ":material/trending_up: Evolución Temporal",
         ":material/local_hospital: Análisis de Triaje",
+        ":material/science: Validación Científica",
         ":material/folder: Análisis de Archivos",
         ":material/mic: Análisis de Transcripciones",
         ":material/link: Análisis Relacional",
@@ -141,6 +147,8 @@ def mostrar_panel_analisis(
         render_evolution(df_analisis, df_files_filtered, key_prefix=f"{key_prefix}_evol")
     with tab_triaje:
         render_triage_analysis(df_analisis, key_prefix=f"{key_prefix}_triage")
+    with tab_concordancia:
+        render_concordance_analysis(df_analisis, key_prefix=f"{key_prefix}_concordance")
     with tab_files:
         render_file_analysis(df_files_filtered, key_prefix=f"{key_prefix}_file")
     with tab_trans:

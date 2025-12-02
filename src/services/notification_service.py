@@ -8,7 +8,7 @@ Principios: DRY, Modularidad, Extensibilidad
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Callable
 from enum import Enum
-from db.connection import get_database
+from db import get_database
 import streamlit as st
 
 

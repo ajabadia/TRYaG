@@ -7,7 +7,7 @@ Utiliza la colección unificada 'people' y el modelo 'Person'.
 """
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from db.connection import get_database
+from db import get_database
 from db.models import Person, Identificacion
 import re
 

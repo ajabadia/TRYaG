@@ -51,7 +51,6 @@ def render_guided_interview(disabled: bool = False, key_suffix: str = "0"):
             del st.session_state.gi_responses['trauma']
 
         st.divider()
-
         # --- 2. DOLOR ---
         st.markdown("##### ⚡ Dolor (Sin golpe previo)")
         pain_opts = repo.get_options_map("gi_pain_type")
@@ -60,22 +59,39 @@ def render_guided_interview(disabled: bool = False, key_suffix: str = "0"):
         has_pain = st.checkbox("¿El paciente refiere dolor?", value=bool(prev_pain), key="gi_pain_check", disabled=disabled)
         
         if has_pain:
-            # Slider de dolor (Propagación inmediata)
-            current_pain = st.session_state.datos_paciente.get('dolor', 0)
-            lvl = st.slider("Nivel de dolor (0-10)", 0, 10, current_pain, key="gi_pain_lvl", disabled=disabled)
-            st.session_state.datos_paciente['dolor'] = lvl # Propagación directa
+            # Mapa Corporal
+            from components.common.body_map import render_body_map
+            st.markdown("**¿Dónde le duele?**")
+            col_map, col_inputs = st.columns([1, 1])
             
-            type_idx = 0
-            if prev_pain.get('type') in list(pain_opts.values()):
-                type_idx = list(pain_opts.values()).index(prev_pain['type'])
+            with col_map:
+                selected_part = render_body_map(key=f"body_map_{key_suffix}")
+
+            with col_inputs:
+                # Determinar ubicación actual (prioridad: selección reciente > guardada > default)
+                current_location = selected_part if selected_part else prev_pain.get('location', 'No especificado')
+                st.info(f"📍 Zona: **{current_location}**")
                 
-            type_pain = st.selectbox("¿Cómo es el dolor?", list(pain_opts.values()), index=type_idx, key="gi_pain_type_sel", disabled=disabled)
-            duration = st.text_input("¿Desde cuándo te duele?", value=prev_pain.get('duration', ''), placeholder="Ej: Hace 2 horas...", key="gi_pain_duration", disabled=disabled)
-            
+                # Slider
+                current_pain = st.session_state.datos_paciente.get('dolor', 0)
+                lvl = st.slider("Nivel (0-10)", 0, 10, current_pain, key="gi_pain_lvl", disabled=disabled)
+                st.session_state.datos_paciente['dolor'] = lvl
+                
+                # Tipo
+                type_idx = 0
+                if prev_pain.get('type') in list(pain_opts.values()):
+                    type_idx = list(pain_opts.values()).index(prev_pain['type'])
+                type_pain = st.selectbox("Tipo de dolor", list(pain_opts.values()), index=type_idx, key="gi_pain_type_sel", disabled=disabled)
+                
+                # Duración
+                duration = st.text_input("Desde cuándo", value=prev_pain.get('duration', ''), placeholder="Ej: 2 horas", key="gi_pain_duration", disabled=disabled)
+
+            # Guardar todo
             st.session_state.gi_responses['pain'] = {
                 "level": lvl,
                 "type": type_pain,
-                "duration": duration
+                "duration": duration,
+                "location": current_location
             }
         elif 'pain' in st.session_state.gi_responses:
             del st.session_state.gi_responses['pain']
@@ -166,7 +182,10 @@ def _update_summary(key_suffix: str):
     # Procesar Dolor
     if 'pain' in responses:
         d = responses['pain']
-        line = f"DOLOR: Nivel {d['level']}/10, Tipo {d['type']}."
+        line = f"DOLOR: Nivel {d['level']}/10"
+        if d.get('location') and d['location'] != 'No especificado':
+            line += f" en {d['location'].upper()}"
+        line += f", Tipo {d['type']}."
         if d['duration']: line += f" Desde: {d['duration']}."
         summary_lines.append(line)
 
