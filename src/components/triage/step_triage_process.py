@@ -26,6 +26,14 @@ def render_step_triage_process() -> bool:
         st.warning("⚠️ No hay paciente seleccionado.")
         return False
     
+    # --- MODO FORMACIÓN ---
+    if st.session_state.get('training_mode', False) and p.get('is_training_case'):
+        from services.training_service import get_case_by_id
+        case = get_case_by_id(p.get('case_id'))
+        if case:
+            st.info(f"🎓 **MODO FORMACIÓN** - Caso: {case['title']}\n\n{case['description']}")
+
+    
     # Mostrar información del paciente (Unificada)
     from ui.components.common.patient_card import render_patient_header
     render_patient_header(p, st.session_state.get('resultado'))

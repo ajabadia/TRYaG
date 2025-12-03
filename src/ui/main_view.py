@@ -59,53 +59,43 @@ def mostrar_asistente_triaje():
     current_step_index = st.session_state.triage_step
     render_horizontal_stepper(steps, current_step_index)
     
-    # --- PASO 0: SELECCIÓN DE SALA (Solo Normal) ---
-    if st.session_state.triage_step == 0 and not is_training:
-        # Panel de Herramientas movido al menú global
-        
-        sala_selected = render_step_sala_selection()
-        
-        # Si se selecciona sala, el componente hace rerun.
-        # Al recargar, la lógica de arriba (auto-avance) nos moverá al paso 1.
+    # --- PASO 0: SELECCIÓN DE SALA (Normal) OR DATOS CASO (Training) ---
+    if st.session_state.triage_step == 0:
+        if is_training:
+             render_step_patient_selection()
+        else:
+             # Panel de Herramientas movido al menú global
+             sala_selected = render_step_sala_selection()
+             # Si se selecciona sala, el componente hace rerun.
+             # Al recargar, la lógica de arriba (auto-avance) nos moverá al paso 1.
     
     # --- PASO 1: SELECCIÓN DE PACIENTE / DATOS CASO ---
     elif st.session_state.triage_step == 1:
-        if is_training:
-            st.markdown("### 🎓 Configuración del Caso de Entrenamiento")
-            st.info("Configure los datos básicos del paciente simulado.")
-            
-            with st.container(border=True):
-                c1, c2 = st.columns(2)
-                with c1:
-                    age_input = st.number_input("Edad del Paciente", min_value=0, max_value=120, value=40)
-                with c2:
-                    sex_input = st.selectbox("Sexo", ["Hombre", "Mujer", "Otro"])
-                
-                if st.button("🚀 Iniciar Caso de Prueba", type="primary", use_container_width=True):
-                    # Configurar entorno de prueba
-                    st.session_state.triage_room_code = "SALATEST"
-                    
-                    # Crear paciente dummy
-                    dummy_code = f"TEST-{datetime.now().strftime('%H%M%S')}"
-                    st.session_state.triage_patient = {
-                        "patient_code": dummy_code,
-                        "nombre": "Usuario",
-                        "apellido1": "De Pruebas",
-                        "apellido2": f"({dummy_code})",
-                        "edad": age_input,
-                        "gender": sex_input,
-                        "motivo_consulta": "Simulación de entrenamiento"
-                    }
-                    
-                    # Resetear datos del triaje
+        # Cabecera compacta de contexto
+        with st.container(border=True):
+            c_info, c_actions = st.columns([4, 1])
+            with c_info:
+                st.markdown(f"📍 **{st.session_state.get('triage_room_code')}** | Seleccione paciente para iniciar triaje")
+            with c_actions:
+                if st.button("Cambiar Sala", key="btn_change_room_header", use_container_width=True):
+                    st.session_state.triage_step = 0
+                    st.session_state.triage_room_code = None
+                    st.rerun()
+
+        patient_selected = render_step_patient_selection()
+        
+        # El componente step_patient_selection ahora debe manejar el avance
+        if patient_selected:
+                if st.session_state.get('triage_patient'):
+                    st.session_state.triage_step = 2
+                    # Resetear datos del paciente para asegurar un formulario limpio
                     st.session_state.datos_paciente = {
-                        "texto_medico": "",
-                        "edad": age_input,
-                        "gender": sex_input,
-                        "dolor": 5,
-                        "imagenes": [],
-                        "imagenes_confirmadas_ia": [],
-                        "vital_signs": {}
+                    "texto_medico": "",
+                    "edad": st.session_state.triage_patient.get('edad', 40) if st.session_state.triage_patient else 40,
+                    "dolor": 5,
+                    "imagenes": [],
+                    "imagenes_confirmadas_ia": [],
+                    "vital_signs": {}
                     }
                     st.session_state.resultado = None
                     st.session_state.calificacion_humana = None
@@ -114,46 +104,7 @@ def mostrar_asistente_triaje():
                     st.session_state.is_editing_text = True
                     st.session_state.show_text_error = False
                     st.session_state.modal_image_selection = {}
-                    
-                    # Avanzar
-                    st.session_state.triage_step = 2
                     st.rerun()
-            
-        else:
-            # Cabecera compacta de contexto
-            with st.container(border=True):
-                c_info, c_actions = st.columns([4, 1])
-                with c_info:
-                    st.markdown(f"📍 **{st.session_state.get('triage_room_code')}** | Seleccione paciente para iniciar triaje")
-                with c_actions:
-                    if st.button("Cambiar Sala", key="btn_change_room_header", use_container_width=True):
-                        st.session_state.triage_step = 0
-                        st.session_state.triage_room_code = None
-                        st.rerun()
-
-            patient_selected = render_step_patient_selection()
-            
-            # El componente step_patient_selection ahora debe manejar el avance
-            if patient_selected:
-                    if st.session_state.get('triage_patient'):
-                        st.session_state.triage_step = 2
-                        # Resetear datos del paciente para asegurar un formulario limpio
-                        st.session_state.datos_paciente = {
-                        "texto_medico": "",
-                        "edad": st.session_state.triage_patient.get('edad', 40) if st.session_state.triage_patient else 40,
-                        "dolor": 5,
-                        "imagenes": [],
-                        "imagenes_confirmadas_ia": [],
-                        "vital_signs": {}
-                        }
-                        st.session_state.resultado = None
-                        st.session_state.calificacion_humana = None
-                        st.session_state.validation_complete = False
-                        st.session_state.analysis_complete = False
-                        st.session_state.is_editing_text = True
-                        st.session_state.show_text_error = False
-                        st.session_state.modal_image_selection = {}
-                        st.rerun()
 
     # --- PASO 2: REALIZAR TRIAJE ---
     elif st.session_state.triage_step == 2:

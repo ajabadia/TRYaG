@@ -26,6 +26,7 @@ El proyecto sigue una arquitectura modular basada en componentes y servicios, se
     *   `report_service.py`: Generación de informes PDF.
     *   `multi_center_service.py`: Agregación de datos multi-centro.
     *   `notification_service.py`: Bus de notificaciones (SMTP, Webhooks).
+    *   `training_service.py`: Lógica del modo formación (Casos y Evaluación).
 *   **`db/`**: Capa de acceso a datos (DAL).
     *   `connection.py`: Gestión de conexión a Mongo (Singleton).
     *   `repositories/`: Implementación del patrón Repository para cada entidad (Pacientes, Centros, Configuración).
@@ -83,6 +84,23 @@ El sistema utiliza una arquitectura de bus de eventos desacoplada para gestionar
 3.  **Gestión de Errores:**
     *   El fallo en un canal secundario (ej. Email) no bloquea el flujo principal ni impide el registro en In-App.
     *   Estado de envío granular (`sent_status`) para auditoría de fallos.
+
+### Modo Formación (Training Mode)
+
+El sistema implementa un entorno de simulación aislado para entrenamiento:
+
+1.  **Datos de Entrenamiento (`training_data.py`):**
+    *   Módulo Python que contiene la biblioteca de casos clínicos predefinidos (JSON-like structure).
+    *   Incluye datos demográficos simulados, signos vitales, síntomas y el "Gold Standard" (Nivel y Destino correctos).
+
+2.  **Servicio de Evaluación (`training_service.py`):**
+    *   **Carga de Casos:** Provee los casos al selector de pacientes cuando `is_training=True`.
+    *   **Lógica de Evaluación:** Compara la decisión del usuario con el Gold Standard.
+    *   **Scoring:** Calcula una puntuación (0-100) basada en la precisión del nivel (70%) y el destino (30%).
+
+3.  **Aislamiento:**
+    *   La UI intercepta el flujo normal en `step_patient_selection` y `step_final_disposition`.
+    *   Los registros se marcan como `is_training=True` para ser excluidos de analytics.
 
 ### Progressive Web App (PWA)
 

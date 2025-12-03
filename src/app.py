@@ -99,6 +99,8 @@ def mostrar_app_principal():
     from ui.config.config_loader import load_general_config
     if 'general_config' not in st.session_state:
         st.session_state.general_config = load_general_config()
+        # Force developer mode off on reload (User Request)
+        st.session_state.general_config['developer_mode'] = False
     
     centro_config = load_centro_config()
 
@@ -246,6 +248,7 @@ if not disclaimer_accepted:
             color: white;
             border: none;
             cursor: pointer;
+            pass
         }
         div[data-testid="stButton"] > button:hover {
             background-color: #218838;

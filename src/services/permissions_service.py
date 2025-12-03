@@ -59,6 +59,11 @@ def get_available_tabs() -> List[str]:
     """
     tabs = []
     
+    # --- MODO FORMACIÓN: VISTA SIMPLIFICADA ---
+    if st.session_state.get('training_mode', False):
+        return ["🩺 Triaje", "⚙️ Configuración"]
+
+    
     if has_permission("admision", "view"):
         tabs.append("📋 Admisión")
         

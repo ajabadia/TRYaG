@@ -21,8 +21,93 @@ def render_step_patient_selection() -> bool:
     Returns:
         bool: True si hay paciente seleccionado, False en caso contrario.
     """
-    st.subheader("2️⃣ Selección de Paciente")
+    is_training = st.session_state.get('training_mode', False)
     
+    if is_training:
+        st.subheader("🎓 Datos del Caso")
+    else:
+        st.subheader("2️⃣ Selección de Paciente")
+    
+    # --- MODO FORMACIÓN (CHECK FIRST) ---
+    if is_training:
+        st.info("🎓 MODO FORMACIÓN ACTIVO: Seleccione un caso clínico para practicar.")
+        
+        from services.training_service import get_all_cases
+        cases = get_all_cases()
+        
+        # Selector de casos
+        case_options = {c['id']: f"{c['title']} ({c['patient_data']['name']})" for c in cases}
+        selected_case_id = st.selectbox("Seleccione Caso Clínico", options=list(case_options.keys()), format_func=lambda x: case_options[x])
+        
+        if selected_case_id:
+            case = next((c for c in cases if c['id'] == selected_case_id), None)
+            if case:
+                st.markdown(f"**Descripción:** {case['description']}")
+                
+                if st.button("🚀 Iniciar Simulación de Caso", type="primary", use_container_width=True):
+                    # Mockear paciente
+                    mock_patient = {
+                        "patient_code": case['patient_data']['identification'],
+                        "nombre": case['patient_data']['name'],
+                        "apellido1": "(Simulado)",
+                        "edad": case['patient_data']['age'],
+                        "gender": case['patient_data']['gender'],
+                        "fecha_nacimiento": "2000-01-01", # Dummy
+                        "is_training_case": True,
+                        "case_id": case['id']
+                    }
+                    
+                    st.session_state.triage_patient = mock_patient
+                    
+                    # Inicializar datos de paciente con datos del caso
+                    st.session_state.datos_paciente = {
+                        "texto_medico": case['clinical_data']['motivo_consulta'],
+                        "edad": case['patient_data']['age'],
+                        "gender": case['patient_data']['gender'],
+                        "dolor": case['clinical_data']['vital_signs'].get('nivel_dolor', 0),
+                        "imagenes": [],
+                        "vital_signs": {
+                            "fc": case['clinical_data']['vital_signs'].get('frecuencia_cardiaca'),
+                            "pas": case['clinical_data']['vital_signs'].get('sistolica'),
+                            "pad": case['clinical_data']['vital_signs'].get('diastolica'),
+                            "spo2": case['clinical_data']['vital_signs'].get('saturacion'),
+                            "temp": case['clinical_data']['vital_signs'].get('temperatura'),
+                            "dolor": case['clinical_data']['vital_signs'].get('nivel_dolor'),
+                            # Default others
+                            "fr": 16,
+                            "gcs": 15,
+                            "pupilas": "Normal",
+                            "hidratacion": "Normal"
+                        },
+                        "symptoms": case['clinical_data']['symptoms'], # Para uso futuro/display
+                        "is_training": True
+                    }
+                    
+                    # Limpiar estados previos
+                    st.session_state.resultado = None
+                    st.session_state.calificacion_humana = None
+                    st.session_state.validation_complete = False
+                    st.session_state.analysis_complete = False
+                    st.session_state.is_editing_text = True
+                    
+                    # Force widget reset
+                    if 'reset_count' not in st.session_state: st.session_state.reset_count = 0
+                    st.session_state.reset_count += 1
+                    
+                    # Clear vital signs widget keys to ensure they pick up new values
+                    keys_to_clear = [k for k in st.session_state.keys() if k.startswith('vs_')]
+                    for k in keys_to_clear:
+                        del st.session_state[k]
+
+                    
+                    # Avanzar
+                    st.session_state.triage_step = 1
+                    st.rerun()
+        
+        st.markdown('<div class="debug-footer">src/components/triage/step_patient_selection.py</div>', unsafe_allow_html=True)
+        return False
+
+    # --- NORMAL MODE ---
     room_code = st.session_state.get('triage_room_code')
     if not room_code:
         st.warning("⚠️ No se ha seleccionado sala.")

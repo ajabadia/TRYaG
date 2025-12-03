@@ -9,6 +9,48 @@ from datetime import datetime
 from services.patient_flow_service import completar_triaje, rechazar_paciente, reassign_patient_flow, save_triage_data
 from services.room_service import obtener_salas_por_tipo
 
+def _show_training_evaluation(case_id, user_level, user_destination):
+    """Muestra la evaluación del caso en modo formación."""
+    from services.training_service import evaluate_decision
+    
+    # Calcular resultado
+    result = evaluate_decision(case_id, user_level, user_destination)
+    
+    st.markdown("---")
+    st.markdown("## 🎓 Evaluación del Caso (Modo Formación)")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Puntuación Total", f"{result['total_score']}/100")
+    with col2:
+        if result['is_correct_level']:
+            st.success("✅ Nivel Correcto")
+        else:
+            st.error(f"❌ Nivel Incorrecto (Esperado: {result['gold_standard']['triage_level']})")
+    with col3:
+        if result['is_correct_destination']:
+            st.success("✅ Destino Correcto")
+        else:
+            st.warning(f"⚠️ Destino Mejorable")
+
+    st.markdown("### 📝 Feedback Clínico")
+    st.info(result['gold_standard']['reason'])
+    
+    st.markdown(f"**Destino Esperado:** {result['gold_standard']['destination']}")
+    st.markdown(f"**Tu Destino:** {user_destination}")
+    
+    if st.button("🏁 Finalizar y Volver", type="primary", use_container_width=True):
+        # Limpiar sesión
+        st.session_state.triage_step = 1
+        st.session_state.triage_patient = None
+        st.session_state.datos_paciente = {}
+        st.session_state.resultado = None
+        st.session_state.calificacion_humana = None
+        st.session_state.showing_training_evaluation = False
+        st.rerun()
+    
+    return True
+
 def render_step_final_disposition():
     """Renderiza las opciones de destino final post-triaje."""
     st.markdown("### 5. Destino y Derivación")
@@ -19,6 +61,13 @@ def render_step_final_disposition():
         return False
         
     st.info(f"Paciente: **{p.get('nombre')} {p.get('apellido1')}** | Triaje Completado")
+
+    # --- MODO FORMACIÓN: Mostrar Evaluación si corresponde ---
+    if st.session_state.get('showing_training_evaluation'):
+        user_level = st.session_state.get('final_triage_level', 5)
+        user_dest = st.session_state.get('final_destination_name', 'Desconocido')
+        _show_training_evaluation(p.get('case_id'), user_level, user_dest)
+        return True
     
     # --- Generación de Informe ---
     from services.report_service import generate_triage_pdf
@@ -88,6 +137,15 @@ def render_step_final_disposition():
                     st.rerun()
             
             if st.button("Confirmar Derivación a Box", type="primary", use_container_width=True):
+                # --- MODO FORMACIÓN ---
+                if st.session_state.get('training_mode', False):
+                    st.session_state.showing_training_evaluation = True
+                    st.session_state.final_destination_name = f"Box {current_selection}"
+                    # Guardar nivel final si existe
+                    if st.session_state.get('resultado'):
+                        st.session_state.final_triage_level = st.session_state.resultado.get('nivel_numero', 5)
+                    st.rerun()
+
                 # Guardar datos completos antes de derivar
                 full_data = {
                     "datos_paciente": st.session_state.datos_paciente,
@@ -145,6 +203,14 @@ def render_step_final_disposition():
                     st.rerun()
             
             if st.button("Confirmar Derivación a Consulta", type="primary", use_container_width=True):
+                # --- MODO FORMACIÓN ---
+                if st.session_state.get('training_mode', False):
+                    st.session_state.showing_training_evaluation = True
+                    st.session_state.final_destination_name = f"Consulta {current_cons}"
+                    if st.session_state.get('resultado'):
+                        st.session_state.final_triage_level = st.session_state.resultado.get('nivel_numero', 5)
+                    st.rerun()
+
                 # Guardar datos completos
                 full_data = {
                     "datos_paciente": st.session_state.datos_paciente,
@@ -192,6 +258,14 @@ def render_step_final_disposition():
     with tab_rechazo:
         motivo = st.text_area("Motivo de rechazo o alta directa", placeholder="Ej: No requiere atención urgente, derivado a AP.")
         if st.button("Confirmar Rechazo/Alta", type="primary", disabled=not motivo):
+            # --- MODO FORMACIÓN ---
+            if st.session_state.get('training_mode', False):
+                st.session_state.showing_training_evaluation = True
+                st.session_state.final_destination_name = "Alta / Rechazo"
+                if st.session_state.get('resultado'):
+                    st.session_state.final_triage_level = st.session_state.resultado.get('nivel_numero', 5)
+                st.rerun()
+
             if rechazar_paciente(p['patient_code'], motivo):
                 st.success("Paciente rechazado/dado de alta.")
                 st.session_state.triage_step = 1
@@ -207,6 +281,12 @@ def render_step_final_disposition():
         sala_adm_code = st.selectbox("Sala de Admisión Destino", [s['codigo'] for s in salas_adm], format_func=lambda x: next((s['nombre'] for s in salas_adm if s['codigo'] == x), x))
         
         if st.button("Devolver a Admisión"):
+            # --- MODO FORMACIÓN ---
+            if st.session_state.get('training_mode', False):
+                st.session_state.showing_training_evaluation = True
+                st.session_state.final_destination_name = f"Admisión {sala_adm_code}"
+                st.rerun()
+
             if reassign_patient_flow(p['patient_code'], new_sala_admision_code=sala_adm_code):
                 st.success(f"Paciente devuelto a admisión {sala_adm_code}")
                 st.session_state.triage_step = 1

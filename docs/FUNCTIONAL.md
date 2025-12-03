@@ -469,9 +469,10 @@ Los administradores pueden configurar los servidores SMTP y las URLs de los Webh
 
 Diseñado para el entrenamiento de nuevo personal sin afectar a los datos reales de pacientes.
 
-* **Simulación (Pendiente):** Permite realizar triajes completos con datos ficticios. *Actualmente requiere entrada manual de datos simulados.*
-* **Evaluación de Competencia (Futurible):** El sistema presenta casos clínicos predefinidos y compara la decisión del usuario con el "Gold Standard" clínico, ofreciendo feedback inmediato sobre aciertos y errores.
-* **Aislamiento de Datos (Implementado):** Los registros generados en este modo se marcan con el flag `is_training=True` y se excluyen de las estadísticas operativas oficiales.
+* **Simulación de Casos Clínicos:** El sistema ofrece una biblioteca de casos predefinidos (ej. "Dolor Torácico", "Esguince"). Al seleccionar uno, el formulario de triaje se auto-completa con los datos del paciente simulado, signos vitales y síntomas.
+* **Evaluación de Competencia:** Al finalizar el triaje, el sistema compara la decisión del usuario (Nivel y Destino) con el "Gold Standard" clínico definido para ese caso.
+* **Feedback Inmediato:** Se muestra una puntuación (0-100) y una explicación detallada de por qué la decisión fue correcta o incorrecta.
+* **Aislamiento de Datos:** Los registros generados en este modo se marcan con el flag `is_training=True` y se excluyen de las estadísticas operativas oficiales.
 
 ### 6.2 Modo Contingencia (Offline Mode)
 
@@ -1288,5 +1289,40 @@ El estudio define rangos específicos y códigos de colores para 7 signos vitale
 
 * **Modo Contingencia (Offline):** Desactiva IA, usa regla "Peor Caso", guarda localmente.
 * **Modo Formación:** Casos ficticios para entrenar al personal.
+
+---
+
+## Anexo B: Guía de Pruebas - Modo Formación
+
+Esta guía detalla los pasos para verificar la funcionalidad del **Modo Formación (Training Mode)**, diseñado para el entrenamiento de personal mediante simulación de casos clínicos.
+
+### 1. Activación del Modo
+1.  Localice la barra lateral izquierda (Sidebar).
+2.  Busque el interruptor **"Modo Formación"** (ubicado bajo el selector de usuario).
+3.  Actívelo. Debería ver una notificación confirmando el cambio de modo.
+
+### 2. Selección de Caso Clínico
+1.  Navegue al módulo de **Triaje**.
+2.  Seleccione una sala de triaje disponible.
+3.  En el paso "Selección de Paciente", observará que la lista de espera habitual ha sido reemplazada por un selector desplegable.
+4.  Seleccione un caso de la lista (ej. *"Dolor Torácico en Varón de 55 años"*).
+5.  Lea la descripción del caso y pulse el botón **"🚀 Iniciar Simulación de Caso"**.
+
+### 3. Verificación de Auto-Relleno
+1.  El sistema avanzará automáticamente al paso de "Realizar Triaje".
+2.  Verifique que los campos se han completado automáticamente con los datos del caso simulado:
+    *   **Motivo de Consulta:** Coincide con la descripción del caso.
+    *   **Signos Vitales:** Despliegue la sección y verifique que hay valores (FC, TA, SatO2, etc.).
+
+### 4. Ejecución y Evaluación
+1.  Pulse **"Analizar con IA"** o proceda directamente si el análisis es automático.
+2.  En la sección de **Validación Humana**, seleccione un Nivel de Triaje y un Destino.
+    *   *Sugerencia:* Intente seleccionar un nivel incorrecto deliberadamente para probar el feedback.
+3.  Pulse **"Confirmar y Finalizar"**.
+4.  En lugar de guardar el registro, aparecerá la pantalla de **Evaluación del Caso**:
+    *   Verifique su **Puntuación Total** (0-100).
+    *   Revise el feedback sobre el Nivel y el Destino.
+    *   Lea la justificación clínica del "Gold Standard".
+5.  Pulse **"🏁 Finalizar y Volver"** para reiniciar el ciclo.
 
 ---
