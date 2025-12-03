@@ -16,7 +16,7 @@ from components.boxes import (
     render_step_attention
 )
 from services.flow_manager import obtener_pacientes_en_sala
-from ui.components.common.tools_panel import render_tools_panel
+
 
 def render_room_header(room_code, step_name, on_back=None, on_change=None):
     """
@@ -45,8 +45,7 @@ def render_boxes_view():
     """
     Renderiza la vista completa de gestión de boxes con stepper.
     """
-    # Panel de Herramientas
-    render_tools_panel("Atención Box", show_pdf=False)
+    # Panel de Herramientas (Ahora en cabecera)
     
     # --- LÓGICA DE PERSISTENCIA Y AUTO-AVANCE ---
     # Si ya hay sala seleccionada y estamos en paso 0, avanzar automáticamente

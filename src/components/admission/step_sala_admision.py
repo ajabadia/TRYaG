@@ -52,3 +52,5 @@ def render_step_sala_admision() -> bool:
         st.rerun()
     
     return False
+
+    st.markdown('<div class="debug-footer">src/components/admission/step_sala_admision.py</div>', unsafe_allow_html=True)

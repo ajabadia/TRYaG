@@ -214,6 +214,7 @@ class TriageRecord(BaseModel):
     # Datos del Paciente (Snapshot)
     patient_id: Optional[str] = Field(default=None, description="ID del paciente (si existe)")
     patient_age: Optional[int] = Field(default=None)
+    patient_snapshot: Optional[Dict[str, Any]] = Field(default=None, description="Snapshot completo de datos del paciente (antecedentes, alergias, etc.)")
     
     # Datos Clínicos
     vital_signs: Optional[VitalSigns] = Field(default=None, description="Signos vitales registrados")
@@ -349,6 +350,26 @@ class ConfigItem(BaseModel):
 
 
 # ============================================================================
+# CENTER GROUPS (MULTI-TENANT)
+# ============================================================================
+
+class CenterGroup(BaseModel):
+    """Grupo de centros para gestión multi-tenant."""
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    name: str = Field(..., description="Nombre del grupo (ej: Zona Norte)")
+    description: Optional[str] = Field(default=None)
+    center_ids: List[str] = Field(default_factory=list, description="IDs de los centros asignados")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str, datetime: lambda v: v.isoformat()}
+
+
+
+# ============================================================================
 # PATIENTS & ADMISSION
 # ============================================================================
 
@@ -417,18 +438,6 @@ class PatientFlow(BaseModel):
     """Modelo de flujo de paciente (un documento por cada paso/movimiento)."""
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     flow_id: str = Field(..., description="ID único del flujo completo (compartido por todos los pasos)")
-    patient_code: str = Field(..., description="Código del paciente")
-    secuencia: int = Field(..., description="Número de secuencia del paso (1, 2, 3...)")
-    
-    sala_code: str = Field(..., description="Código de la sala actual")
-    sala_tipo: str = Field(..., description="Tipo de sala (admision, triaje, box, etc.)")
-    sala_subtipo: Optional[str] = Field(default=None, description="Subtipo (espera, atencion)")
-    
-    estado: str = Field(..., description="Estado en este paso (EN_ADMISION, EN_ESPERA_TRIAJE, etc.)")
-    activo: bool = Field(default=True, description="Si es el paso actual del paciente")
-    
-    entrada: datetime = Field(default_factory=datetime.now, description="Fecha/hora de entrada a este paso")
-    salida: Optional[datetime] = Field(default=None, description="Fecha/hora de salida de este paso")
     duracion_minutos: Optional[int] = Field(default=None, description="Duración en minutos")
     
     notas: Optional[str] = Field(default=None)

@@ -413,3 +413,5 @@ def _generate_csv_export(fecha_inicio, fecha_fin):
     
     df = pd.DataFrame(data)
     return df.to_csv(index=False).encode('utf-8')
+
+    st.markdown('<div class="debug-footer">src/ui/shift_manager_advanced.py</div>', unsafe_allow_html=True)

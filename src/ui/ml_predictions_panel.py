@@ -334,3 +334,5 @@ def render_anomaly_detection_tab(ml_service):
 # Footer de depuración
 if __name__ == "__main__":
     render_ml_predictions_panel()
+
+    st.markdown('<div class="debug-footer">src/ui/ml_predictions_panel.py</div>', unsafe_allow_html=True)

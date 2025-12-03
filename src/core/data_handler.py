@@ -127,12 +127,7 @@ def guardar_auditoria(datos, session_state):
                     "decision_humana": datos.get('decision_humana'),
                     "justificacion": datos.get('justificacion_humana'),
                     # Snapshot de datos paciente para el PDF
-                    "patient_snapshot": {
-                        "nombre": "Paciente", # Se debería enriquecer si es posible
-                        "patient_code": patient_code,
-                        "age": datos.get('edad'),
-                        "gender": "N/A"
-                    }
+                    "patient_snapshot": datos # Guardamos todo el diccionario de datos para tener el contexto completo
                 }
                 
                 triage_repo.create(triage_record)

@@ -346,3 +346,5 @@ def render_time_series_chart(periodo_dias: int = 30):
     )
     
     st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown('<div class="debug-footer">src/ui/room_metrics_dashboard.py</div>', unsafe_allow_html=True)

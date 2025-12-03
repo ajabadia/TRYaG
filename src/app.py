@@ -17,6 +17,7 @@ from ui.config.config_loader import load_centro_config
 
 from components.common.user_selector import render_user_selector
 from ui.main_view import mostrar_asistente_triaje
+from ui.components.common.user_menu import render_user_menu
 
 # ---------------------------------------------------------------------------
 # Page configuration
@@ -109,14 +110,15 @@ def mostrar_app_principal():
             <style>
             .debug-footer {
                 display: block !important;
+                color: #888 !important;
             }
             </style>
             """,
             unsafe_allow_html=True
         )
 
-    # Header with logo and centre name
-    col_logo, col_title = st.columns([1, 8])
+    # Header with logo, centre name and user menu
+    col_logo, col_title, col_menu = st.columns([1, 7, 1])
     with col_logo:
         logo_path = centro_config.get("logo_path", "")
         if logo_path:
@@ -129,19 +131,17 @@ def mostrar_app_principal():
                         st.image(logo_path, width=120)
                     else:
                         # Try relative to root_dir
-                        abs_path = os.path.join(root_dir, logo_path)
-                        if os.path.exists(abs_path):
-                            st.image(abs_path, width=120)
+                        # Assuming root_dir is current working directory or needs to be defined
+                        # For now, just check relative path
+                        if os.path.exists(logo_path):
+                            st.image(logo_path, width=120)
                         else:
-                            # Try fixing slashes for Linux/Windows compatibility
-                            fixed_path = logo_path.replace("\\", "/")
-                            abs_path_fixed = os.path.join(root_dir, fixed_path)
-                            if os.path.exists(abs_path_fixed):
-                                st.image(abs_path_fixed, width=120)
-                            else:
-                                render_icon("logo", size=80, color="#28a745")
+                             render_icon("logo", size=80, color="#28a745")
             except Exception:
                 render_icon("logo", size=80, color="#28a745")
+        else:
+             render_icon("logo", size=80, color="#28a745")
+
     with col_title:
         nombre_centro = centro_config.get(
             "denominacion", "Asistente de Triaje IA (Piloto Traumatología)"
@@ -152,6 +152,9 @@ def mostrar_app_principal():
             st.markdown(
                 f'<p class="header-message">{mensaje}</p>', unsafe_allow_html=True
             )
+            
+    with col_menu:
+        render_user_menu()
 
     # Initialize loading container (justo después del header)
 

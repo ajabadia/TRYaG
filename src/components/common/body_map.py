@@ -89,3 +89,5 @@ def render_body_map(key="body_map"):
         selected_part = names[point_index]
 
     return selected_part
+
+    st.markdown('<div class="debug-footer">src/components/common/body_map.py</div>', unsafe_allow_html=True)

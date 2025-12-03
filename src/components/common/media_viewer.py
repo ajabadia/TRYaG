@@ -536,3 +536,5 @@ def open_media_viewer(files_list: list, start_index: int = 0, key: str = None):
                 st.image(file['path'], caption=file['name'], use_container_width=True)
             else:
                 render_media_content(file['path'], file['ext'])
+
+                st.markdown('<div class="debug-footer">src/components/common/media_viewer.py</div>', unsafe_allow_html=True)

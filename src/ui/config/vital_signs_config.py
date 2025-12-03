@@ -79,3 +79,5 @@ def render_vital_signs_config():
                     repo.update(selected_ref.id, selected_ref.model_dump(by_alias=True, exclude_none=True))
                     st.success("Configuración actualizada correctamente.")
                     st.rerun()
+
+                    st.markdown('<div class="debug-footer">src/ui/config/vital_signs_config.py</div>', unsafe_allow_html=True)

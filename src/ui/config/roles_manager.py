@@ -174,3 +174,5 @@ def render_roles_manager():
                         st.rerun()
                     else:
                         st.error("Error al actualizar el rol.")
+
+                        st.markdown('<div class="debug-footer">src/ui/config/roles_manager.py</div>', unsafe_allow_html=True)

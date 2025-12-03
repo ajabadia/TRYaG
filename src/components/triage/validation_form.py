@@ -91,6 +91,22 @@ def render_validation_form():
                     st.success(msg_text)
                 else:
                     st.warning(msg_text)
+                    
+            # --- BOTÓN DE DESCARGA DE INFORME ---
+            if st.session_state.get('current_audit_id'):
+                from services.report_service import generate_triage_report
+                try:
+                    pdf_bytes = generate_triage_report(st.session_state.current_audit_id)
+                    st.download_button(
+                        label="📄 Descargar Informe Clínico (PDF)",
+                        data=pdf_bytes,
+                        file_name=f"Informe_Triaje_{st.session_state.current_audit_id}.pdf",
+                        mime="application/pdf",
+                        key="download_report_btn"
+                    )
+                except Exception as e:
+                    st.error(f"No se pudo generar el informe: {e}")
+            
             return
 
         # --- Lógica de Decisión ---
@@ -98,8 +114,9 @@ def render_validation_form():
         if decision == "Confirmar Nivel Sugerido":
             if st.button("Confirmar y Continuar", type="primary", use_container_width=True):
                 datos_auditoria.update({"decision_humana": "Confirmado", "nivel_corregido": nivel_texto, "justificacion_humana": ""})
-                guardar_auditoria(datos_auditoria, st.session_state)
+                audit_id = guardar_auditoria(datos_auditoria, st.session_state)
                 
+                st.session_state.current_audit_id = audit_id # Guardar ID para el reporte
                 st.session_state.validation_complete = True
                 st.session_state.validation_msg = "Triaje validado. Proceda a la derivación."
                 st.session_state.validation_msg_type = "success"
@@ -123,7 +140,9 @@ def render_validation_form():
                 else:
                     nivel_humano_norm = nuevo_nivel_display.split(' (')[0]
                     datos_auditoria.update({"decision_humana": "Modificado", "nivel_corregido": nivel_humano_norm, "justificacion_humana": justificacion})
-                    guardar_auditoria(datos_auditoria, st.session_state)
+                    audit_id = guardar_auditoria(datos_auditoria, st.session_state)
+                    
+                    st.session_state.current_audit_id = audit_id # Guardar ID para el reporte
                     
                     # Actualizar resultado en sesión para que el PDF refleje el cambio
                     level_map = {"Nivel I": 1, "Nivel II": 2, "Nivel III": 3, "Nivel IV": 4, "Nivel V": 5}

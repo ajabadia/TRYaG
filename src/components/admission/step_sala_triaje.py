@@ -48,3 +48,5 @@ def render_step_sala_triaje() -> bool:
         return True
     
     return None
+
+    st.markdown('<div class="debug-footer">src/components/admission/step_sala_triaje.py</div>', unsafe_allow_html=True)

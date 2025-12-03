@@ -136,3 +136,5 @@ def _update_assignments(repo, sala_code, old_ids, new_ids, users_map):
             repo.update_user(uid, {"sala_asignada": sala_code})
             
     st.toast(f"Asignaciones actualizadas para sala {sala_code}")
+
+    st.markdown('<div class="debug-footer">src/ui/config/asignacion_turnos.py</div>', unsafe_allow_html=True)

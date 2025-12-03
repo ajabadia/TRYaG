@@ -169,3 +169,5 @@ def render_file_log(df_files_view, start_date, end_date, key_prefix="files_log")
                 except IndexError:
                     st.session_state[f'{key_prefix}_selected_file_indices'] = []
                     st.rerun()
+
+                    st.markdown('<div class="debug-footer">src/components/audit/file_log.py</div>', unsafe_allow_html=True)

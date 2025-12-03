@@ -67,6 +67,26 @@ def procesar_respuesta_ia(resultado_ia, algo_result=None):
                 "msg": resultado_ia.get("msg", "Error procesando respuesta de IA") if isinstance(resultado_ia, dict) else str(resultado_ia)
             }
             
+    # --- GESTIÓN DE HISTORIAL (PHASE 8.7) ---
+    if "_ai_response_object" in resultado_ia:
+        new_response_obj = resultado_ia["_ai_response_object"]
+        
+        # Inicializar historial en session_state si no existe
+        if "ai_responses_history" not in st.session_state:
+            st.session_state.ai_responses_history = []
+        
+        # Marcar anteriores como 'discarded'
+        for resp in st.session_state.ai_responses_history:
+            if resp.get("status") == "accepted":
+                resp["status"] = "discarded"
+        
+        # Añadir nueva respuesta
+        st.session_state.ai_responses_history.append(new_response_obj)
+        
+        # Limpiar el objeto temporal del resultado final para no ensuciar la UI
+        if "_ai_response_object" in final_result:
+            del final_result["_ai_response_object"]
+
     st.session_state.resultado = final_result
 
 def render_input_form():
@@ -337,8 +357,24 @@ def render_input_form():
                     st.rerun()
         
         with col_analisis_2:
-            # Botón principal con icono (simulado en texto o label si es posible, pero st.button no soporta markdown/html en label facilmente, se deja texto limpio)
-            if st.button(button_label, type="primary", disabled=is_button_disabled, use_container_width=True):
+            # Botón principal con icono
+            # Si ya hay análisis completo, mostrar opción de Regenerar
+            if st.session_state.analysis_complete:
+                if st.button("🔄 Regenerar Respuesta IA", type="secondary", disabled=is_button_disabled, use_container_width=True, help="Generar una nueva respuesta y archivar la actual"):
+                    with st.spinner("Regenerando análisis..."):
+                        # Lógica idéntica a la llamada normal, el servicio se encarga de versionar
+                        pass # Se ejecutará el bloque de abajo porque el botón retorna True
+                else:
+                    # Si no se pulsa regenerar, y ya está completo, no hacemos nada (evita re-ejecución automática al refrescar)
+                    # PERO: necesitamos que el botón original "Analizar" no se muestre o cambie de estado.
+                    # Mejor estrategia: Si analysis_complete, cambiamos el botón a "Regenerar".
+                    pass
+
+            # Botón de Análisis (o Regeneración si se pulsa)
+            btn_text = "🔄 Regenerar Respuesta" if st.session_state.analysis_complete else button_label
+            btn_type = "secondary" if st.session_state.analysis_complete else "primary"
+            
+            if st.button(btn_text, type=btn_type, disabled=is_button_disabled, use_container_width=True, key="btn_analyze_main"):
                 with st.spinner("Contactando con la IA..."):
                     imagenes_a_enviar = [f for f in st.session_state.datos_paciente.get('imagenes', []) if st.session_state.modal_image_selection.get(f.name)]
                     st.session_state.datos_paciente['imagenes_confirmadas_ia'] = imagenes_a_enviar

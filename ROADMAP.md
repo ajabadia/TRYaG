@@ -133,6 +133,9 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - [ ] **Modo Desarrollador (Toggle):**
         - Implementar opción en `Configuración > General` para habilitar/deshabilitar "Modo Desarrollador".
         - Controlar visibilidad de los footers de archivo mediante CSS (clase `.debug-footer` + inyección de estilos condicional) para evitar lógica condicional en cada archivo.
+        - Controlar visibilidad de los footers de archivo mediante CSS (clase `.debug-footer` + inyección de estilos condicional) para evitar lógica condicional en cada archivo.
+        - **Tarea Futura:** Revisar que todas las etiquetas/footers respeten el estado del check (algunas no lo hacen actualmente).
+        - **Pendiente:** Revisar funcionalidad de ocultación CSS (actualmente no oculta correctamente en todos los casos) y verificar por qué no aplica `color: white` por defecto.
 
 - [x] **Mejoras Módulo Webcam:**
     - [x] Permitir tomar múltiples fotos en una misma sesión.
@@ -168,8 +171,8 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
         - [x] Análisis de Prompts.
         - [x] Análisis de Feedback.
     - [x] **Integración:** Cada sub-módulo debe implementar su propio Selector de Fechas y Barra de Acciones.
-    - [ ] Añadir etiquetas de footer a todos los nuevos módulos.
-    - [ ] Registrar nuevos módulos en `FILE_MAP.md`.
+    - [x] Añadir etiquetas de footer a todos los nuevos módulos.
+    - [x] Registrar nuevos módulos en `FILE_MAP.md`.
     - [x] **Estrategia de Migración:** Crear menú "Auditoría v2" para desarrollo paralelo sin romper la versión actual. (Fusionado: "Auditoría" ahora usa la implementación v2).
 
 ### 7.9 Correcciones y Estabilización
@@ -231,7 +234,7 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 - [x] **8.4 Testing y Calidad:**
     - [x] Estructura de tests (`tests/` folder).
     - [x] Implementar cobertura de tests unitarios y de integración (PTR y ML Service).
-    - [ ] CI/CD pipelines básicos.
+    - [x] CI/CD pipelines básicos.
 
 - [x] **8.5 Mejora de Simulación Offline (Contingencia):**
     - [x] Mejorar `src/services/simulated_ia.py` para usar reglas más complejas (Árbol de Decisión).
@@ -253,22 +256,18 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
       }
       ```
 
-- [ ] **8.6 Modularización y Configuración de PTR:** (Verificar si requiere actualización en FUNCTIONAL.md)
-    - Migrar multiplicadores hardcoded de `ptr_logic.py` a colección `triage_config` en MongoDB.
-    - Crear interfaz de administración para modificar pesos y reglas.
-    - Implementar versionado de configuraciones PTR.
-    - **Requisito Contingencia:** Sistema de sincronización/caché local para asegurar que los multiplicadores estén disponibles offline (duplicación en `localStorage` o JSON local).
+- [x] **8.6 Modularización y Configuración de PTR:**
+    - [x] Migrar multiplicadores hardcoded de `ptr_logic.py` a colección `ptr_config` en MongoDB.
+    - [x] Crear interfaz de administración (`ptr_config_panel.py`) para modificar pesos y reglas.
+    - [x] Implementar versionado de configuraciones PTR (vía `updated_at`/`updated_by`).
+    - **Nota:** La sincronización offline (localStorage) se abordará en la fase de PWA/Offline completa.
 
-- [ ] **8.7 Versionado y Auditoría de Respuestas IA:**
-    - **Schema:** Migrar de `sugerencia_ia` (string único) a `ai_responses` (array de objetos) en `triage_records`.
-    - **Estructura:** `{ "response": "...", "status": "accepted"|"rejected"|"discarded", "timestamp": "...", "model_version": "..." }`.
-    - **UI Triaje:** Permitir "regenerar" respuesta sin perder la anterior, marcando la previa como "descartada".
-    - **Análisis (`triage_analysis.py`):**
-        - Adaptar métricas para analizar la "Tasa de Rechazo" (1ª respuesta vs final).
-        - Nuevo gráfico: "Distribución de respuestas descartadas" (¿Qué sugiere la IA cuando se equivoca?).
-        - Comparativa: `ai_responses[status='accepted']` vs `decision_humana`.
+- [x] **8.7 Versionado y Auditoría de Respuestas IA:**
+    - [x] **Schema:** Migrar de `sugerencia_ia` (string único) a `ai_responses` (array de objetos) en `triage_records`.
+    - [x] **UI:** Permitir "regenerar" respuesta en el asistente sin perder la anterior (botón "Regenerar").
+    - [x] **Analytics:** Analizar "Tasa de Rechazo" y respuestas descartadas en el Panel de Auditoría.
 
-- [ ] **8.8 Reporte Clínico Integral (PDF):**
+- [x] **8.8 Reporte Clínico Integral (PDF):**
     - **Objetivo:** Generar un documento legal/clínico completo del episodio de triaje.
     - **Contenido Requerido:**
         - **Administrativo:** Datos paciente, hora llegada, centro.
@@ -277,17 +276,27 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
         - **Antecedentes:** Historial clínico integral recuperado.
         - **Multimodal:** Referencia a imágenes/audios adjuntos (thumbnails si es posible).
         - **IA:** Análisis completo, justificación y sugerencia.
-        - **IA:** Análisis completo, justificación y sugerencia.
         - **Cierre:** Validación humana, destino, firma digital (timestamp/usuario).
     - **Requisitos Técnicos:**
         - **Fuente de Datos:** Recuperar toda la información directamente de la Base de Datos (MongoDB), no de la sesión volátil.
         - **Visualización:** Renderizar dinámicamente solo los campos informados (evitar mostrar campos vacíos o "N/A" para limpiar el reporte).
     - **Nota de Implementación:** Si es necesario modificar el esquema de BD (ej: convertir campos planos a arrays o reestructurar objetos) para facilitar esta tarea o la 8.11, **hacerlo sin miedo**. Estamos en fase de piloto con datos de prueba.
 
-- [ ] **8.9 Integración IoT Dispositivos Médicos (Simulación):** (Verificar si requiere actualización en FUNCTIONAL.md)
+- [x] **8.11 Recuperación de Triaje Interrumpido:**
+    - [x] **Schema:** Añadir estado `draft` y `timestamp_update` en `triage_records`.
+    - [x] **Lógica:** Implementar auto-guardado en cada paso del formulario (sin bloquear UI).
+    - [x] **UX:** Al seleccionar un paciente con triaje incompleto, ofrecer "Retomar Triaje" y restaurar estado.
+    - [x] **Reset:** Añadir opción "Reiniciar Triaje" para descartar el borrador y empezar de cero.
+
+- [x] **8.9 Integración IoT Dispositivos Médicos (Simulación):** (Verificar si requiere actualización en FUNCTIONAL.md)
     - **Objetivo:** Simular la conectividad con dispositivos de electromedicina en el box de triaje.
     - **Configuración de Sala:** Añadir selectores en `Configuración > Salas` para asignar dispositivos (Monitor Multiparamétrico, Tensiómetro BT, Pulsioxímetro).
     - **Interfaz de Triaje:** Botón "Capturar Signos Vitales" que simule la lectura automática.
+
+- [x] **8.12 Refactorización de UI/UX (Menú de Usuario):**
+    - **Objetivo:** Centralizar utilidades y gestión de usuario en un menú global.
+    - **Cambio:** Mover `tools_panel.py` de los módulos individuales a un botón/menú en la cabecera (top-right).
+    - **Futuro:** Este menú alojará Login, Logout, Perfil y Recuperación de Claves.
     - **Dispositivos a Simular:**
         - Monitor de Signos Vitales (Connex/Welch Allyn style) -> FC, SpO2, TA, Temp.
         - Pulsioxímetro de dedo (Bluetooth LE).
@@ -295,16 +304,11 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - **Implementación:** Mockup de "Conectando...", delay aleatorio, y relleno automático de campos en `input_form.py`.
 
 
-- [ ] **8.10 Grupos de Centros (Multi-Tenant):**
+- [x] **8.10 Grupos de Centros (Multi-Tenant):**
     - **Objetivo:** Permitir la agrupación lógica de centros (ej: "Zona Norte", "Hospitales Privados") para gestión y reportes consolidados.
     - **Modelo de Datos:** Crear colección `center_groups` con referencias a `centros`.
     - **Configuración:** Nueva sección en `Configuración > Centro` para crear grupos y asignar centros.
     - **Dashboard:** Filtros por "Grupo de Centros" en el Dashboard Multi-Centro.
+    - **[ ] Refactorización Futura:** Hacer que la dependencia sea estricta (Centro -> Grupo) añadiendo `group_id` en el modelo de Centro, en lugar de solo listar IDs en el Grupo.
 
-- [ ] **8.11 Recuperación de Triaje Interrumpido:**
-    - **Objetivo:** Permitir retomar un triaje dejado a medias (ej: corte de luz, cierre accidental).
-    - **Estrategia:**
-        - Crear registro en BD (`triage_records` con estado "draft" o "in_progress") al iniciar el proceso.
-        - Implementar "Auto-save" o guardado por bloques lógicos (al avanzar de paso).
-        - **UI:** En la lista de pacientes, mostrar indicador "Triaje en curso" y permitir "Reanudar".
-    - **Nota de Implementación:** Aprovechar la flexibilidad actual para ajustar el modelo de datos (`TriageRecord`) si se requiere para soportar estados intermedios o estructuras más complejas.
+

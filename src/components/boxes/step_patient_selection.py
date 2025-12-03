@@ -134,3 +134,5 @@ def _llamar_paciente(paciente, room_code):
             st.error(f"No se pudo llamar al paciente: {msg}")
     except Exception as e:
         st.error(f"Error al llamar paciente: {e}")
+
+        st.markdown('<div class="debug-footer">src/components/boxes/step_patient_selection.py</div>', unsafe_allow_html=True)

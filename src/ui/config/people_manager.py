@@ -244,3 +244,5 @@ def person_dialog(person_id=None, on_save=None):
             st.rerun()
         except Exception as e:
             st.error(f"Error al guardar: {e}")
+
+            st.markdown('<div class="debug-footer">src/ui/config/people_manager.py</div>', unsafe_allow_html=True)

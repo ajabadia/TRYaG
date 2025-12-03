@@ -105,3 +105,4 @@ def mostrar_panel_datos_brutos(df_audit_base, df_files, df_trans, df_feedback,
 
     with tab_feedback:
         render_feedback_list(df_feedback, start_date, end_date)
+        st.markdown('<div class="debug-footer">src/ui/audit_panel/raw_data_panel.py</div>', unsafe_allow_html=True)

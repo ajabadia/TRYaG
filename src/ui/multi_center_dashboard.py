@@ -29,11 +29,45 @@ def render_multi_center_dashboard():
         # Fallback a demo si no hay datos
         centros_disponibles = _get_demo_centers()
 
+    # --- FILTRO POR GRUPO ---
+    from db.repositories.center_groups import get_center_group_repository
+    group_repo = get_center_group_repository()
+    groups = group_repo.get_all()
+    
+    selected_group_id = None
+    if groups:
+        group_options = ["Todos"] + [g.name for g in groups]
+        selected_group_name = st.selectbox("Filtrar por Grupo", group_options)
+        
+        if selected_group_name != "Todos":
+            selected_group = next((g for g in groups if g.name == selected_group_name), None)
+            if selected_group:
+                selected_group_id = str(selected_group.id)
+                # Filtrar centros disponibles si tienen ID
+                # Nota: centros_disponibles puede ser dicts o objetos, y los IDs pueden ser str o ObjectId
+                # Asumimos que center_ids en grupo son strings que coinciden con el ID del centro
+                
+                # Normalizar IDs de centros disponibles para comparación
+                centers_in_group = []
+                for c in centros_disponibles:
+                    c_id = str(c.get('id', c.get('_id')))
+                    if c_id in selected_group.center_ids:
+                        centers_in_group.append(c)
+                
+                # Si encontramos coincidencias, filtramos. Si no (ej: demo data), no filtramos pero avisamos.
+                if centers_in_group:
+                    centros_disponibles = centers_in_group
+                elif not selected_group.center_ids:
+                    st.warning(f"El grupo '{selected_group_name}' no tiene centros asignados.")
+                else:
+                    # Caso donde hay IDs pero no coinciden (ej: datos demo vs grupos reales)
+                    pass
+
     selected_centers = st.multiselect(
         "Centros a Visualizar",
         options=[c.get('id', c.get('_id')) for c in centros_disponibles], # Manejar _id de mongo o id simulado
-        default=[c.get('id', c.get('_id')) for c in centros_disponibles[:3]],
-        format_func=lambda x: next((c.get('nombre', 'Desconocido') for c in centros_disponibles if c.get('id', c.get('_id')) == x), x)
+        default=[c.get('id', c.get('_id')) for c in centros_disponibles], # Default: Todos los filtrados
+        format_func=lambda x: next((c.get('nombre', 'Desconocido') for c in centros_disponibles if str(c.get('id', c.get('_id'))) == str(x)), x)
     )
     
     if not selected_centers:
@@ -215,3 +249,5 @@ def render_consolidated_reports_tab(selected_centers, all_centers):
     st.subheader("Reportes Consolidados")
     st.info("Funcionalidad de generación de reportes PDF en desarrollo.")
 
+
+    st.markdown('<div class="debug-footer">src/ui/multi_center_dashboard.py</div>', unsafe_allow_html=True)

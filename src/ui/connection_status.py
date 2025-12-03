@@ -30,3 +30,5 @@ def check_database_connection():
         # En caso de error, mostramos el mensaje en el contenedor
         status_container.error(f"❌ Error de conexión a la base de datos:\n\n{str(e)}")
         return False
+
+        st.markdown('<div class="debug-footer">src/ui/connection_status.py</div>', unsafe_allow_html=True)

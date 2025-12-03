@@ -194,3 +194,4 @@ def generate_pdf_analisis(df_analisis, filters_text):
 
         else:
             st.success("✅ No se han encontrado discrepancias entre la IA y las decisiones humanas.")
+            st.markdown('<div class="debug-footer">src/ui/audit_panel/analysis_panel.py.backup</div>', unsafe_allow_html=True)

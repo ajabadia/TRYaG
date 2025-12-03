@@ -51,12 +51,13 @@ def render_triage_analysis(df_audit, key_prefix="triage"):
         st.warning("No hay datos para los niveles seleccionados.")
         return
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         ":material/bar_chart: Distribución de Niveles", 
         ":material/compare_arrows: Comparativa IA vs Humano", 
         ":material/healing: Dolor por Nivel", 
         ":material/star_rate: Calidad de Sugerencias", 
-        ":material/warning: Análisis de Discrepancias"
+        ":material/warning: Análisis de Discrepancias",
+        ":material/history: Auditoría IA"
     ])
     
     # Tab 1: Distribución de Niveles
@@ -167,5 +168,87 @@ def render_triage_analysis(df_audit, key_prefix="triage"):
                            use_container_width=True, hide_index=True)
         else:
             st.success("✅ No se han encontrado discrepancias entre la IA y las decisiones humanas.")
+
+    # Tab 6: Auditoría IA (Phase 8.7)
+    with tab6:
+        st.markdown("#### Auditoría de Respuestas IA (Versionado)")
+        
+        # Verificar si existe la columna ai_responses
+        if 'ai_responses' not in df_audit.columns:
+            st.info("No hay datos de historial de respuestas IA disponibles (columna 'ai_responses' no encontrada).")
+        else:
+            # Filtrar registros que tienen historial (más de 1 respuesta o lista no vacía)
+            # Nota: ai_responses puede ser NaN o lista vacía
+            
+            def get_regen_count(x):
+                if isinstance(x, list):
+                    return len(x)
+                return 0
+                
+            df_audit['regen_count'] = df_audit['ai_responses'].apply(get_regen_count)
+            regenerated_df = df_audit[df_audit['regen_count'] > 1]
+            
+            # KPIs
+            total_triages = len(df_audit)
+            total_regen = len(regenerated_df)
+            regen_rate = (total_regen / total_triages * 100) if total_triages > 0 else 0
+            
+            kpi1, kpi2, kpi3 = st.columns(3)
+            kpi1.metric("Tasa de Regeneración", f"{regen_rate:.1f}%", help="Porcentaje de triajes donde se solicitó más de una respuesta a la IA")
+            kpi2.metric("Total Regeneraciones", total_regen)
+            kpi3.metric("Max Intentos", df_audit['regen_count'].max() if not df_audit.empty else 0)
+            
+            st.divider()
+            
+            if not regenerated_df.empty:
+                st.markdown("##### Análisis de Respuestas Descartadas")
+                st.caption("Comparativa entre la primera respuesta (descartada) y la decisión final.")
+                
+                # Extraer datos de la primera respuesta vs la final
+                comparison_data = []
+                for _, row in regenerated_df.iterrows():
+                    responses = row['ai_responses']
+                    if len(responses) >= 2:
+                        first_response = responses[0] # Asumimos orden cronológico
+                        last_response = responses[-1]
+                        
+                        # Extraer nivel sugerido de la estructura
+                        # Puede variar según cómo se guardó (dict o objeto)
+                        def get_level(resp_obj):
+                            if isinstance(resp_obj, dict):
+                                sug = resp_obj.get('sugerencia_ia', {})
+                                return sug.get('nivel_sugerido')
+                            return None
+
+                        first_level = get_level(first_response)
+                        final_level = row['nivel_corregido'] # Nivel final validado por humano
+                        
+                        comparison_data.append({
+                            "timestamp": row['timestamp'],
+                            "first_ia_level": first_level,
+                            "final_human_level": final_level,
+                            "attempts": len(responses)
+                        })
+                
+                if comparison_data:
+                    df_comp_regen = pd.DataFrame(comparison_data)
+                    
+                    # Gráfico: ¿Mejoró la IA? (Convergencia)
+                    # Si first_ia_level != final_human_level, hubo discrepancia inicial.
+                    # Si last_ia_level == final_human_level, la regeneración arregló la discrepancia (idealmente).
+                    
+                    st.dataframe(
+                        df_comp_regen,
+                        column_config={
+                            "timestamp": "Fecha",
+                            "first_ia_level": "1ª Sugerencia IA",
+                            "final_human_level": "Decisión Final",
+                            "attempts": "Intentos"
+                        },
+                        use_container_width=True,
+                        hide_index=True
+                    )
+            else:
+                st.info("No hay registros con regeneración de respuestas en el periodo seleccionado.")
 
     st.markdown('<div class="debug-footer">src/components/analytics/triage_analysis.py</div>', unsafe_allow_html=True)

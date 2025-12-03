@@ -24,6 +24,15 @@ El acceso a las funcionalidades del sistema está segmentado por roles, definido
 > [!NOTE]
 > Los roles son configurables en la colección `users`. Actualmente no se han detectado roles personalizados en la base de datos.
 
+### 2.1 Menú de Usuario Global
+Se ha implementado un punto de acceso unificado en la cabecera de la aplicación (esquina superior derecha) para gestionar la sesión y utilidades:
+*   **Acceso:** Botón con icono de usuario y nombre del usuario actual.
+*   **Funcionalidades:**
+    *   **Feedback:** Reporte rápido de errores o sugerencias.
+    *   **Modo Contingencia:** Activación manual del modo offline.
+    *   **Modo Formación:** Activación del modo de entrenamiento.
+    *   **Cerrar Sesión:** (Placeholder) Salida segura del sistema.
+
 ---
 
 ## 3. Ciclo de Vida del Flujo de Paciente
@@ -100,6 +109,12 @@ Mediante el análisis de patrones en los datos históricos y clínicos, el siste
 *   **Riesgo de Caídas:** Basado en edad, medicación y antecedentes.
 *   **Violencia/Abuso:** Detección de inconsistencias entre el relato y las lesiones visibles.
 
+### 4.4 Versionado de Respuestas IA
+El sistema mantiene un historial completo de todas las interacciones con la IA para un mismo episodio de triaje. Esto permite:
+*   **Regeneración:** Si el usuario no está satisfecho con la primera sugerencia, puede solicitar una nueva ("Regenerar Respuesta").
+*   **Trazabilidad:** La respuesta anterior no se borra, sino que se marca como `discarded` (descartada) y se archiva en el historial del registro (`ai_responses`).
+*   **Auditoría:** Se puede analizar posteriormente cuántas veces se regeneró una respuesta y si la segunda opción fue finalmente aceptada o rechazada.
+
 ---
 
 ## 5. Detalle de Módulos
@@ -113,6 +128,14 @@ Mediante el análisis de patrones en los datos históricos y clínicos, el siste
     *   *Continuar:* Ir al paso actual del paciente.
     *   *Reasignar:* Mover al paciente a otra sala (ej. de vuelta a espera).
     *   *Rechazar/Cancelar:* Cerrar el flujo actual.
+
+#### 5.1.1 Recuperación de Sesiones (Borradores)
+El sistema implementa un mecanismo de **auto-guardado y recuperación** para evitar la pérdida de datos ante interrupciones (ej. cierre accidental del navegador, recarga de página).
+
+*   **Auto-Guardado:** Durante el proceso de triaje, cada cambio en los campos clave (motivo, dolor, signos vitales, antecedentes) se guarda automáticamente en un registro con estado `draft`.
+*   **Recuperación:** Al volver a seleccionar al mismo paciente desde la cola de espera, el sistema detecta si existe un borrador activo y restaura automáticamente el estado anterior, notificando al usuario.
+*   **Reinicio:** Si el usuario desea descartar el trabajo previo, puede utilizar la opción **"Reiniciar"** (icono papelera) en la tarjeta del paciente, lo que eliminará el borrador y comenzará un triaje limpio.
+*   **Finalización:** Al validar el triaje, el borrador pasa a estado `completed` y deja de ser recuperable como borrador.
 
 ### 5.2 Módulo de Triaje Inteligente (Core)
 **Objetivo:** Evaluación clínica asistida por IA para determinar urgencia y especialidad.
@@ -234,6 +257,9 @@ Al pulsar "Analizar con IA", el sistema compila toda la información (texto, vit
     *   **Métricas de Calidad:**
         *   *Sobre-Triaje:* Pacientes leves clasificados como graves (Riesgo de ineficiencia).
         *   *Sub-Triaje:* Pacientes graves clasificados como leves (Riesgo de seguridad clínica).
+    *   **Análisis de Regeneración:**
+        *   Tasa de regeneración de respuestas IA.
+        *   Comparativa entre respuestas descartadas y la decisión final.
 *   **Registro de Auditoría:** Tabla detallada con todos los eventos de triaje, permitiendo filtrar por fecha, nivel, usuario, etc.
 *   **Logs Técnicos:**
     *   *Log de Transcripciones:* Revisión de audios y textos generados.
@@ -294,6 +320,45 @@ Antes de activar un prompt, los administradores pueden validarlo en un entorno s
 *   **Alertas Globales:** Sistema centralizado de detección de saturación o bloqueos en cualquier punto de la red.
 *   **Tecnología:** Alimentado por `MultiCenterService` que agrega datos directamente de la base de datos central.
 
+### 5.11 Reporte Clínico Integral (PDF)
+**Objetivo:** Generación de documentación clínica legal y transferible.
+
+El sistema permite generar un informe en formato PDF al finalizar la validación del triaje. Este documento consolida toda la información del episodio:
+*   **Datos Administrativos:** Identificación del paciente, fecha/hora, centro.
+*   **Datos Clínicos:** Motivo de consulta, signos vitales, antecedentes, alergias.
+*   **Análisis IA:** Nivel sugerido, justificación clínica detallada.
+*   **Validación Humana:** Decisión final del profesional, nivel asignado y destino.
+
+**Características Técnicas:**
+*   Generación dinámica con `reportlab`.
+*   Persistencia de datos completa (`patient_snapshot`) en el registro de triaje para garantizar la integridad del informe histórico.
+*   Accesible desde:
+    *   **Formulario de Validación:** Al finalizar el triaje.
+    *   **Tarjeta de Paciente (Borrador):** Si existe un triaje en curso, se puede descargar un informe preliminar desde la lista de selección de pacientes.
+    *   **Historial de Paciente:** Acceso a informes históricos.
+
+### 5.12 Integración IoT (Simulación)
+**Objetivo:** Automatización de la captura de constantes vitales.
+
+El sistema simula la conectividad con dispositivos médicos en el box de triaje para agilizar la entrada de datos y reducir errores de transcripción.
+
+**Funcionalidades:**
+*   **Configuración por Sala:** Asignación de dispositivos específicos (Monitor Multiparamétrico, Tensiómetro, Pulsioxímetro, Termómetro) a cada sala de triaje desde el panel de administración.
+*   **Captura Automática:** Botón "Capturar Signos Vitales" en el formulario de triaje que simula la conexión y lectura de datos.
+*   **Feedback Visual:** Indicadores de conexión y éxito en la transferencia de datos.
+
+**Nota:** Al ser una simulación, los valores generados son aleatorios dentro de rangos fisiológicos realistas, pero la arquitectura está preparada para integrarse con drivers reales en el futuro.
+
+### 5.13 Grupos de Centros (Multi-Tenant)
+**Objetivo:** Agrupación lógica de centros para gestión consolidada.
+
+Permite crear estructuras organizativas superiores (ej: "Zona Norte", "Hospitales Privados") para facilitar la gestión y el análisis de datos en redes de centros.
+
+**Funcionalidades:**
+*   **Gestión de Grupos:** Creación, edición y eliminación de grupos desde `Configuración > Centro > Grupos`.
+*   **Asignación de Centros:** Vinculación de múltiples centros a un grupo.
+*   **Dashboard Filtrado:** El Dashboard Multi-Centro permite filtrar métricas y alertas por grupo específico, facilitando la supervisión regional o temática.
+
 ---
 
 ## 6. Modos Avanzados de Operación
@@ -315,15 +380,78 @@ Garantiza la continuidad operativa ante fallos de conexión a internet o caída 
 
 ---
 
-## 7. Arquitectura Técnica (Resumen)
+## 7. Arquitectura Técnica
 
-*   **Frontend:** Streamlit (Python).
-*   **Backend Logic:** Python (Servicios modulares en `src/services`).
-*   **Base de Datos:** MongoDB (Colecciones: `people`, `patient_flow`, `triage_records`, `config`, `clinical_options`).
-*   **IA:** Google Vertex AI / Gemini API.
-*   **Testing:** Suite de pruebas automatizadas (`pytest`) cubriendo:
-    *   **Unitarios:** Lógica de negocio crítica (PTR, ML).
-    *   **Integración:** Conectividad con base de datos y servicios externos.
+### 7.1 Stack Tecnológico
+*   **Frontend:** Streamlit (Python) - Framework de UI reactiva.
+*   **Backend Logic:** Python 3.10+ (Servicios modulares en `src/services`).
+*   **Base de Datos:** MongoDB 6.0+ (NoSQL Document Store).
+*   **IA Generativa:** Google Vertex AI / Gemini API (Modelos: `gemini-1.5-flash`, `gemini-1.5-pro`).
+*   **Machine Learning:** Scikit-learn (Random Forest para predicciones tabulares).
+*   **Reportes:** ReportLab (Generación programática de PDFs).
+*   **Multimedia:** `streamlit-webrtc` (Procesamiento de audio/video en tiempo real).
+
+### 7.2 Estructura del Proyecto
+El código sigue una arquitectura modular basada en servicios:
+*   `src/ui`: Componentes de interfaz (Vistas y Widgets).
+*   `src/services`: Lógica de negocio (Triaje, Pacientes, IA, Reportes).
+*   `src/db`: Capa de persistencia (Repositorios y Modelos Pydantic).
+*   `src/core`: Utilidades transversales (Configuración, Logging).
+
+### 7.3 Despliegue
+*   **Contenerización:** Docker Ready (Dockerfile optimizado para Streamlit).
+*   **Estado:** Gestión de sesión mediante `st.session_state` (Server-side).
+
+---
+
+## 8. Modelo de Datos (Esquema Alto Nivel)
+
+El sistema utiliza un esquema flexible pero estructurado en MongoDB. Las colecciones principales son:
+
+### 8.1 `people` (Master Patient Index)
+Repositorio único de identidades.
+*   `_id`: UUID.
+*   `nombre`, `apellidos`: Datos demográficos.
+*   `identificaciones`: Array de documentos (DNI, SS, Pasaporte).
+*   `fecha_nacimiento`: Para cálculo de edad.
+
+### 8.2 `triage_records` (Episodios Clínicos)
+Registro central de cada acto de triaje.
+*   `patient_id`: Link a `people`.
+*   `status`: `draft` (borrador), `completed` (validado), `discarded`.
+*   `patient_snapshot`: Copia inmutable de los datos clínicos en el momento del triaje (evita inconsistencias si la ficha del paciente cambia).
+*   `ia_result`: Respuesta completa de la IA (Nivel, Razones, Especialidad).
+*   `ai_responses`: Array histórico de regeneraciones (Auditoría).
+*   `final_priority`: Nivel validado por el humano.
+
+### 8.3 `patient_flow` (Estado Operativo)
+Tabla de estado actual para el orquestador.
+*   `patient_code`: Link a `people`.
+*   `sala_actual`: Código de sala.
+*   `estado`: `EN_ESPERA`, `EN_TRIAJE`, `DERIVADO`.
+*   `timestamp_entrada`: Para cálculo de tiempos de espera.
+
+### 8.4 `config` & `clinical_options`
+Configuración dinámica del sistema.
+*   `config`: Datos del centro, definición de salas, usuarios y roles.
+*   `clinical_options`: Catálogos para desplegables (Alergias, Síntomas, etc.).
+
+---
+
+## 9. Seguridad y Privacidad
+
+### 9.1 Cumplimiento Normativo (GDPR/LOPD)
+*   **Minimización de Datos:** Solo se recolectan los datos estrictamente necesarios para el acto clínico.
+*   **Derecho al Olvido:** Arquitectura preparada para anonimización de registros en `people`.
+
+### 9.2 Auditoría y Trazabilidad
+*   **Logs de Acción:** Cada cambio de estado, validación o edición queda registrado con Timestamp y Usuario responsable.
+*   **Trazabilidad IA:** Se almacena el prompt exacto y la respuesta generada para cada decisión algorítmica, permitiendo auditorías forenses de la IA.
+
+### 9.3 Seguridad de la Información
+*   **Acceso Basado en Roles (RBAC):** Permisos granulares definidos en `permissions_service.py`.
+*   **Gestión de Sesión:** Cookies seguras y expiración de sesión.
+*   **Protección de Datos:** Los datos sensibles (historial médico) se almacenan en colecciones separadas con acceso restringido.
 
 ---
 

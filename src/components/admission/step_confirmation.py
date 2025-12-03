@@ -214,3 +214,5 @@ def _reset_admission_flow():
     for key in keys_to_clear:
         if key in st.session_state:
             del st.session_state[key]
+
+            st.markdown('<div class="debug-footer">src/components/admission/step_confirmation.py</div>', unsafe_allow_html=True)

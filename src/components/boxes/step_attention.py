@@ -282,3 +282,5 @@ def _solicitar_ingreso(patient_code, sala_destino, data, session_key):
             
     except Exception as e:
         st.error(f"Error al solicitar ingreso: {e}")
+
+        st.markdown('<div class="debug-footer">src/components/boxes/step_attention.py</div>', unsafe_allow_html=True)

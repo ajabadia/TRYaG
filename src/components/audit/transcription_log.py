@@ -132,3 +132,5 @@ def render_transcription_log(df_trans_view, start_date, end_date, key_prefix="tr
                 except IndexError:
                     st.session_state[f'{key_prefix}_selected_trans_indices'] = []
                     st.rerun()
+
+                    st.markdown('<div class="debug-footer">src/components/audit/transcription_log.py</div>', unsafe_allow_html=True)

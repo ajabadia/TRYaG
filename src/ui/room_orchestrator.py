@@ -45,3 +45,5 @@ def mostrar_orquestador_salas():
     with tab_notifications:
         from services.notification_service import render_notifications_panel
         render_notifications_panel(user_id="admin")
+
+        st.markdown('<div class="debug-footer">src/ui/room_orchestrator.py</div>', unsafe_allow_html=True)

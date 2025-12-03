@@ -26,3 +26,5 @@ def render_temp_file_log_view():
         df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
     st.subheader("📁 Registro de Ficheros (MongoDB - Sin filtros)")
     st.dataframe(df)
+
+    st.markdown('<div class="debug-footer">src/components/audit/temp_file_log_view.py</div>', unsafe_allow_html=True)

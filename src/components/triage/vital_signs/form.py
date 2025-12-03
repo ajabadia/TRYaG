@@ -16,7 +16,52 @@ def render_vital_signs_form(age: int = 40):
     # CSS para Grid Responsivo
     # Cargar CSS externo
     from utils.ui_utils import load_css
+    from utils.ui_utils import load_css
     load_css("src/assets/css/components/forms.css")
+
+    # --- SIMULACIÓN IOT ---
+    import time
+    import random
+    from db.repositories.salas import get_sala
+
+    # Obtener sala actual para verificar dispositivos
+    sala_code = st.session_state.get("sala_seleccionada")
+    devices = []
+    if sala_code:
+        # Si es un objeto/dict, obtener código
+        if isinstance(sala_code, dict):
+            sala_code = sala_code.get("codigo")
+        
+        sala = get_sala(sala_code)
+        if sala:
+            devices = sala.get("devices", [])
+
+    # Botón de Captura (solo si hay dispositivos)
+    if devices:
+        col_iot, _ = st.columns([1, 3])
+        with col_iot:
+            if st.button("📡 Capturar Signos Vitales", help=f"Dispositivos conectados: {', '.join(devices)}"):
+                with st.spinner("Conectando con dispositivos médicos..."):
+                    time.sleep(random.uniform(1.5, 3.0)) # Simular delay conexión
+                    
+                    # Generar valores realistas
+                    if "Monitor Multiparamétrico" in devices or "Pulsioxímetro" in devices:
+                        if 'vital_signs' not in st.session_state.datos_paciente: st.session_state.datos_paciente['vital_signs'] = {}
+                        st.session_state.datos_paciente['vital_signs']['fc'] = float(random.randint(60, 100))
+                        st.session_state.datos_paciente['vital_signs']['spo2'] = float(random.randint(95, 99))
+                    
+                    if "Monitor Multiparamétrico" in devices or "Tensiómetro Digital" in devices:
+                        if 'vital_signs' not in st.session_state.datos_paciente: st.session_state.datos_paciente['vital_signs'] = {}
+                        st.session_state.datos_paciente['vital_signs']['pas'] = float(random.randint(110, 140))
+                        st.session_state.datos_paciente['vital_signs']['pad'] = float(random.randint(70, 90))
+                        
+                    if "Monitor Multiparamétrico" in devices or "Termómetro Digital" in devices:
+                        if 'vital_signs' not in st.session_state.datos_paciente: st.session_state.datos_paciente['vital_signs'] = {}
+                        st.session_state.datos_paciente['vital_signs']['temp'] = round(random.uniform(36.0, 37.5), 1)
+                        
+                    st.success(f"Datos recibidos de: {', '.join(devices)}")
+                    st.rerun()
+    # ----------------------
 
     with st.container(border=True):
         st.markdown('<span class="vital-signs-grid" style="display:none"></span>', unsafe_allow_html=True)

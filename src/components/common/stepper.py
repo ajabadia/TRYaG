@@ -95,3 +95,5 @@ def render_horizontal_stepper(steps: list[str], current_step: int):
     
     # Línea separadora sutil
     st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px; border: 0; border-top: 1px solid #eee;'/>", unsafe_allow_html=True)
+
+    st.markdown('<div class="debug-footer">src/components/common/stepper.py</div>', unsafe_allow_html=True)

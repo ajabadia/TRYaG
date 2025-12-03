@@ -38,3 +38,5 @@ def render_audit_table(df_display, has_selection):
 
     if records_to_show < total_records:
         st.button("Cargar más", on_click=lambda: st.session_state.update(num_audit_records_to_show=st.session_state.num_audit_records_to_show + PAGE_SIZE), use_container_width=True)
+
+        st.markdown('<div class="debug-footer">src/components/audit/table.py</div>', unsafe_allow_html=True)

@@ -90,6 +90,16 @@ def finalize_triage_draft(triage_id: str, final_data: Dict[str, Any]):
     final_data["timestamp"] = datetime.now() # Actualizar fecha al finalizar
     repo.update(triage_id, final_data)
 
+def discard_draft(patient_id: str):
+    """Descarta (invalida) el borrador activo de un paciente."""
+    repo = get_triage_repository()
+    draft = repo.find_one({"patient_id": patient_id, "status": "draft"})
+    if draft:
+        # Opción A: Soft delete (cambiar estado) - Preferido para auditoría
+        repo.update(str(draft["_id"]), {"status": "discarded", "discarded_at": datetime.now()})
+        # Opción B: Hard delete
+        # repo.delete(str(draft["_id"]))
+
 def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, prompt_content=None, triage_result=None, antecedentes=None, alergias=None, gender=None, criterio_geriatrico=False, criterio_inmunodeprimido=False, criterio_inmunodeprimido_det=None, user_id="system", extended_history=None, nursing_assessment=None):
     """
     Llama al modelo Gemini de Google para obtener una sugerencia de triaje.
@@ -235,5 +245,23 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
     
     # Serializar para devolver al frontend (que espera dicts, no pydantic models directamente)
     response_data["razones"] = [r.model_dump() for r in parsed_reasons]
+
+    # --- VERSIONADO DE RESPUESTAS (PHASE 8.7) ---
+    # Crear objeto AIResponse
+    new_ai_response = AIResponse(
+        timestamp=datetime.now(),
+        sugerencia_ia=response_data,
+        razones_parsed=parsed_reasons,
+        model_version=version_id,
+        status="accepted" # Por defecto la última es la aceptada (activa) hasta que se regenere
+    )
+
+    # Si hay un triage_id activo (estamos editando un borrador), actualizar historial
+    # Nota: llamar_modelo_gemini es stateless, pero si se usa en contexto de un record existente,
+    # el caller debería encargarse de guardar. Sin embargo, aquí devolvemos los datos para que el caller (input_form)
+    # actualice el estado.
+    
+    # Inyectamos el objeto AIResponse serializado en la respuesta para que input_form lo pueda usar
+    response_data["_ai_response_object"] = new_ai_response.model_dump(mode='json')
 
     return response_data, final_prompt

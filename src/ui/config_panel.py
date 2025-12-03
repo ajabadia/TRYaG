@@ -6,7 +6,7 @@ Panel de configuración de la aplicación.
 Orquesta las pestañas principales delegando en módulos específicos.
 """
 import streamlit as st
-from ui.components.common.tools_panel import render_tools_panel
+
 from ui.config.config_loader import load_general_config, load_centro_config
 from ui.config.general_tab import render_general_tab
 from ui.config.centro_tab import render_centro_tab
@@ -16,9 +16,6 @@ def mostrar_panel_configuracion():
     """Muestra el panel de configuración con pestañas modulares."""
     
     st.header("⚙️ Configuración")
-    
-    # Panel de Herramientas
-    render_tools_panel("Configuración", show_pdf=False)
 
     # Cargar configuración en session_state (una sola vez)
     if 'general_config' not in st.session_state:

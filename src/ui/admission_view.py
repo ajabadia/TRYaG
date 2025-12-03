@@ -20,7 +20,7 @@ def _get_username():
     return user.get("username", "unknown") if user else "unknown"
 
 
-from ui.components.common.tools_panel import render_tools_panel
+
 
 def mostrar_admision():
     """
@@ -49,8 +49,7 @@ def mostrar_admision():
     
     # --- PASO 0: SELECCIÓN DE SALA DE ADMISIÓN ---
     if st.session_state.admission_step == 0:
-        # Panel de Herramientas
-        render_tools_panel("Admisión", show_pdf=False)
+        # Panel de Herramientas (Ahora en cabecera)
 
         sala_selected = render_step_sala_admision()
         

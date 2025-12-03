@@ -254,3 +254,5 @@ def render_usuarios_manager():
                 with cols[i % 2]:
                     render_user_card(user)
             st.divider()
+
+            st.markdown('<div class="debug-footer">src/ui/config/usuarios_manager.py</div>', unsafe_allow_html=True)

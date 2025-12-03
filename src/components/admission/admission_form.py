@@ -395,3 +395,5 @@ def render_admission_form():
             st.rerun()
 
 # Fin del archivo
+
+st.markdown('<div class="debug-footer">src/components/admission/admission_form.py</div>', unsafe_allow_html=True)

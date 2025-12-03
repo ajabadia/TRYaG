@@ -213,3 +213,5 @@ def render_step_final_disposition():
                 st.error("Error al reasignar.")
 
     return True
+
+    st.markdown('<div class="debug-footer">src/components/triage/step_final_disposition.py</div>', unsafe_allow_html=True)

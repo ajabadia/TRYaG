@@ -58,6 +58,24 @@ def edit_sala_dialog(sala: dict, centro_id: str):
         capacidad = st.number_input("Capacidad", min_value=1, max_value=500, value=sala.get('capacidad', 1))
         activa = st.checkbox("Activa", value=sala.get('activa', True))
         
+        # IoT Devices Configuration
+        available_devices = [
+            "Monitor Multiparamétrico",
+            "Tensiómetro Digital",
+            "Pulsioxímetro",
+            "Termómetro Digital"
+        ]
+        current_devices = sala.get('devices', [])
+        # Ensure current devices are in available list to avoid errors
+        current_devices = [d for d in current_devices if d in available_devices]
+        
+        devices = st.multiselect(
+            "Dispositivos IoT Asignados",
+            options=available_devices,
+            default=current_devices,
+            help="Seleccione los dispositivos médicos conectados en esta sala para la captura automática."
+        )
+        
         if st.form_submit_button("💾 Guardar Cambios"):
             if is_new and not codigo:
                 st.error("El código es obligatorio")
@@ -71,6 +89,7 @@ def edit_sala_dialog(sala: dict, centro_id: str):
                 "subtipo": subtipo,
                 "capacidad": capacidad,
                 "activa": activa,
+                "devices": devices,
                 "updated_at": datetime.now()
             }
             # Preservar campos extra si existen (migración)

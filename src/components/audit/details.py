@@ -65,3 +65,5 @@ def render_audit_details(selected_records, df_files):
                                     'md5': file_row['file_md5']
                                 }]
                                 open_media_viewer(single_file_list, start_index=0, key=f"view_btn_{file_row['file_md5']}")
+
+                                st.markdown('<div class="debug-footer">src/components/audit/details.py</div>', unsafe_allow_html=True)

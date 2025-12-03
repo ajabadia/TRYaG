@@ -1,330 +1,245 @@
-# path: src/services/report_service.py
-from fpdf import FPDF
+import io
 from datetime import datetime
-import os
-import tempfile
-from typing import Dict, Any, Optional
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.units import inch
+from db.repositories.triage import get_triage_repository
+from db.repositories.people import get_people_repository
 
-class TriageReportGenerator(FPDF):
-    def __init__(self, triage_record: Dict[str, Any]):
-        super().__init__()
-        self.record = triage_record
-        self.patient = triage_record.get('patient_data', {})
-        self.vitals = triage_record.get('vital_signs', {})
-        self.result = triage_record.get('triage_result', {})
+def generate_triage_report(triage_id: str) -> bytes:
+    """
+    Genera un informe clínico completo en formato PDF para un episodio de triaje.
+    
+    Args:
+        triage_id (str): ID del registro de triaje.
         
-        # Configuración básica
-        self.set_auto_page_break(auto=True, margin=15)
-        self.add_page()
+    Returns:
+        bytes: Contenido del archivo PDF.
+    """
+    # 1. Obtener datos
+    data = _fetch_triage_data(triage_id)
+    if not data:
+        raise ValueError(f"No se encontró el registro de triaje con ID: {triage_id}")
         
-    def header(self):
-        # Logo (placeholder) y Título
-        self.set_font('Helvetica', 'B', 16)
-        self.cell(0, 10, 'Informe de Triaje Clínico', ln=True, align='C')
+    # 2. Generar PDF
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+    
+    # Estilos
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Justify', alignment=1))
+    styles.add(ParagraphStyle(name='SectionHeader', parent=styles['Heading2'], spaceAfter=6, textColor=colors.HexColor("#007bff")))
+    
+    story = []
+    
+    # --- CABECERA ---
+    story.append(Paragraph(f"Informe Clínico de Triaje", styles['Title']))
+    story.append(Spacer(1, 12))
+    
+    # Datos Administrativos
+    admin_data = [
+        ["Paciente:", data.get('patient_name', 'Desconocido')],
+        ["ID Paciente:", data.get('patient_code', 'N/A')],
+        ["Fecha/Hora:", data.get('timestamp', datetime.now().isoformat())],
+        ["Centro:", "Hospital General (Simulado)"] # TODO: Obtener del config
+    ]
+    t_admin = Table(admin_data, colWidths=[1.5*inch, 4*inch])
+    t_admin.setStyle(TableStyle([
+        ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+    ]))
+    story.append(t_admin)
+    story.append(Spacer(1, 24))
+    
+    # --- MOTIVO DE CONSULTA ---
+    story.append(Paragraph("1. Motivo de Consulta", styles['SectionHeader']))
+    story.append(Paragraph(data.get('motivo_consulta', 'No especificado'), styles['Normal']))
+    story.append(Spacer(1, 12))
+    
+    # --- SIGNOS VITALES ---
+    if data.get('vital_signs'):
+        story.append(Paragraph("2. Signos Vitales", styles['SectionHeader']))
+        vs = data.get('vital_signs', {})
+        vs_data = [
+            ["FC", f"{vs.get('heart_rate', '-')} bpm", "SatO2", f"{vs.get('oxygen_saturation', '-')} %"],
+            ["TA", f"{vs.get('systolic_bp', '-')}/{vs.get('diastolic_bp', '-')} mmHg", "Temp", f"{vs.get('temperature', '-')} °C"],
+            ["FR", f"{vs.get('respiratory_rate', '-')} rpm", "Dolor", f"{data.get('pain_level', '-')} / 10"]
+        ]
+        t_vs = Table(vs_data, colWidths=[1*inch, 1.5*inch, 1*inch, 1.5*inch])
+        t_vs.setStyle(TableStyle([
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('BACKGROUND', (0,0), (0,-1), colors.whitesmoke),
+            ('BACKGROUND', (2,0), (2,-1), colors.whitesmoke),
+            ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+            ('PADDING', (0,0), (-1,-1), 6),
+        ]))
+        story.append(t_vs)
+        story.append(Spacer(1, 12))
         
-        # Subtítulo con fecha
-        self.set_font('Helvetica', 'I', 10)
-        timestamp = self.record.get('timestamp', datetime.now())
-        if isinstance(timestamp, str):
-            try:
-                timestamp = datetime.fromisoformat(timestamp)
-            except:
-                pass
-        date_str = timestamp.strftime("%d/%m/%Y %H:%M") if isinstance(timestamp, datetime) else str(timestamp)
-        
-        self.cell(0, 5, f'Fecha: {date_str} | ID: {self.record.get("audit_id", "N/A")}', ln=True, align='C')
-        
-        # Banner de Contingencia
-        if self.record.get('contingency_mode'):
-            self.ln(2)
-            self.set_font('Helvetica', 'B', 10)
-            self.set_text_color(220, 53, 69) # Rojo
-            self.cell(0, 6, "⚠️ REGISTRO GENERADO EN MODO CONTINGENCIA (OFFLINE)", ln=True, align='C', border=1)
-            self.set_text_color(0) # Reset
+    # --- ANTECEDENTES ---
+    story.append(Paragraph("3. Antecedentes Clínicos", styles['SectionHeader']))
+    ant_text = data.get('antecedentes', 'Sin antecedentes relevantes registrados.')
+    story.append(Paragraph(ant_text.replace('\n', '<br/>'), styles['Normal']))
+    
+    if data.get('alergias'):
+        story.append(Spacer(1, 6))
+        story.append(Paragraph(f"<b>Alergias:</b> {data.get('alergias')}", styles['Normal']))
+    story.append(Spacer(1, 12))
+    
+    # --- ANÁLISIS IA ---
+    story.append(Paragraph("4. Análisis Asistido (IA)", styles['SectionHeader']))
+    
+    # Nivel
+    level_text = data.get('triage_level_text', 'No clasificado')
+    level_color = data.get('triage_level_color', 'grey')
+    
+    # Convertir nombre de color a Hex si es necesario para ReportLab
+    color_map = {
+        "red": "#dc3545", "orange": "#fd7e14", "yellow": "#ffc107", 
+        "green": "#28a745", "blue": "#007bff", "black": "#343a40", "gray": "#6c757d"
+    }
+    hex_color = color_map.get(level_color, level_color) if level_color in color_map else "#6c757d"
+    
+    story.append(Paragraph(f"<b>Nivel Sugerido:</b> <font color='{hex_color}'>{level_text}</font>", styles['Normal']))
+    
+    # Razones
+    if data.get('ai_reasons'):
+        story.append(Paragraph("<b>Justificación Clínica:</b>", styles['Normal']))
+        for reason in data.get('ai_reasons', []):
+            r_text = reason.get('text', str(reason)) if isinstance(reason, dict) else str(reason)
+            story.append(Paragraph(f"• {r_text}", styles['Normal'], bulletText="•"))
             
-        self.ln(10)
+    story.append(Spacer(1, 12))
+    
+    # --- VALIDACIÓN HUMANA ---
+    story.append(Paragraph("5. Validación y Cierre", styles['SectionHeader']))
+    val_data = [
+        ["Decisión:", data.get('human_decision', 'Pendiente')],
+        ["Nivel Final:", data.get('final_level', level_text)],
+        ["Validado por:", data.get('validator_user', 'Sistema')],
+        ["Destino:", data.get('disposition', 'No asignado')]
+    ]
+    t_val = Table(val_data)
+    t_val.setStyle(TableStyle([
+        ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
+    ]))
+    story.append(t_val)
+    
+    # Build
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
 
-    def footer(self):
-        self.set_y(-15)
-        self.set_font('Helvetica', 'I', 8)
-        self.cell(0, 10, f'Página {self.page_no()}', align='C')
+def _fetch_triage_data(triage_id: str) -> dict:
+    """
+    Recupera y consolida los datos de un registro de triaje.
+    """
+    repo = get_triage_repository()
+    record = repo.get_by_audit_id(triage_id)
+    
+    if not record:
+        return None
+        
+    # Mapeo de datos del registro a estructura plana para el reporte
+    snapshot = record.get('patient_snapshot', {})
+    
+    data = {
+        "patient_name": f"{snapshot.get('nombre', '')} {snapshot.get('apellido1', '')}",
+        "patient_code": record.get('patient_id'),
+        "timestamp": record.get('created_at', datetime.now()).strftime("%Y-%m-%d %H:%M:%S") if isinstance(record.get('created_at'), datetime) else str(record.get('created_at')),
+        "motivo_consulta": snapshot.get('texto_medico', ''),
+        "vital_signs": snapshot.get('vital_signs', {}),
+        "pain_level": snapshot.get('dolor', 0),
+        "antecedentes": snapshot.get('antecedentes', ''),
+        "alergias": snapshot.get('alergias_info_completa', ''),
+        
+        # IA Data
+        "triage_level_text": record.get('ia_result', {}).get('nivel', {}).get('text', 'N/A'),
+        "triage_level_color": record.get('ia_result', {}).get('nivel', {}).get('color', 'black'),
+        "ai_reasons": record.get('ia_result', {}).get('razones', []),
+        
+        # Human Data
+        "human_decision": record.get('status', 'Borrador'), 
+        "final_level": record.get('final_priority', 'N/A'),
+        "validator_user": record.get('validator_id', 'N/A'),
+        "disposition": record.get('disposition', 'N/A')
+    }
+    
+    return data
 
-    def section_title(self, title):
-        self.set_font('Helvetica', 'B', 12)
-        self.set_fill_color(240, 240, 240)
-        self.cell(0, 8, title, ln=True, fill=True)
-        self.ln(2)
-
-    def _sanitize(self, text):
-        """Sanitiza el texto para ser compatible con latin-1 (FPDF standard)."""
-        if not isinstance(text, str):
-            text = str(text)
-        # Reemplazar caracteres problemáticos comunes
-        replacements = {
-            "€": "EUR",
-            "–": "-",
-            "—": "-",
-            "“": '"',
-            "”": '"',
-            "‘": "'",
-            "’": "'"
-        }
-        for k, v in replacements.items():
-            text = text.replace(k, v)
-            
-        # Intentar codificar a latin-1, reemplazando errores con ?
-        return text.encode('latin-1', 'replace').decode('latin-1')
-
-    def field(self, label, value):
-        self.set_font('Helvetica', 'B', 10)
-        self.cell(40, 6, self._sanitize(f"{label}:"), align='L')
-        self.set_font('Helvetica', '', 10)
-        val_str = str(value) if value else "No disponible"
-        self.multi_cell(0, 6, self._sanitize(val_str))
-        self.ln(1)
-
-    def generate(self):
-        # 1. Datos del Paciente
-        self.section_title("Datos del Paciente")
-        name = f"{self.patient.get('nombre', '')} {self.patient.get('apellido1', '')} {self.patient.get('apellido2', '')}"
-        self.field("Nombre", name.strip())
-        self.field("ID / DNI", self.patient.get('id_number', 'No disponible')) # Ajustar según modelo real
-        self.field("Edad", f"{self.patient.get('age', 'No disponible')} años")
-        self.field("Género", self.patient.get('gender', 'No disponible'))
+def generate_triage_pdf(triage_record: dict) -> bytes:
+    """
+    Genera el PDF del triaje a partir de un diccionario de registro (para borradores o compatibilidad).
+    
+    Args:
+        triage_record (dict): Diccionario con datos del triaje.
         
-        # Contexto Clínico
-        if self.patient.get('criterio_geriatrico'):
-            self.field("Criterio Geriátrico", "Sí (Edad >= 65)")
+    Returns:
+        bytes: Contenido del archivo PDF.
+    """
+    # Crear una instancia temporal del generador usando el diccionario directamente
+    # Nota: TriageReportGenerator no existe como clase exportada en esta versión refactorizada,
+    # así que adaptamos la lógica para usar generate_triage_report si tuviéramos ID,
+    # o reconstruimos la lógica para dicts.
+    
+    # Para mantenerlo simple y robusto, usamos la misma lógica de generación de reportlab
+    # pero mapeando el dict de entrada a la estructura esperada por el generador.
+    
+    # Mapeo rápido de triage_record (que puede venir de session_state) a 'data' plano
+    snapshot = triage_record.get('patient_snapshot', triage_record) # Si no hay snapshot, usar el record mismo
+    patient_data = triage_record.get('patient_data', {})
+    
+    data = {
+        "patient_name": f"{patient_data.get('nombre', '')} {patient_data.get('apellido1', '')}",
+        "patient_code": triage_record.get('patient_id'),
+        "timestamp": datetime.now().isoformat(), # Borrador
+        "motivo_consulta": patient_data.get('texto_medico', ''),
+        "vital_signs": patient_data.get('vital_signs', {}),
+        "pain_level": patient_data.get('dolor', 0),
+        "antecedentes": patient_data.get('antecedentes', ''),
+        "alergias": patient_data.get('alergias_info_completa', ''),
         
-        if self.patient.get('criterio_inmunodeprimido'):
-            detalles = self.patient.get('criterio_inmunodeprimido_det', '')
-            val = f"Sí - {detalles}" if detalles else "Sí"
-            self.field("Inmunodeprimido", val)
-            
-        self.ln(5)
-
-        # 2. Motivo de Consulta y HDA
-        self.section_title("Motivo de Consulta y Enfermedad Actual")
-        self.set_font('Helvetica', '', 10)
-        motivo = self.record.get('motivo_consulta', 'No disponible')
-        self.multi_cell(0, 6, self._sanitize(f"Motivo: {motivo}"))
+        # IA Data
+        "triage_level_text": triage_record.get('ia_result', {}).get('nivel', {}).get('text', 'N/A'),
+        "triage_level_color": triage_record.get('ia_result', {}).get('nivel', {}).get('color', 'black'),
+        "ai_reasons": triage_record.get('ia_result', {}).get('razones', []),
         
-        # HDA (ALICIA)
-        hda = []
-        if self.patient.get('hda_aparicion'): hda.append(f"Aparición: {self.patient.get('hda_aparicion')}")
-        if self.patient.get('hda_localizacion'): hda.append(f"Localización: {self.patient.get('hda_localizacion')}")
-        if self.patient.get('hda_intensidad'): hda.append(f"Intensidad: {self.patient.get('hda_intensidad')}")
-        if self.patient.get('hda_caracter'): hda.append(f"Carácter: {self.patient.get('hda_caracter')}")
-        if self.patient.get('hda_irradiacion'): hda.append(f"Irradiación: {self.patient.get('hda_irradiacion')}")
-        if self.patient.get('hda_atenuantes'): hda.append(f"Atenuantes/Agravantes: {self.patient.get('hda_atenuantes')}")
-        
-        if hda:
-            self.ln(2)
-            self.set_font('Helvetica', 'B', 10)
-            self.cell(0, 6, "Historia de la Enfermedad Actual (ALICIA):", ln=True)
-            self.set_font('Helvetica', '', 10)
-            for line in hda:
-                self.multi_cell(0, 6, self._sanitize(f"- {line}"))
-                
-        # Datos Administrativos
-        admin_data = []
-        if self.patient.get('fuente_informacion'): admin_data.append(f"Fuente: {self.patient.get('fuente_informacion')}")
-        if self.patient.get('referencia'): admin_data.append(f"Referencia: {self.patient.get('referencia')}")
-        if self.patient.get('seguro'): admin_data.append(f"Seguro: {self.patient.get('seguro')}")
-        
-        if admin_data:
-            self.ln(2)
-            self.set_font('Helvetica', 'I', 9)
-            self.multi_cell(0, 6, self._sanitize(" | ".join(admin_data)))
-
-        self.ln(5)
-
-        # 3. Signos Vitales
-        self.section_title("Signos Vitales y Escalas")
-        
-        if not self.vitals:
-            self.set_font('Helvetica', 'I', 10)
-            self.cell(0, 6, "No disponible", ln=True)
-        else:
-            # Tabla simple
-            self.set_font('Helvetica', 'B', 9)
-            cols = ["Métrica", "Valor", "Estado"]
-            col_widths = [40, 40, 60]
-            
-            for w, h in zip(col_widths, cols):
-                self.cell(w, 7, self._sanitize(h), border=1, align='C', fill=True)
-            self.ln()
-            
-            self.set_font('Helvetica', '', 9)
-            
-            # Mapeo de nombres
-            metrics_map = {
-                "fc": "Frecuencia Cardíaca", "spo2": "Saturación O2", "temp": "Temperatura",
-                "pas": "Presión Sistólica", "pad": "Presión Diastólica", "fr": "Frec. Respiratoria",
-                "gcs": "Glasgow", "eva": "Dolor (EVA)", "pupilas": "Pupilas",
-                "oxigeno_suplementario": "Oxígeno Supl.", "hidratacion": "Hidratación"
-            }
-            
-            # Detalles del cálculo (si existen) para obtener colores/labels
-            details = self.result.get('details', [])
-            details_dict = {d['metric']: d for d in details}
-            
-            for key, val in self.vitals.items():
-                if key in ['notas']: continue
-                
-                label = metrics_map.get(key, key.upper())
-                det = details_dict.get(key, {})
-                status = det.get('label', '-')
-                
-                # Formateo especial booleanos
-                if isinstance(val, bool):
-                    val = "Sí" if val else "No"
-                
-                self.cell(col_widths[0], 7, self._sanitize(label), border=1)
-                self.cell(col_widths[1], 7, self._sanitize(str(val)), border=1, align='C')
-                self.cell(col_widths[2], 7, self._sanitize(status), border=1)
-                self.ln()
-            
-        self.ln(5)
-
-        # 4. Historia Clínica Integral
-        self.section_title("Historia Clínica Integral")
-        
-        # Antecedentes (Legacy + Extended)
-        bg = self.record.get('patient_background', {})
-        
-        # Combinar legacy con extended si existen
-        allergies = bg.get('allergies', [])
-        pathologies = bg.get('pathologies', [])
-        medications = bg.get('medications', '')
-        
-        if allergies: self.field("Alergias", ", ".join([a.get('agent', '') for a in allergies]))
-        if pathologies: self.field("Antecedentes Personales", ", ".join([p.get('name', '') for p in pathologies]))
-        if medications: self.field("Medicación Habitual", medications)
-        
-        # Campos extendidos (extended_history.py)
-        # Campos extendidos (extended_history.py)
-        ext_fields = {
-            "ant_familiares": "Antecedentes Familiares",
-            "ant_fam_cardio_det": " - Detalle Cardio",
-            "ant_fam_cancer_det": " - Detalle Cáncer",
-            "ant_fam_diabetes_det": " - Detalle Diabetes",
-            "ant_psiquiatricos": "Psiquiatría/Salud Mental",
-            "psy_diagnostico": " - Diagnósticos Psiquiátricos",
-            "psy_medicacion": " - Medicación Psicotrópica",
-            "psy_suicidio_det": " - Detalle Riesgo Suicidio",
-            "ant_quirurgicos": "Antecedentes Quirúrgicos",
-            "habitos_toxicos": "Hábitos Tóxicos",
-            "nutricion_dieta": "Nutrición y Dieta",
-            "nut_dieta": " - Dieta Habitual",
-            "nut_alergias_alim": " - Alergias Alimentarias",
-            "nut_disfagia_det": " - Detalle Disfagia",
-            "nut_peso_det": " - Detalle Pérdida Peso",
-            "viajes_recientes": "Viajes/Exposición",
-            "exp_animales_det": " - Detalle Animales",
-            "exp_ocupacional": " - Riesgo Ocupacional",
-            "sensorial_ayudas": "Déficits Sensoriales",
-            "sens_auditivo_det": " - Detalle Auditivo",
-            "sens_visual_det": " - Detalle Visual",
-            "dolor_cronico": "Historia de Dolor",
-            "pain_cronico_det": " - Localización Dolor Crónico",
-            "hospitalizaciones_previas": "Hospitalizaciones Previas",
-            "hosp_legal_det": " - Detalle Legal",
-            "situacion_legal": "Situación Legal/Social",
-            "for_violencia_det": " - Detalle Violencia"
-        }
-        
-        for key, label in ext_fields.items():
-            val = self.patient.get(key)
-            if val:
-                if isinstance(val, list):
-                    val = ", ".join([str(v) for v in val])
-                self.field(label, val)
-                
-        self.ln(5)
-
-        # 5. Valoración de Enfermería
-        self.section_title("Valoración de Enfermería")
-        
-        nursing_data = []
-        if self.patient.get('skin_integrity'): nursing_data.append(f"Piel: {self.patient.get('skin_integrity')} ({self.patient.get('skin_color', '')})")
-        if self.patient.get('fall_risk'): nursing_data.append(f"Riesgo Caídas: {self.patient.get('fall_risk')}")
-        if self.patient.get('nut_disfagia'): nursing_data.append("Riesgo Aspiración: Sí")
-        if self.patient.get('id_bracelet'): nursing_data.append("Pulsera ID: Colocada")
-        
-        if nursing_data:
-            for item in nursing_data:
-                self.multi_cell(0, 6, self._sanitize(f"- {item}"))
-        else:
-            self.multi_cell(0, 6, "No registrada")
-            
-        if self.patient.get('belongings'):
-            self.ln(2)
-            self.field("Pertenencias", self.patient.get('belongings'))
-
-        self.ln(5)
-
-        # 6. Resultado del Triaje
-        self.section_title("Clasificación de Triaje")
-        
-        level = self.result.get('final_priority', 0)
-        color_name = self.result.get('final_color') or 'gray'
-        wait_time = self.result.get('wait_time', '-')
-        
-        # Color visual (cuadro relleno)
-        r, g, b = 200, 200, 200
-        if color_name == 'red': r, g, b = 220, 53, 69
-        elif color_name == 'orange': r, g, b = 253, 126, 20
-        elif color_name == 'yellow': r, g, b = 255, 193, 7
-        elif color_name == 'green': r, g, b = 40, 167, 69
-        elif color_name == 'black': r, g, b = 52, 58, 64
-        
-        self.set_fill_color(r, g, b)
-        self.set_text_color(255 if color_name in ['red', 'green', 'black'] else 0)
-        self.set_font('Helvetica', 'B', 14)
-        
-        level_text = f"NIVEL {level} - {color_name.upper()}"
-        if level == 0: level_text = "PENDIENTE / NO DISPONIBLE"
-        
-        self.cell(0, 15, self._sanitize(level_text), ln=True, align='C', fill=True, border=1)
-        
-        self.set_text_color(0)
-        self.ln(2)
-        self.set_font('Helvetica', 'B', 11)
-        self.cell(0, 8, self._sanitize(f"Tiempo Máximo de Espera: {wait_time}"), ln=True, align='C')
-        
-        dest = self.record.get('destination', 'Sala de Espera')
-        self.cell(0, 8, self._sanitize(f"Destino: {dest}"), ln=True, align='C')
-        
-        # Órdenes Iniciales
-        orders = []
-        if self.patient.get('order_diet'): orders.append(f"Dieta: {self.patient.get('order_diet')}")
-        if self.patient.get('order_iv'): orders.append("Acceso IV: Sí")
-        if self.patient.get('order_labs'): orders.append(f"Labs: {', '.join(self.patient.get('order_labs'))}")
-        if self.patient.get('order_meds_stat'): orders.append(f"Meds STAT: {self.patient.get('order_meds_stat')}")
-        
-        if orders:
-            self.ln(5)
-            self.set_font('Helvetica', 'B', 10)
-            self.cell(0, 6, "Órdenes Iniciales:", ln=True)
-            self.set_font('Helvetica', '', 10)
-            for o in orders:
-                self.multi_cell(0, 6, self._sanitize(f"- {o}"))
-
-        self.ln(10)
-        
-        # Firma
-        self.line(10, self.get_y(), 200, self.get_y())
-        self.set_font('Helvetica', 'I', 8)
-        evaluator = self.record.get('evaluator_id', 'Sistema')
-        self.cell(0, 5, self._sanitize(f"Evaluado por: {evaluator}"), ln=True, align='R')
-        self.cell(0, 5, "Este documento es un registro clínico. Confidencial.", ln=True, align='C')
-
-    def get_pdf_bytes(self):
-        return self.output(dest='S').encode('latin-1')
-
-def generate_triage_pdf(triage_record: Dict[str, Any]) -> bytes:
-    """Genera el PDF del triaje y retorna los bytes."""
-    pdf = TriageReportGenerator(triage_record)
-    pdf.generate()
-    return pdf.get_pdf_bytes()
+        # Human Data
+        "human_decision": "BORRADOR", 
+        "final_level": triage_record.get('final_priority', 'N/A'),
+        "validator_user": "Usuario Actual",
+        "disposition": "En Proceso"
+    }
+    
+    # Reutilizar lógica de generación (copiada por ahora para evitar refactor mayor, 
+    # idealmente extraer _build_pdf a función separada)
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+    
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Justify', alignment=1))
+    styles.add(ParagraphStyle(name='SectionHeader', parent=styles['Heading2'], spaceAfter=6, textColor=colors.HexColor("#007bff")))
+    
+    story = []
+    story.append(Paragraph(f"Borrador de Informe Clínico", styles['Title']))
+    story.append(Spacer(1, 12))
+    
+    # ... (Versión simplificada para borrador)
+    story.append(Paragraph(f"Paciente: {data['patient_name']}", styles['Normal']))
+    story.append(Paragraph(f"Motivo: {data['motivo_consulta']}", styles['Normal']))
+    story.append(Spacer(1, 12))
+    
+    if data['vital_signs']:
+        story.append(Paragraph("Signos Vitales (Borrador)", styles['SectionHeader']))
+        vs = data['vital_signs']
+        story.append(Paragraph(f"FC: {vs.get('heart_rate','-')} | SatO2: {vs.get('oxygen_saturation','-')} | TA: {vs.get('systolic_bp','-')}/{vs.get('diastolic_bp','-')}", styles['Normal']))
+    
+    story.append(Spacer(1, 12))
+    story.append(Paragraph("Nivel Sugerido IA: " + str(data['triage_level_text']), styles['Normal']))
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()

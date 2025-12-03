@@ -1,6 +1,6 @@
 # path: src/ui/main_view.py
 # Creado: 2025-11-21
-# Última modificación: 2025-12-02
+# Última modificación: 2025-12-03
 """
 Módulo orquestador que construye la vista principal del "Asistente de Triaje".
 Implementa un flujo por pasos (stepper) para selección de sala, paciente y triaje.
@@ -13,7 +13,6 @@ from components.triage.step_triage_process import render_step_triage_process
 from components.triage.step_disposition import render_step_disposition
 from components.triage.nursing_form import render_nursing_assessment_form
 from components.triage.step_final_disposition import render_step_final_disposition
-from ui.components.common.tools_panel import render_tools_panel
 from datetime import datetime
 from services.patient_flow_service import save_triage_data
 
@@ -21,6 +20,7 @@ def mostrar_asistente_triaje():
     """
     Dibuja y gestiona la lógica de la pestaña "Asistente de Triaje" con stepper.
     """
+    # Cabecera
     st.title("🏥 Asistente de Triaje")
 
     # Banner Modo Formación
@@ -47,8 +47,6 @@ def mostrar_asistente_triaje():
             "Órdenes y Planificación",
             "Finalizar Entrenamiento"
         ]
-        # Mapeo de pasos visuales a lógicos para training si fuera necesario, 
-        # pero aquí parece que coinciden 1:1 con la lógica de abajo.
     else:
         steps = [
             "Selección de Sala",
@@ -58,15 +56,12 @@ def mostrar_asistente_triaje():
         ]
     
     # Renderizar Stepper Horizontal
-    # Ajustamos el índice visual si es necesario. 
-    # En modo normal: Paso 0 (Sala) -> index 0. Paso 1 (Paciente) -> index 1.
     current_step_index = st.session_state.triage_step
     render_horizontal_stepper(steps, current_step_index)
     
     # --- PASO 0: SELECCIÓN DE SALA (Solo Normal) ---
     if st.session_state.triage_step == 0 and not is_training:
-        # Panel de Herramientas (Global en paso 0)
-        render_tools_panel("Triaje", show_pdf=False)
+        # Panel de Herramientas movido al menú global
         
         sala_selected = render_step_sala_selection()
         
@@ -139,10 +134,7 @@ def mostrar_asistente_triaje():
             patient_selected = render_step_patient_selection()
             
             # El componente step_patient_selection ahora debe manejar el avance
-            # Si retorna True (paciente seleccionado), avanzamos
             if patient_selected:
-                    # La lógica de avance ya debería estar en el botón "Atender" del componente
-                    # Pero por seguridad, si detectamos paciente seleccionado aquí:
                     if st.session_state.get('triage_patient'):
                         st.session_state.triage_step = 2
                         # Resetear datos del paciente para asegurar un formulario limpio
@@ -185,8 +177,7 @@ def mostrar_asistente_triaje():
             st.session_state.analysis_complete = False
             st.rerun()
         
-        # Panel de Herramientas (Feedback + PDF)
-        render_tools_panel("Triaje", st.session_state.get('triage_patient'))
+        # Panel de Herramientas movido al menú global
         
         validation_complete = render_step_triage_process()
         

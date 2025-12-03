@@ -322,3 +322,5 @@ def render_step_patient_data() -> bool:
         st.session_state.admission_patient_validated = True
 
     return st.session_state.admission_patient_validated
+
+    st.markdown('<div class="debug-footer">src/components/admission/step_patient_data.py</div>', unsafe_allow_html=True)

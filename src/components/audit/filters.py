@@ -156,3 +156,5 @@ def apply_transcription_filters(df, start_date, end_date, selected_source, selec
         df_filtered = df_filtered[df_filtered['language_name'] == selected_lang]
         
     return df_filtered
+
+    st.markdown('<div class="debug-footer">src/components/audit/filters.py</div>', unsafe_allow_html=True)

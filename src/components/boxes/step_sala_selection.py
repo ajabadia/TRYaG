@@ -50,3 +50,5 @@ def render_step_sala_selection() -> bool:
         return True
     
     return False
+
+    st.markdown('<div class="debug-footer">src/components/boxes/step_sala_selection.py</div>', unsafe_allow_html=True)

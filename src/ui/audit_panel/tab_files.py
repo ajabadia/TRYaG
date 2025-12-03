@@ -18,3 +18,5 @@ def render_tab_files(df_files, start_date, end_date, key_prefix="files_log"):
     df_files_filtered = apply_file_filters(df_files, start_date, end_date, selected_type, selected_source)
     
     render_file_log(df_files_filtered, start_date, end_date, key_prefix=key_prefix)
+
+    st.markdown('<div class="debug-footer">src/ui/audit_panel/tab_files.py</div>', unsafe_allow_html=True)

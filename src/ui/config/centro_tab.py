@@ -16,6 +16,8 @@ def render_centro_tab(centro_config):
     if has_permission("configuracion", "roles"):
         subtabs_map["Roles"] = "🛡️ Gestión de Roles"
         
+    subtabs_map["Grupos"] = "🌐 Grupos (Multi-Tenant)"
+        
     selected_subtabs = st.tabs(list(subtabs_map.values()))
     
     subtab_datos = selected_subtabs[list(subtabs_map.keys()).index("Datos")]
@@ -23,6 +25,7 @@ def render_centro_tab(centro_config):
     subtab_usuarios = selected_subtabs[list(subtabs_map.keys()).index("Usuarios")] if "Usuarios" in subtabs_map else None
     subtab_roles = selected_subtabs[list(subtabs_map.keys()).index("Roles")] if "Roles" in subtabs_map else None
     subtab_turnos = selected_subtabs[list(subtabs_map.keys()).index("GestionTurnos")] if "GestionTurnos" in subtabs_map else None
+    subtab_grupos = selected_subtabs[list(subtabs_map.keys()).index("Grupos")]
 
     with subtab_datos:
         from ui.config.datos_generales import render_datos_generales
@@ -64,3 +67,8 @@ def render_centro_tab(centro_config):
         with subtab_turnos:
             from ui.shift_manager_advanced import render_advanced_shift_manager
             render_advanced_shift_manager()
+            
+    with subtab_grupos:
+        from ui.config.center_groups_manager import render_center_groups_manager
+        render_center_groups_manager()
+

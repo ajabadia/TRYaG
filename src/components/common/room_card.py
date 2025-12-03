@@ -292,3 +292,5 @@ def render_room_list(
             selected_sala_code = sala_code
             
     return selected_sala_code
+
+    st.markdown('<div class="debug-footer">src/components/common/room_card.py</div>', unsafe_allow_html=True)

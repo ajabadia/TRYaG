@@ -18,3 +18,5 @@ def render_tab_transcriptions(df_trans, start_date, end_date, key_prefix="trans_
     df_trans_filtered = apply_transcription_filters(df_trans, start_date, end_date, selected_source, selected_lang)
     
     render_transcription_log(df_trans_filtered, start_date, end_date, key_prefix=key_prefix)
+
+    st.markdown('<div class="debug-footer">src/ui/audit_panel/tab_transcriptions.py</div>', unsafe_allow_html=True)

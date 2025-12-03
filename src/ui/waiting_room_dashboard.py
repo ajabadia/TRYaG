@@ -4,7 +4,7 @@ from services.patient_flow_service import obtener_vista_global_salas
 from services.room_service import obtener_salas_por_tipo
 from ui.components.waiting_list import render_waiting_list_component
 
-from ui.components.common.tools_panel import render_tools_panel
+
 
 def render_waiting_room_dashboard():
     """
@@ -12,9 +12,6 @@ def render_waiting_room_dashboard():
     Muestra estadísticas y la lista priorizada de pacientes.
     """
     st.header("🪑 Sala de Espera")
-    
-    # Panel de Herramientas
-    render_tools_panel("Sala de Espera", show_pdf=False)
     
     # 1. Obtener pacientes en espera
     vista_global = obtener_vista_global_salas()

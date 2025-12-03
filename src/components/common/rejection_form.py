@@ -45,3 +45,5 @@ def render_rejection_form(
     with col_cancel:
         if st.button("Cancelar", use_container_width=True, key=f"{key_prefix}_cancel_btn"):
             on_cancel()
+
+            st.markdown('<div class="debug-footer">src/components/common/rejection_form.py</div>', unsafe_allow_html=True)

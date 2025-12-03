@@ -43,6 +43,10 @@ def render_step_patient_selection() -> bool:
     # --- RECUPERACIÓN DE PACIENTES ---
     from services.flow_manager import obtener_pacientes_en_sala, mover_paciente_a_sala
     from services.patient_service import obtener_paciente_por_codigo, calcular_edad
+    from services.triage_service import create_draft_triage, get_active_draft, discard_draft
+    from services.report_service import generate_triage_pdf
+    import unicodedata
+    import re
     
     lista_pacientes = []
     blocking_patient = None
@@ -144,7 +148,7 @@ def render_step_patient_selection() -> bool:
                 st.session_state.datos_paciente['edad'] = calcular_edad(fn)
             
             # --- GESTIÓN DE BORRADORES (DRAFTS) ---
-            from services.triage_service import create_draft_triage, get_active_draft
+            # (Imports movidos arriba)
             
             patient_code = patient.get('patient_code')
             user_id = _get_username()
@@ -158,8 +162,25 @@ def render_step_patient_selection() -> bool:
                 st.session_state.triage_record_id = str(draft['_id'])
                 # Restaurar datos si existen en el borrador (pendiente implementar mapeo completo)
                 # Por ahora, confiamos en que el usuario rellene, o mapeamos lo básico si guardamos partials
+                # Restaurar datos si existen en el borrador
                 if 'vital_signs' in draft and draft['vital_signs']:
                      st.session_state.datos_paciente['vital_signs'] = draft['vital_signs']
+                
+                # Restaurar campos adicionales (Phase 8.11)
+                if 'motivo_consulta' in draft and draft['motivo_consulta']:
+                    st.session_state.datos_paciente['texto_medico'] = draft['motivo_consulta']
+                
+                if 'dolor' in draft:
+                    st.session_state.datos_paciente['dolor'] = draft['dolor']
+                    
+                if 'antecedentes' in draft:
+                    st.session_state.datos_paciente['antecedentes'] = draft['antecedentes']
+                    
+                if 'alergias' in draft:
+                    st.session_state.datos_paciente['alergias'] = draft['alergias']
+                
+                # Restaurar estado de edición para que el usuario vea lo que tenía
+                st.session_state.is_editing_text = True
             else:
                 # 2. Crear nuevo borrador
                 draft_id = create_draft_triage(patient_code, user_id)
@@ -200,12 +221,30 @@ def render_step_patient_selection() -> bool:
             st.session_state.triage_action_type = 'reassign'
             st.rerun()
 
+        def on_reset(patient):
+            """Reiniciar triaje: descartar borrador y limpiar sesión."""
+            discard_draft(patient.get('patient_code'))
+            st.toast(f"🗑️ Borrador descartado para {patient.get('nombre')}")
+            # Limpiar datos en sesión si es el paciente actual
+            if st.session_state.triage_patient and st.session_state.triage_patient.get('patient_code') == patient.get('patient_code'):
+                 st.session_state.datos_paciente = {
+                    "texto_medico": "",
+                    "edad": 40, # Se recalculará
+                    "dolor": 5,
+                    "imagenes": [],
+                    "vital_signs": {}
+                }
+            st.rerun()
+
+        # Verificar si hay borrador activo para este paciente
+        active_draft = get_active_draft(p.get('patient_code'))
+
         # Construir acciones
         actions = []
         
         # Botón Principal (Atender/Continuar)
         # Ahora es "Triar Ahora" o "Retomar Triaje"
-        btn_label = "Retomar Triaje" if is_in_room else "Triar Ahora"
+        btn_label = "Retomar Triaje" if (is_in_room or active_draft) else "Triar Ahora"
         btn_type = "primary"
         
         # Solo mostrar botón de atender si no está bloqueado o si es el paciente en sala
@@ -219,6 +258,16 @@ def render_step_patient_selection() -> bool:
             "disabled": disable_attend and not is_in_room
         })
 
+        # Botón de Reiniciar (Solo si hay borrador)
+        if active_draft:
+            actions.append({
+                "label": "Reiniciar", # Icono se pone en patient_card si se soporta, o texto
+                "key": "reset",
+                "type": "secondary",
+                "on_click": on_reset,
+                "help": "Descartar borrador y empezar de cero"
+            })
+
         render_patient_card(
             patient=p,
             actions=actions,
@@ -230,6 +279,32 @@ def render_step_patient_selection() -> bool:
             allow_rejection=True,
             allow_reassignment=True
         )
+
+        # Botón de descarga de borrador (si existe)
+        if active_draft:
+            try:
+                # Preparar datos para el PDF (mezcla de paciente y borrador)
+                # El borrador tiene los datos clínicos parciales
+                draft_record = {**p, **active_draft}
+                draft_record["destination"] = "BORRADOR - EN PROCESO"
+                
+                pdf_bytes = generate_triage_pdf(draft_record)
+                
+                raw_name = f"{p.get('nombre', 'Paciente')}_{p.get('apellido1', '')}"
+                normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
+                safe_name = re.sub(r'[^\w\-_]', '_', normalized)
+                file_name = f"Borrador_{safe_name}_{datetime.now().strftime('%H%M')}.pdf"
+                
+                st.download_button(
+                    label="📄 Descargar Borrador PDF",
+                    data=pdf_bytes,
+                    file_name=file_name,
+                    mime="application/octet-stream",
+                    key=f"btn_dl_draft_{p.get('patient_code')}",
+                    help="Descargar informe preliminar con los datos capturados hasta ahora"
+                )
+            except Exception as e:
+                st.error(f"Error generando PDF borrador: {e}")
 
     # Mostrar paciente seleccionado y permitir avanzar
     # (Ya no es necesario porque el botón avanza directo, pero por si acaso queda algo residual)

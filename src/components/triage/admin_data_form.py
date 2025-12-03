@@ -95,3 +95,5 @@ def render_admin_data_form(reset_count: int, disabled: bool = False):
                 st.session_state.datos_paciente['seguro'] = "Privado"
     
     st.markdown('<div style="color: #ccc; font-size: 0.6em; text-align: right; margin-top: 5px;">src/components/triage/admin_data_form.py</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="debug-footer">src/components/triage/admin_data_form.py</div>', unsafe_allow_html=True)

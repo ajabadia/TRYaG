@@ -22,3 +22,5 @@ def render_recommendations_card(recommendations: list):
             
         # Placeholder for future print functionality
         # st.button("🖨️ Imprimir Hoja de Recomendaciones", key="print_rec_btn", disabled=True)
+
+        st.markdown('<div class="debug-footer">src/components/triage/recommendations_card.py</div>', unsafe_allow_html=True)

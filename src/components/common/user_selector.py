@@ -90,3 +90,5 @@ def render_user_selector():
         f"🆔 {selected_user.get('internal_id', '-')}\n\n"
         f"🔑 {role_name}"
     )
+
+    st.markdown('<div class="debug-footer">src/components/common/user_selector.py</div>', unsafe_allow_html=True)

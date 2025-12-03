@@ -172,3 +172,5 @@ def render_user_assignment_timeline():
             """,
             unsafe_allow_html=True
         )
+
+        st.markdown('<div class="debug-footer">src/ui/config/staff_conflicts_viewer.py</div>', unsafe_allow_html=True)

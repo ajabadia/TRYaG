@@ -205,3 +205,5 @@ def render_prompt_log_final(key_prefix="prompt_log"):
                 except IndexError:
                     st.session_state[f'{key_prefix}_selected_prompt_idx'] = []
                     st.rerun()
+
+                    st.markdown('<div class="debug-footer">src/components/audit/prompt_log.py</div>', unsafe_allow_html=True)

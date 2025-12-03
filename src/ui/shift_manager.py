@@ -226,3 +226,5 @@ def render_shift_manager():
                         
                         st.success("Turno creado correctamente")
                         st.rerun()
+
+                        st.markdown('<div class="debug-footer">src/ui/shift_manager.py</div>', unsafe_allow_html=True)

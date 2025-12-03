@@ -49,8 +49,13 @@ def render_step_triage_process() -> bool:
             # Recopilar datos actuales
             current_data = {
                 "vital_signs": st.session_state.datos_paciente.get('vital_signs'),
-                "sintomas_detectados": [], # Pendiente extraer
-                # Podríamos guardar más cosas aquí
+                "motivo_consulta": st.session_state.datos_paciente.get('texto_medico'), # Mapear a campo persistente
+                "dolor": st.session_state.datos_paciente.get('dolor'),
+                "antecedentes": st.session_state.datos_paciente.get('antecedentes'),
+                "alergias": st.session_state.datos_paciente.get('alergias'),
+                "sintomas_detectados": [], # Pendiente extraer de NLP si aplica
+                # Nota: Las imágenes son archivos temporales, no se pueden guardar fácilmente en BD sin subirlos.
+                # Se podría guardar metadatos si fuera crítico.
             }
             # Actualizar silenciosamente (sin rerun)
             update_triage_draft(st.session_state.triage_record_id, current_data)

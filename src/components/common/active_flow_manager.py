@@ -159,3 +159,5 @@ def render_active_flow_manager(
             on_confirm=_on_reject_confirm,
             on_cancel=_on_reject_cancel
         )
+
+        st.markdown('<div class="debug-footer">src/components/common/active_flow_manager.py</div>', unsafe_allow_html=True)

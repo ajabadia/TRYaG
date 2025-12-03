@@ -208,3 +208,5 @@ def render_date_selector(min_date, max_date, default_start, default_end, key_pre
         )
         
     return start_date, end_date
+
+    st.markdown('<div class="debug-footer">src/ui/audit_panel/components.py</div>', unsafe_allow_html=True)

@@ -166,3 +166,6 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/scripts/generate_synthetic_data.py** | Script de generación de datos sintéticos. | CLI | Script |
 | **src/services/ml_training_service.py** | Servicio de entrenamiento de modelos ML. | `src/ui/ml_predictions_panel.py` | Activo |
 | **generate_synthetic_data.py** | Script raíz de generación de datos (Bypass gitignore). | CLI | Script |
+| **src/db/repositories/center_groups.py** | Repositorio de Grupos de Centros. | Servicios/UI | Activo |
+| **src/ui/config/center_groups_manager.py** | UI para gestión de grupos de centros. | `src/ui/config/centro_tab.py` | Activo |
+| **src/ui/components/common/user_menu.py** | Menú de usuario global (Header). | `src/ui/main_view.py` | Activo |
