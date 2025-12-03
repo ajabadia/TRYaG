@@ -17,7 +17,7 @@ from ui.config.config_loader import load_centro_config
 
 from components.common.user_selector import render_user_selector
 from ui.main_view import mostrar_asistente_triaje
-from ui.components.common.user_menu import render_user_menu
+
 
 # ---------------------------------------------------------------------------
 # Page configuration
@@ -154,7 +154,8 @@ def mostrar_app_principal():
             )
             
     with col_menu:
-        render_user_menu()
+        # Menú de usuario movido al sidebar
+        pass
 
     # Initialize loading container (justo después del header)
 

@@ -91,4 +91,47 @@ def render_user_selector():
         f"🔑 {role_name}"
     )
 
+    # --- INTEGRACIÓN MENÚ DE USUARIO (Migrado desde user_menu.py) ---
+    st.sidebar.divider()
+    
+    # 1. Sistema / Modos
+    st.sidebar.markdown("⚙️ **Sistema**")
+    
+    # Modo Contingencia
+    from services.contingency_service import is_contingency_active, set_contingency_mode, get_unsynced_count
+    is_offline = is_contingency_active()
+    new_state = st.sidebar.toggle("Modo Contingencia (Offline)", value=is_offline, key="toggle_offline_sidebar")
+    
+    if new_state != is_offline:
+        set_contingency_mode(new_state)
+        st.rerun()
+        
+    unsynced = get_unsynced_count()
+    if unsynced > 0:
+        st.sidebar.caption(f"⚠️ {unsynced} registros locales")
+
+    # Modo Formación
+    is_training = st.session_state.get('training_mode', False)
+    new_training = st.sidebar.toggle("Modo Formación", value=is_training, key="toggle_training_sidebar")
+    if new_training != is_training:
+        st.session_state.training_mode = new_training
+        st.rerun()
+        
+    st.sidebar.divider()
+
+    # 2. Herramientas (Lo último)
+    st.sidebar.markdown("🛠️ **Herramientas**")
+    
+    # Feedback
+    from components.common.feedback_button import render_feedback_button
+    # Renderizar feedback en sidebar
+    with st.sidebar:
+        render_feedback_button("SidebarUserMenu")
+        
+    st.sidebar.divider()
+    
+    # 3. Sesión
+    if st.sidebar.button("Cerrar Sesión", key="btn_logout_sidebar", use_container_width=True):
+        st.warning("Funcionalidad de Logout pendiente de implementar en Auth Service.")
+
     st.markdown('<div class="debug-footer">src/components/common/user_selector.py</div>', unsafe_allow_html=True)

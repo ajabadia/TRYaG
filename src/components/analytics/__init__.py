@@ -8,6 +8,8 @@ from .triage_analysis import render_triage_analysis
 from .file_analysis import render_file_analysis
 from .transcription_analysis import render_transcription_analysis
 from .relational_analysis import render_relational_analysis
+from .feedback_analysis import render_feedback_analysis
+from .concordance_analysis import render_concordance_analysis
 
 __all__ = [
     'render_kpis',
@@ -15,5 +17,7 @@ __all__ = [
     'render_triage_analysis',
     'render_file_analysis',
     'render_transcription_analysis',
-    'render_relational_analysis'
+    'render_relational_analysis',
+    'render_feedback_analysis',
+    'render_concordance_analysis'
 ]

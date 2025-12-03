@@ -241,85 +241,134 @@ def _extract_clinical_data(record: dict, is_draft: bool = False) -> dict:
     """
     Extrae y normaliza los datos clínicos de un registro (final o borrador).
     """
-    # Determinar fuente de datos (snapshot o root)
-    source = record.get('patient_snapshot', record) if not is_draft else record
-    
-    # Datos básicos
-    patient_name = f"{source.get('nombre', '')} {source.get('apellido1', '')}"
-    if not source.get('nombre'): patient_name = "Paciente Desconocido"
-    
-    age = source.get('edad', '?')
-    gender = source.get('gender', '')
-    age_gender = f"{age} años" + (f" ({gender})" if gender else "")
-    
-    # HDA
-    hda = {
-        "aparicion": source.get('hda_aparicion'),
-        "localizacion": source.get('hda_localizacion'),
-        "intensidad": source.get('hda_intensidad'),
-        "caracteristicas": source.get('hda_caracteristicas'),
-        "irradiacion": source.get('hda_irradiacion'),
-        "alivio": source.get('hda_alivio'),
-        "sintomas_asoc": source.get('hda_sintomas_asoc')
-    }
-    
-    # Contexto
-    ctx = {
-        "geriatric": source.get('criterio_geriatrico', False),
-        "immuno": source.get('criterio_inmunodeprimido', False),
-        "immuno_det": source.get('criterio_inmunodeprimido_det', [])
-    }
-    
-    # IA Results
-    ia_res = record.get('ia_result', {})
-    # Si es borrador, puede que ia_result esté en el root o no exista
-    if not ia_res and is_draft:
-        ia_res = {} # En borrador a veces no hay resultado IA aún
+    try:
+        # Determinar fuente de datos (snapshot o root)
+        source = record.get('patient_snapshot', record) if not is_draft else record
+        if not source: source = {}
         
-    return {
-        "is_draft": is_draft,
-        "episode_id": str(record.get('_id', 'N/A')),
-        "patient_code": record.get('patient_id', 'N/A'),
-        "patient_name": patient_name,
-        "age_gender": age_gender,
-        "timestamp": record.get('created_at', datetime.now()).strftime("%Y-%m-%d %H:%M") if isinstance(record.get('created_at'), datetime) else str(record.get('created_at', '-')),
+        # Datos básicos
+        patient_name = f"{source.get('nombre', '')} {source.get('apellido1', '')}"
+        if not source.get('nombre'): patient_name = "Paciente Desconocido"
         
-        "motivo_consulta": source.get('texto_medico', source.get('motivo_consulta', '')),
-        "guided_interview": source.get('guided_interview_summary', ''),
-        "hda": hda,
+        age = source.get('edad', '?')
+        gender = source.get('gender', '')
+        age_gender = f"{age} años" + (f" ({gender})" if gender else "")
         
-        "vital_signs": source.get('vital_signs', {}),
-        "pain_level": source.get('dolor', 0),
+        # HDA
+        hda = {
+            "aparicion": source.get('hda_aparicion'),
+            "localizacion": source.get('hda_localizacion'),
+            "intensidad": source.get('hda_intensidad'),
+            "caracteristicas": source.get('hda_caracteristicas'),
+            "irradiacion": source.get('hda_irradiacion'),
+            "alivio": source.get('hda_alivio'),
+            "sintomas_asoc": source.get('hda_sintomas_asoc')
+        }
         
-        "clinical_context": ctx,
+        # Contexto
+        ctx = {
+            "geriatric": source.get('criterio_geriatrico', False),
+            "immuno": source.get('criterio_inmunodeprimido', False),
+            "immuno_det": source.get('criterio_inmunodeprimido_det', [])
+        }
         
-        "alergias": source.get('alergias_info_completa', source.get('alergias', '')),
-        "antecedentes": source.get('antecedentes', ''),
-        "extended_history": source.get('historia_integral', ''),
-        
-        "triage_level_text": ia_res.get('nivel', {}).get('text', 'PENDIENTE'),
-        "triage_level_color": ia_res.get('nivel', {}).get('color', 'gray'),
-        "wait_time": ia_res.get('wait_time', ''),
-        "ai_reasons": ia_res.get('razones', []),
-        
-        "status": record.get('status', 'Borrador').upper(),
-        "disposition": record.get('disposition', '-'),
-        "validator": record.get('validator_id', 'Sistema'),
-        "signature_hash": str(record.get('_id', ''))[-8:].upper() # Mock signature
-    }
+        # IA Results
+        ia_res = record.get('ia_result', {})
+        # Si es borrador, puede que ia_result esté en el root o no exista
+        if not ia_res and is_draft:
+            ia_res = {} # En borrador a veces no hay resultado IA aún
+            
+        return {
+            "is_draft": is_draft,
+            "episode_id": str(record.get('_id', 'N/A')),
+            "patient_code": record.get('patient_id', 'N/A'),
+            "patient_name": patient_name,
+            "age_gender": age_gender,
+            "timestamp": record.get('created_at', datetime.now()).strftime("%Y-%m-%d %H:%M") if isinstance(record.get('created_at'), datetime) else str(record.get('created_at', '-')),
+            
+            "motivo_consulta": str(source.get('texto_medico', source.get('motivo_consulta', 'No especificado'))),
+            "guided_interview": str(source.get('guided_interview_summary', '')),
+            "hda": hda,
+            
+            "vital_signs": source.get('vital_signs', {}),
+            "pain_level": source.get('dolor', 0),
+            
+            "clinical_context": ctx,
+            
+            "alergias": str(source.get('alergias_info_completa', source.get('alergias', ''))),
+            "antecedentes": str(source.get('antecedentes', '')),
+            "extended_history": str(source.get('historia_integral', '')),
+            
+            "triage_level_text": ia_res.get('nivel', {}).get('text', 'PENDIENTE'),
+            "triage_level_color": ia_res.get('nivel', {}).get('color', 'gray'),
+            "wait_time": ia_res.get('wait_time', ''),
+            "ai_reasons": ia_res.get('razones', []),
+            
+            "status": record.get('status', 'Borrador').upper(),
+            "disposition": record.get('disposition', '-'),
+            "validator": record.get('validator_id', 'Sistema'),
+            "signature_hash": str(record.get('_id', ''))[-8:].upper() # Mock signature
+        }
+    except Exception as e:
+        print(f"Error extracting clinical data: {e}")
+        return {
+            "patient_name": "ERROR DE DATOS",
+            "motivo_consulta": f"Error al extraer datos: {str(e)}",
+            "triage_level_text": "ERROR",
+            "triage_level_color": "red",
+            "status": "ERROR"
+        }
 
 def generate_triage_report(triage_id: str) -> bytes:
-    """Genera reporte final desde DB."""
-    repo = get_triage_repository()
-    record = repo.get_by_audit_id(triage_id)
-    if not record:
-        raise ValueError("Record not found")
-    
-    data = _extract_clinical_data(record, is_draft=False)
-    return generate_report(data)
+    """Genera reporte final desde DB con manejo robusto de errores."""
+    try:
+        repo = get_triage_repository()
+        record = repo.get_by_audit_id(triage_id)
+        
+        if not record:
+            # En lugar de fallar, creamos un registro dummy de error
+            print(f"Warning: Record {triage_id} not found. Generating error report.")
+            record = {
+                "_id": "ERROR",
+                "patient_id": "UNKNOWN",
+                "patient_snapshot": {
+                    "nombre": "ERROR: REGISTRO NO ENCONTRADO",
+                    "apellido1": "",
+                    "motivo_consulta": f"No se encontró el registro de triaje con ID: {triage_id}. Es posible que no se haya guardado correctamente en la base de datos."
+                },
+                "status": "ERROR",
+                "ia_result": {
+                    "nivel": {"text": "DATOS NO DISPONIBLES", "color": "gray"}
+                }
+            }
+        
+        data = _extract_clinical_data(record, is_draft=False)
+        return generate_report(data)
+        
+    except Exception as e:
+        print(f"Critical error generating report: {e}")
+        # Fallback de último recurso
+        try:
+            return generate_report({
+                "patient_name": "ERROR CRÍTICO",
+                "motivo_consulta": f"Fallo total en generación de reporte: {str(e)}",
+                "triage_level_text": "SYSTEM ERROR",
+                "triage_level_color": "black"
+            })
+        except:
+            # Si incluso el fallback falla, devolvemos un PDF vacío válido o bytes de error
+            return b"%PDF-1.4\n%Error generating PDF"
 
 def generate_triage_pdf(triage_record: dict) -> bytes:
     """Genera reporte borrador desde diccionario (Frontend)."""
-    # triage_record aquí suele ser una mezcla de datos del paciente y estado del borrador
-    data = _extract_clinical_data(triage_record, is_draft=True)
-    return generate_report(data)
+    try:
+        # triage_record aquí suele ser una mezcla de datos del paciente y estado del borrador
+        data = _extract_clinical_data(triage_record, is_draft=True)
+        return generate_report(data)
+    except Exception as e:
+        print(f"Error generating draft PDF: {e}")
+        return generate_report({
+            "patient_name": "ERROR BORRADOR",
+            "motivo_consulta": f"Error generando borrador: {str(e)}",
+            "is_draft": True
+        })

@@ -1,12 +1,13 @@
 # src/core/data_handler.py
 # Creado: 2025-11-21
-# Última modificación: 2025-11-24
+# Última modificación: 2025-12-03
 """
 Módulo para la persistencia y acceso a datos.
 
 Contiene toda la lógica para leer y escribir en los repositorios de datos.
 """
 import os
+from datetime import datetime
 from utils.file_handler import process_and_log_files, cleanup_temp_files
 from db.repositories.audit import get_audit_repository
 
@@ -86,8 +87,6 @@ def guardar_auditoria(datos, session_state):
                 triage_repo = get_triage_repository()
                 
                 # Construir TriageRecord (simplificado por ahora, mapeando lo que tenemos)
-                # Nota: Idealmente usaríamos el modelo Pydantic, pero por flexibilidad aquí pasamos dict
-                # y dejamos que el repo/modelo valide si es estricto, o guardamos como dict.
                 
                 # Extraer nivel final
                 nivel_final = None
@@ -105,15 +104,20 @@ def guardar_auditoria(datos, session_state):
                         colors = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'green', 5: 'blue'}
                         color_final = colors.get(nivel_final, 'grey')
                 else:
-                    # Usar sugerencia IA
-                    # datos['sugerencia_ia'] suele ser "Nivel X - Color"
-                    pass # Pendiente mejorar parsing
+                    # Usar sugerencia IA si existe
+                    # TODO: Mejorar parsing de sugerencia IA
+                    pass 
                 
+                # Asegurar que signos vitales sea un dict válido (o None)
+                signos_vitales = datos.get('signos_vitales')
+                if not isinstance(signos_vitales, dict):
+                    signos_vitales = None
+
                 triage_record = {
                     "audit_id": audit_id,
                     "patient_id": patient_code,
                     "timestamp": datetime.now(),
-                    "vital_signs": datos.get('signos_vitales'),
+                    "vital_signs": signos_vitales,
                     "sugerencia_ia": {
                         "analysis": {
                             "reason": datos.get('motivo_consulta'),
@@ -127,13 +131,26 @@ def guardar_auditoria(datos, session_state):
                     "decision_humana": datos.get('decision_humana'),
                     "justificacion": datos.get('justificacion_humana'),
                     # Snapshot de datos paciente para el PDF
-                    "patient_snapshot": datos # Guardamos todo el diccionario de datos para tener el contexto completo
+                    "patient_snapshot": datos,
+                    # Campos requeridos por el modelo TriageRecord para evitar fallos de validación
+                    "razones_ia": [], 
+                    "ai_responses": [],
+                    "prompt_type": "triage_gemini"
                 }
                 
                 triage_repo.create(triage_record)
                 
             except Exception as e:
                 print(f"Error guardando TriageRecord: {e}")
+                # Importante: Si falla el guardado del registro clínico, debemos avisar
+                # para evitar el error 'Record not found' al generar el PDF.
+                try:
+                    import streamlit as st
+                    st.error(f"Error crítico guardando registro clínico: {e}")
+                except:
+                    pass
+                # Retornamos None para indicar fallo parcial crítico
+                return None
 
         return audit_id
         

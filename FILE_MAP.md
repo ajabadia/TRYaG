@@ -17,29 +17,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/room_manager_view.py** | Vista de Gestión de Salas (Configuración/Estado). | `src/app.py` | Activo |
 | **src/ui/room_metrics_dashboard.py** | Dashboard de Métricas de Salas. | `src/app.py` | Activo |
 | **src/ui/audit_panel/main_panel_v2.py** | Versión 2 de panel principal. | `src/app.py` | Activo |
-| **src/ui/audit_panel/raw_data_panel_v2.py** | Versión 2 de panel de datos brutos. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
-| **src/ui/audit_panel/tab_audit_v2.py** | Versión 2 de pestaña auditoría. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
-| **src/ui/audit_panel/tab_files_v2.py** | Versión 2 de pestaña archivos. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
-| **src/ui/audit_panel/tab_transcriptions_v2.py** | Versión 2 de pestaña transcripciones. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
-| **src/ui/audit_panel/feedback_list_v2.py** | Versión 2 de lista de feedback. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
-| **src/ui/audit_panel/analysis_panel.py** | Panel de Análisis Gráfico (Auditoría). | `src/ui/audit_panel/main_panel_v2.py` | Activo |
-| **src/ui/audit_panel/debug_panel.py** | Panel de Debug MongoDB. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
-| **src/ui/audit_panel/components.py** | Componentes reutilizables (Action Bar, Filters, Date Selector). | `src/ui/audit_panel/*.py` | Activo |
-| **src/components/analytics/feedback_analysis.py** | Análisis gráfico de feedback. | `src/ui/audit_panel/analysis_panel.py` | Activo |
-| **src/components/analytics/evolution.py** | Gráfico de evolución temporal. | `src/ui/audit_panel/analysis_panel.py` | Activo |
-| **src/components/analytics/file_analysis.py** | Análisis de archivos importados. | `src/ui/audit_panel/analysis_panel.py` | Activo |
-| **src/components/analytics/kpis.py** | KPIs generales. | `src/ui/audit_panel/analysis_panel.py` | Activo |
-| **src/components/analytics/prompt_analysis.py** | Análisis de prompts. | `src/ui/audit_panel/analysis_panel.py` | Activo |
-| **src/components/analytics/relational_analysis.py** | Análisis relacional. | `src/ui/audit_panel/analysis_panel.py` | Activo |
-| **src/components/analytics/transcription_analysis.py** | Análisis de transcripciones. | `src/ui/audit_panel/analysis_panel.py` | Activo |
-| **src/components/analytics/triage_analysis.py** | Análisis de triaje. | `src/ui/audit_panel/analysis_panel.py` | Activo |
 | **src/components/analytics/concordance_analysis.py** | Análisis de concordancia IA vs Humano. | `src/ui/audit_panel/analysis_panel.py` | Activo |
-| **src/components/audit/details.py** | Detalles de registros de auditoría. | `src/ui/audit_panel/tab_audit_v2.py` | Activo |
-| **src/components/audit/file_log.py** | Componente de log de ficheros. | `src/ui/audit_panel/tab_files_v2.py` | Activo |
-| **src/components/audit/filters.py** | Filtros específicos de auditoría. | `src/ui/audit_panel/*.py` | Activo |
-| **src/components/audit/prompt_log.py** | Componente de log de prompts. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
-| **src/components/audit/table.py** | Tabla de registros de auditoría. | `src/ui/audit_panel/tab_audit_v2.py` | Activo |
-| **src/components/audit/transcription_log.py** | Componente de log de transcripciones. | `src/ui/audit_panel/tab_transcriptions_v2.py` | Activo |
 | **src/ui/config/asignacion_turnos.py** | UI para asignación de turnos. | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/datos_generales.py** | UI para datos generales del centro. | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/equipment_config.py** | UI para configuración de equipamiento. | `src/ui/config_panel.py` | Activo |
@@ -165,4 +143,16 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **generate_synthetic_data.py** | Script raíz de generación de datos (Bypass gitignore). | CLI | Script |
 | **src/db/repositories/center_groups.py** | Repositorio de Grupos de Centros. | Servicios/UI | Activo |
 | **src/ui/config/center_groups_manager.py** | UI para gestión de grupos de centros. | `src/ui/config/centro_tab.py` | Activo |
-| **src/ui/components/common/user_menu.py** | Menú de usuario global (Header). | `src/ui/main_view.py` | Activo |
+| **src/ui/audit_panel/analysis_panel_modular.py** | Orquestador modular de Análisis Gráfico. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
+| **src/ui/audit_panel/debug_panel_modular.py** | Orquestador modular de Debug MongoDB. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
+| **src/ui/audit_panel/debug_modules/collection_inspector.py** | Inspector genérico de colecciones. | `src/ui/audit_panel/debug_panel_modular.py` | Activo |
+| **src/components/analytics/modules/kpis.py** | Módulo independiente de KPIs. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/analytics/modules/evolution.py** | Módulo independiente de Evolución. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/analytics/modules/triage_analysis.py** | Módulo independiente de Análisis de Triaje. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/analytics/modules/file_analysis.py** | Módulo independiente de Análisis de Archivos. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/analytics/modules/transcription_analysis.py** | Módulo independiente de Análisis de Transcripciones. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/analytics/modules/relational_analysis.py** | Módulo independiente de Análisis Relacional. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/analytics/modules/prompt_analysis.py** | Módulo independiente de Análisis de Prompts. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/analytics/modules/feedback_analysis.py** | Módulo independiente de Análisis de Feedback. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/analytics/modules/concordance_analysis.py** | Módulo independiente de Concordancia. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/audit/generic_log_view.py** | Vista genérica de logs con detalles. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |

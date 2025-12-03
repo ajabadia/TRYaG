@@ -7,8 +7,8 @@ from datetime import date, datetime, timedelta
 import streamlit as st
 import pandas as pd
 from .raw_data_panel_v2 import mostrar_panel_datos_brutos_v2
-from .analysis_panel import mostrar_panel_analisis
-from .debug_panel import render_debug_panel
+from .analysis_panel_modular import mostrar_panel_analisis_modular
+from .debug_panel_modular import render_debug_panel_modular
 from db.repositories.audit import get_audit_repository
 from db.repositories.files import get_file_imports_repository
 from db.repositories.transcriptions import get_transcriptions_repository
@@ -71,9 +71,9 @@ def mostrar_registro_auditoria_v2():
         if df_feedback.empty:
             df_feedback = pd.DataFrame(columns=["timestamp", "type", "module", "status"])
 
-        # Debug panel
+        # Debug panel (Modular)
         with tab_debug:
-            render_debug_panel(key_prefix="v2_debug")
+            render_debug_panel_modular(key_prefix="v2_debug_mod")
 
         # Procesar timestamps
         if "timestamp" in df_audit_base.columns:
@@ -133,17 +133,14 @@ def mostrar_registro_auditoria_v2():
 
         # Renderizar paneles
         with tab_analisis:
-            mostrar_panel_analisis(
+            mostrar_panel_analisis_modular(
                 df_audit_base,
-                default_start_analisis,
-                default_end_analisis,
-                default_decisions,
                 df_files,
                 df_trans,
                 df_feedback,
-                key_prefix="v2_analisis",
+                key_prefix="v2_analisis_mod",
             )
-
+            
         with tab_predicciones:
             from ui.ml_predictions_panel import render_ml_predictions_panel
             render_ml_predictions_panel()
