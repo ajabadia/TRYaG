@@ -6,11 +6,13 @@
 *   **Framework Web:** Streamlit
 *   **Base de Datos:** MongoDB Atlas (NoSQL)
 *   **IA Generativa:** Google Gemini (vía `google-generativeai`)
+*   **PWA:** Service Workers, Web Manifest (Offline Support)
 *   **Librerías Clave:**
     *   `pymongo`: Driver de MongoDB.
     *   `streamlit-cookies-manager`: Gestión de sesiones persistentes.
     *   `pandas`, `plotly`: Análisis y visualización de datos.
     *   `pydantic`: Validación de modelos de datos.
+    *   `reportlab`: Generación de PDFs.
 
 ## 🏗️ Arquitectura del Proyecto
 
@@ -21,14 +23,21 @@ El proyecto sigue una arquitectura modular basada en componentes y servicios, se
 *   **`app.py`**: Punto de entrada principal. Configura la página, inicializa el estado de sesión y enruta a las vistas principales.
 *   **`core/`**: Lógica de negocio pura (Manejadores de datos, lógica de prompts).
 *   **`services/`**: Integración con servicios externos (Gemini, MongoDB) y lógica de aplicación (Permisos, Flujos).
+    *   `report_service.py`: Generación de informes PDF.
+    *   `multi_center_service.py`: Agregación de datos multi-centro.
+    *   `notification_service.py`: Bus de notificaciones (SMTP, Webhooks).
 *   **`db/`**: Capa de acceso a datos (DAL).
     *   `connection.py`: Gestión de conexión a Mongo (Singleton).
     *   `repositories/`: Implementación del patrón Repository para cada entidad (Pacientes, Centros, Configuración).
 *   **`ui/`**: Componentes de interfaz de usuario (Vistas, Paneles).
 *   **`components/`**: Widgets reutilizables (Selectores, Tarjetas, Visores).
+    *   `common/pwa_installer.py`: Inyección de scripts PWA.
     *   `common/body_map.py`: Mapa corporal interactivo con Plotly.
     *   `analytics/concordance_analysis.py`: Módulo de validación científica (Pandas).
 *   **`utils/`**: Funciones de utilidad (Iconos, PDFs, Imágenes).
+*   **`templates/`**: Plantillas HTML y de texto.
+    *   `email_templates.py`: Templates Jinja2-like para emails transaccionales.
+*   **`static/`**: Recursos estáticos servidos directamente (Manifest, Service Worker, Iconos).
 
 ### Patrones de Diseño
 
@@ -55,6 +64,33 @@ La interacción con la IA se centraliza en `src/services/gemini_client.py`.
 *   **Session State (`st.session_state`):** Maneja el estado efímero de la interfaz (navegación, datos de formularios temporales).
 *   **Cookies:** Se usan para persistir la aceptación del disclaimer (`streamlit-cookies-manager`).
 *   **MongoDB:** Almacenamiento persistente de toda la información crítica (Pacientes, Historial, Configuración).
+*   **Borradores (`triage_draft`):** Colección específica para el auto-guardado de sesiones de triaje en curso.
+
+### Sistema de Notificaciones
+
+El sistema utiliza una arquitectura de bus de eventos desacoplada para gestionar las notificaciones:
+
+1.  **Core Service (`notification_service.py`):**
+    *   Recibe solicitudes de notificación con prioridad y categoría.
+    *   Resuelve los destinatarios (IDs de usuario -> Emails).
+    *   Determina los canales de envío basándose en la prioridad (Lógica de negocio).
+
+2.  **Canales:**
+    *   **In-App:** Escritura directa en la colección `notifications` de MongoDB.
+    *   **SMTP:** Envío síncrono de emails usando `smtplib` y templates HTML.
+    *   **Webhooks:** Envío HTTP POST a endpoints externos (Slack/Teams) con payloads adaptativos.
+
+3.  **Gestión de Errores:**
+    *   El fallo en un canal secundario (ej. Email) no bloquea el flujo principal ni impide el registro en In-App.
+    *   Estado de envío granular (`sent_status`) para auditoría de fallos.
+
+### Progressive Web App (PWA)
+
+El sistema implementa capacidades PWA mediante la inyección de scripts en el frontend de Streamlit:
+
+1.  **Manifest (`static/manifest.json`):** Define metadatos, iconos y comportamiento de instalación (standalone).
+2.  **Service Worker (`static/sw.js`):** Intercepta peticiones de red para ofrecer una estrategia de caché (Network First) y servir una página offline personalizada.
+3.  **Installer (`pwa_installer.py`):** Componente Python que inyecta el registro del Service Worker y los tags `<link>` necesarios en el head de la aplicación.
 
 ## 🚀 Despliegue
 

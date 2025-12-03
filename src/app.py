@@ -85,6 +85,10 @@ def init_background_services():
 def mostrar_app_principal():
     """Render the main Streamlit interface."""
     
+    # PWA Installer (Injects manifest and SW)
+    from components.common.pwa_installer import render_pwa_installer
+    render_pwa_installer()
+    
     # Verify DB connection before loading anything
     if not check_database_connection():
         st.stop()

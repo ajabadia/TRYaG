@@ -439,6 +439,28 @@ Permite crear estructuras organizativas superiores (ej: "Zona Norte", "Hospitale
 * **Asignación de Centros:** Vinculación de múltiples centros a un grupo.
 * **Dashboard Filtrado:** El Dashboard Multi-Centro permite filtrar métricas y alertas por grupo específico, facilitando la supervisión regional o temática.
 
+### 5.15 Sistema de Notificaciones Multicanal
+
+**Objetivo:** Alertar proactivamente a los usuarios sobre eventos críticos, independientemente de si están mirando la pantalla.
+
+El sistema implementa un bus de notificaciones inteligente que enruta los mensajes por diferentes canales según su prioridad y configuración.
+
+**Canales Soportados:**
+
+*   **In-App:** Centro de notificaciones integrado en la aplicación (icono campana). Siempre activo.
+*   **Email (SMTP):** Envío de alertas detalladas con formato HTML a las direcciones de correo corporativo.
+*   **Webhooks:** Integración con plataformas de mensajería externa como **Slack** o **Microsoft Teams**.
+
+**Lógica de Priorización:**
+
+*   **CRÍTICA (Sala Inexistente):** Se envía por **TODOS** los canales configurados para garantizar la atención inmediata.
+*   **ALTA (Sala Inactiva):** Se envía por In-App, Email y Webhook.
+*   **MEDIA (Actualización Paciente):** Se envía por In-App y Email.
+*   **BAJA (Info):** Solo In-App.
+
+**Configuración:**
+Los administradores pueden configurar los servidores SMTP y las URLs de los Webhooks desde el panel de `Configuración > General > Notificaciones`, así como realizar pruebas de conexión en tiempo real.
+
 ---
 
 ## 6. Modos Avanzados de Operación
@@ -461,6 +483,15 @@ Garantiza la continuidad operativa ante fallos de conexión a internet o caída 
   * El sistema pasa a un modo de "Triaje Manual Estructurado" basado en reglas locales.
 * **Almacenamiento Local:** Los datos se guardan temporalmente en el navegador del usuario.
 * **Sincronización:** Al restablecerse la conexión, el sistema permite sincronizar los registros locales con la base de datos central, marcándolos como "Generados en Contingencia".
+
+### 6.3 Aplicación Web Progresiva (PWA)
+
+El sistema ha sido habilitado como una **Progressive Web App (PWA)**, permitiendo su instalación como una aplicación nativa en dispositivos de escritorio y móviles.
+
+*   **Instalable:** Los usuarios pueden añadir la aplicación a su pantalla de inicio, eliminando la barra de navegación del navegador y ofreciendo una experiencia inmersiva.
+*   **Icono Adaptativo:** El icono de la aplicación se adapta automáticamente al tema del dispositivo (claro/oscuro).
+*   **Soporte Offline Básico:** En caso de pérdida total de conexión, la aplicación muestra una pantalla informativa amigable en lugar del error estándar del navegador.
+*   **Acceso Rápido:** Facilita el acceso inmediato al triaje sin necesidad de recordar URLs.
 
 ---
 
