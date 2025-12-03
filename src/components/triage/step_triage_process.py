@@ -46,19 +46,20 @@ def render_step_triage_process() -> bool:
         # Guardar borrador si hay cambios en datos clave
         if st.session_state.get('triage_record_id'):
             from services.triage_service import update_triage_draft
-            # Recopilar datos actuales
-            current_data = {
-                "vital_signs": st.session_state.datos_paciente.get('vital_signs'),
-                "motivo_consulta": st.session_state.datos_paciente.get('texto_medico'), # Mapear a campo persistente
-                "dolor": st.session_state.datos_paciente.get('dolor'),
-                "antecedentes": st.session_state.datos_paciente.get('antecedentes'),
-                "alergias": st.session_state.datos_paciente.get('alergias'),
-                "sintomas_detectados": [], # Pendiente extraer de NLP si aplica
-                # Nota: Las imágenes son archivos temporales, no se pueden guardar fácilmente en BD sin subirlos.
-                # Se podría guardar metadatos si fuera crítico.
-            }
+            # Recopilar datos actuales dinámicamente
+            # Guardamos todo lo que hay en datos_paciente excepto objetos binarios/temporales
+            data_to_save = {k: v for k, v in st.session_state.datos_paciente.items() 
+                           if k not in ['imagenes', 'imagenes_confirmadas_ia']}
+            
+            # Mapeos de compatibilidad (Legacy)
+            if 'texto_medico' in data_to_save:
+                data_to_save['motivo_consulta'] = data_to_save['texto_medico']
+
+            # Añadir estados externos a datos_paciente
+            data_to_save['gi_responses'] = st.session_state.get('gi_responses', {})
+            
             # Actualizar silenciosamente (sin rerun)
-            update_triage_draft(st.session_state.triage_record_id, current_data)
+            update_triage_draft(st.session_state.triage_record_id, data_to_save)
     
     st.divider()
     

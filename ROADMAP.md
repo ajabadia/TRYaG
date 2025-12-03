@@ -229,8 +229,11 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - [x] UI Implementada (`multi_center_dashboard.py`).
     - [x] Conectar dashboard a datos agregados reales (Implementado en `multi_center_service.py`).
     - [x] Implementar selectores de centros dinámicos.
+    - [x] Conectar dashboard a datos agregados reales (Implementado en `multi_center_service.py`).
+    - [x] Implementar selectores de centros dinámicos.
 - [x] **8.3 Video Nativo:**
     - [x] Implementar grabación de video real usando MediaRecorder API (o alternativa robusta `st.file_uploader`).
+    - [x] **FIX**: Revisar estabilidad y funcionamiento (Reemplazado por File Uploader robusto).
 - [x] **8.4 Testing y Calidad:**
     - [x] Estructura de tests (`tests/` folder).
     - [x] Implementar cobertura de tests unitarios y de integración (PTR y ML Service).

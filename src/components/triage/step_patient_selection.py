@@ -163,21 +163,26 @@ def render_step_patient_selection() -> bool:
                 # Restaurar datos si existen en el borrador (pendiente implementar mapeo completo)
                 # Por ahora, confiamos en que el usuario rellene, o mapeamos lo básico si guardamos partials
                 # Restaurar datos si existen en el borrador
-                if 'vital_signs' in draft and draft['vital_signs']:
-                     st.session_state.datos_paciente['vital_signs'] = draft['vital_signs']
+                # Preservar imágenes si ya hubiera en sesión (raro en resume, pero por seguridad)
+                saved_images = st.session_state.datos_paciente.get('imagenes', [])
                 
-                # Restaurar campos adicionales (Phase 8.11)
-                if 'motivo_consulta' in draft and draft['motivo_consulta']:
+                # Definir claves de metadatos a excluir de datos_paciente
+                metadata_keys = ['_id', 'patient_id', 'evaluator_id', 'status', 'timestamp', 'audit_id', 'gi_responses']
+                
+                # Restaurar dinámicamente todo lo que no sea metadata
+                for k, v in draft.items():
+                    if k not in metadata_keys:
+                        st.session_state.datos_paciente[k] = v
+                
+                # Restaurar imágenes
+                st.session_state.datos_paciente['imagenes'] = saved_images
+
+                # Mapeo de compatibilidad inversa (si falta texto_medico pero hay motivo_consulta)
+                if 'motivo_consulta' in draft and not st.session_state.datos_paciente.get('texto_medico'):
                     st.session_state.datos_paciente['texto_medico'] = draft['motivo_consulta']
-                
-                if 'dolor' in draft:
-                    st.session_state.datos_paciente['dolor'] = draft['dolor']
-                    
-                if 'antecedentes' in draft:
-                    st.session_state.datos_paciente['antecedentes'] = draft['antecedentes']
-                    
-                if 'alergias' in draft:
-                    st.session_state.datos_paciente['alergias'] = draft['alergias']
+
+                if 'gi_responses' in draft:
+                    st.session_state.gi_responses = draft['gi_responses']
                 
                 # Restaurar estado de edición para que el usuario vea lo que tenía
                 st.session_state.is_editing_text = True
@@ -199,7 +204,10 @@ def render_step_patient_selection() -> bool:
                     "dolor": 5,
                     "imagenes": [],
                     "imagenes_confirmadas_ia": [],
-                    "vital_signs": {}
+                    "vital_signs": {},
+                    # Propagar datos de seguro
+                    "insurance_info": st.session_state.triage_patient.get('insurance_info', {}),
+                    "seguro": st.session_state.triage_patient.get('seguro', '')
                 }
                 st.session_state.resultado = None
                 st.session_state.calificacion_humana = None
@@ -299,7 +307,7 @@ def render_step_patient_selection() -> bool:
                     label="📄 Descargar Borrador PDF",
                     data=pdf_bytes,
                     file_name=file_name,
-                    mime="application/octet-stream",
+                    mime="application/pdf",
                     key=f"btn_dl_draft_{p.get('patient_code')}",
                     help="Descargar informe preliminar con los datos capturados hasta ahora"
                 )

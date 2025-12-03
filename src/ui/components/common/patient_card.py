@@ -4,6 +4,9 @@ from datetime import datetime
 from utils.ui_utils import get_room_color
 
 from services.patient_service import calcular_edad, obtener_paciente_por_codigo
+from services.report_service import generate_triage_pdf
+import unicodedata
+import re
 
 def render_patient_card(
     patient: dict,
@@ -240,27 +243,29 @@ def render_patient_card(
             }
             
             try:
-                from services.report_service import generate_triage_pdf
-                import unicodedata
-                import re
-                
+                # Generar PDF
                 pdf_bytes = generate_triage_pdf(record_wrapper)
                 
+                # Sanitizar nombre de archivo
                 raw_name = f"{patient.get('nombre', 'Paciente')}_{patient.get('apellido1', '')}"
+                # Normalizar y eliminar caracteres especiales
                 normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
                 safe_name = re.sub(r'[^\w\-_]', '_', normalized)
-                file_name = f"Informe_{safe_name}_{datetime.now().strftime('%H%M')}.pdf"
+                
+                # Timestamp detallado para evitar caché/duplicados
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                file_name = f"Informe_{safe_name}_{timestamp}.pdf"
                 
                 st.download_button(
                     label="📄 Informe PDF",
                     data=pdf_bytes,
                     file_name=file_name,
-                    mime="application/octet-stream",
+                    mime="application/pdf",
                     use_container_width=True,
                     key=f"btn_dl_pdf_{pid}_{key_prefix}"
                 )
             except Exception as e:
-                st.error(f"Error PDF: {e}")
+                st.error(f"Error generando PDF: {e}")
 
     # --- MODALES DE ACCIONES ESTÁNDAR ---
     # Renderizar fuera del container principal para evitar problemas de anidamiento visual

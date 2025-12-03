@@ -3,7 +3,7 @@ import base64
 import time
 from datetime import datetime
 from utils.file_handler import save_file_to_temp, TempFileWrapper
-from components.custom_video_recorder import video_recorder
+
 
 def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=False):
     """
@@ -20,47 +20,40 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
         st.info("Grabación bloqueada.")
         return
 
-    # Clave dinámica para reiniciar el componente
-    if f"{key_prefix}_reset_counter" not in st.session_state:
-        st.session_state[f"{key_prefix}_reset_counter"] = 0
-        
-    recorder_key = f"{key_prefix}_rec_{st.session_state[f'{key_prefix}_reset_counter']}"
+    # --- IMPLEMENTACIÓN ROBUSTA (File Uploader) ---
+    # La grabación nativa vía componente custom es inestable para videos largos (Base64 overhead).
+    # Usamos file_uploader con capture="environment" (móviles) o subida directa.
     
-    # Renderizar componente custom
-    video_data_base64 = video_recorder(key=recorder_key)
+    uploaded_video = st.file_uploader(
+        "Subir video o Grabar (Móvil)", 
+        type=['mp4', 'mov', 'avi', 'webm'], 
+        accept_multiple_files=False,
+        key=f"{key_prefix}_uploader_{st.session_state[f'{key_prefix}_reset_counter']}"
+    )
     
-    # Procesar datos recibidos
-    if video_data_base64:
+    if uploaded_video:
         try:
-            # Decodificar base64
-            # El formato suele ser "data:video/webm;base64,GkXfo..."
-            if "," in video_data_base64:
-                header, encoded = video_data_base64.split(",", 1)
-            else:
-                encoded = video_data_base64
-                
-            video_bytes = base64.b64decode(encoded)
-            
             # Guardar temporalmente
-            file_info = save_file_to_temp(video_bytes, default_ext=".webm")
+            file_info = save_file_to_temp(uploaded_video.getvalue(), default_ext=f".{uploaded_video.name.split('.')[-1]}")
             
             wrapper = TempFileWrapper(
-                video_bytes, 
-                f"video_{datetime.now().strftime('%H%M%S')}.webm", 
+                uploaded_video, 
+                uploaded_video.name, 
                 temp_path=file_info['path'], 
-                file_type="video/webm"
+                file_type=uploaded_video.type
             )
             
             # Añadir a lista temporal
             if f"{key_prefix}_videos" not in st.session_state:
                 st.session_state[f"{key_prefix}_videos"] = []
             
-            # Evitar duplicados (el componente puede enviar el mismo valor en reruns)
-            # Usamos el tamaño como proxy simple o verificamos si ya existe el último
+            # Evitar duplicados simples
             current_list = st.session_state[f"{key_prefix}_videos"]
-            if not current_list or current_list[-1].size != len(video_bytes):
+            is_duplicate = any(v.name == wrapper.name and v.size == wrapper.size for v in current_list)
+            
+            if not is_duplicate:
                  st.session_state[f"{key_prefix}_videos"].append(wrapper)
-                 # Forzar reinicio del componente para limpiar
+                 # Incrementar contador para limpiar uploader
                  st.session_state[f"{key_prefix}_reset_counter"] += 1
                  st.rerun()
                  

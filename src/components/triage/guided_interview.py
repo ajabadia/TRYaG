@@ -47,13 +47,25 @@ def render_guided_interview(disabled: bool = False, key_suffix: str = "0"):
                 "location": loc,
                 "bleeding": bleeding
             }
+            
+            # Sincronización HDA (Trauma)
+            st.session_state.datos_paciente['hda_localizacion'] = loc
+            # Actualizar widget key si existe
+            if f"hda_loc_sel_{key_suffix}" in st.session_state:
+                # Mapear valor a opciones del selectbox si es posible, sino 'Otro'
+                # (Simplificación: forzamos rerun para que la lógica de hda_form maneje el default)
+                del st.session_state[f"hda_loc_sel_{key_suffix}"] # Borrar estado para forzar recarga del default
+            if f"hda_loc_txt_{key_suffix}" in st.session_state:
+                del st.session_state[f"hda_loc_txt_{key_suffix}"]
+            
         elif 'trauma' in st.session_state.gi_responses:
             del st.session_state.gi_responses['trauma']
 
         st.divider()
         # --- 2. DOLOR ---
         st.markdown("##### ⚡ Dolor (Sin golpe previo)")
-        pain_opts = repo.get_options_map("gi_pain_type")
+        # Usar la misma categoría que en HDA para consistencia
+        pain_opts = repo.get_options_map("pain_characteristics")
         prev_pain = st.session_state.gi_responses.get('pain', {})
         
         has_pain = st.checkbox("¿El paciente refiere dolor?", value=bool(prev_pain), key="gi_pain_check", disabled=disabled)
@@ -93,6 +105,23 @@ def render_guided_interview(disabled: bool = False, key_suffix: str = "0"):
                 "duration": duration,
                 "location": current_location
             }
+            
+            # Sincronización HDA (Dolor)
+            st.session_state.datos_paciente['hda_intensidad'] = lvl
+            st.session_state.datos_paciente['hda_caracteristicas'] = [type_pain]
+            st.session_state.datos_paciente['hda_localizacion'] = current_location
+            st.session_state.datos_paciente['hda_aparicion'] = duration
+            
+            # Sincronizar Widget Keys (Borrar para forzar recarga desde datos_paciente)
+            keys_to_reset = [
+                f"hda_int_{key_suffix}", 
+                f"hda_char_{key_suffix}", 
+                f"hda_loc_sel_{key_suffix}", 
+                f"hda_onset_{key_suffix}"
+            ]
+            for k in keys_to_reset:
+                if k in st.session_state: del st.session_state[k]
+            
         elif 'pain' in st.session_state.gi_responses:
             del st.session_state.gi_responses['pain']
 
@@ -119,6 +148,8 @@ def render_guided_interview(disabled: bool = False, key_suffix: str = "0"):
                     if 'vital_signs' not in st.session_state.datos_paciente:
                         st.session_state.datos_paciente['vital_signs'] = {}
                     st.session_state.datos_paciente['vital_signs']['temp'] = temp_val
+                    # Sincronizar widget key de Signos Vitales
+                    st.session_state['vs_temp'] = temp_val
 
             symptoms = st.multiselect("Otros síntomas:", list(sym_opts.values()), default=prev_inf.get('symptoms', []), key="gi_inf_syms", disabled=disabled)
             
@@ -219,24 +250,47 @@ def _update_summary(key_suffix: str):
     # Concatenar al motivo de consulta existente (evitando duplicados si ya se añadió)
     current_text = st.session_state.datos_paciente.get('texto_medico', '')
     
-    new_text = ""
+    # Definir función de actualización interna
+    def apply_update(new_content, mode="append"):
+        if mode == "append":
+            updated_text = current_text + "\n\n[ENTREVISTA GUIADA]:\n" + new_content if current_text else "[ENTREVISTA GUIADA]:\n" + new_content
+        elif mode == "overwrite":
+            # Intentar reemplazar el bloque existente
+            import re
+            # Regex para buscar el bloque: desde [ENTREVISTA GUIADA]: hasta el final o doble salto de línea
+            # Asumimos que es el último bloque o está delimitado
+            pattern = r"\[ENTREVISTA GUIADA\]:.*?(?=\n\n\[|$)" 
+            if re.search(pattern, current_text, re.DOTALL):
+                updated_text = re.sub(pattern, f"[ENTREVISTA GUIADA]:\n{new_content}", current_text, flags=re.DOTALL)
+            else:
+                # Fallback si no encuentra patrón exacto pero detectamos la etiqueta
+                updated_text = current_text + "\n\n[ENTREVISTA GUIADA]:\n" + new_content
+        
+        st.session_state.datos_paciente['texto_medico'] = updated_text
+        widget_key = f"texto_medico_input_{key_suffix}"
+        st.session_state[widget_key] = updated_text
+        st.toast("✅ Resumen actualizado.")
+        st.rerun()
+
     # Simple check para no duplicar masivamente
     if "[ENTREVISTA GUIADA]" not in current_text:
-        if current_text:
-            new_text = current_text + "\n\n[ENTREVISTA GUIADA]:\n" + final_text
-        else:
-            new_text = "[ENTREVISTA GUIADA]:\n" + final_text
+        apply_update(final_text, mode="append")
     else:
-        # Si ya existe, intentar reemplazar la sección (más complejo, por ahora solo avisamos)
-        st.toast("⚠️ El resumen ya fue añadido. Edita el campo de texto directamente si necesitas cambios.")
-        new_text = current_text # Mantener igual
-    
-    if new_text != current_text:
-        st.session_state.datos_paciente['texto_medico'] = new_text
-        
-        # --- CRITICAL FIX: Force update of the text_area widget state ---
-        widget_key = f"texto_medico_input_{key_suffix}"
-        st.session_state[widget_key] = new_text
-        
-        st.toast("✅ Resumen actualizado en el formulario.")
-        st.rerun()
+        # Diálogo de resolución de conflictos
+        @st.dialog("⚠️ Actualizar Resumen", width="small")
+        def resolve_conflict():
+            st.warning("Ya existe un resumen de entrevista en el motivo de consulta.")
+            st.markdown("¿Qué deseas hacer?")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("➕ Añadir al final", use_container_width=True):
+                    apply_update(final_text, mode="append")
+            with col2:
+                if st.button("✏️ Sobrescribir", type="primary", use_container_width=True):
+                    apply_update(final_text, mode="overwrite")
+            
+            if st.button("❌ Cancelar", type="secondary", use_container_width=True):
+                st.rerun()
+
+        resolve_conflict()

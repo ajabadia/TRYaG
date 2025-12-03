@@ -144,7 +144,7 @@ def render_report_viewer(record: dict, patient: dict):
                     label="⬇️ Descargar Archivo PDF",
                     data=pdf_bytes,
                     file_name=file_name,
-                    mime="application/octet-stream",
+                    mime="application/pdf",
                     type="secondary",
                     icon="📥",
                     use_container_width=True

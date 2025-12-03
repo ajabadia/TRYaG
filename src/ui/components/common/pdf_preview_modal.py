@@ -107,7 +107,7 @@ def show_pdf_preview_modal(record: dict, patient: dict):
                 label="⬇️ Generar y Descargar PDF",
                 data=pdf_bytes,
                 file_name=file_name,
-                mime="application/octet-stream",
+                mime="application/pdf",
                 type="primary",
                 use_container_width=True
             )

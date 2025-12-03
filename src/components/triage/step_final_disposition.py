@@ -52,7 +52,7 @@ def render_step_final_disposition():
             label="🖨️ Descargar Hoja de Triaje",
             data=pdf_bytes,
             file_name=file_name,
-            mime="application/octet-stream",
+            mime="application/pdf",
             type="primary",
             icon="📄",
             use_container_width=True

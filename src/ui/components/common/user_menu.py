@@ -17,7 +17,8 @@ def render_user_menu():
         role = "Invitado"
     
     # Usar un popover para el menú
-    with st.popover(f"👤 {username}", help="Menú de Usuario"):
+    # Cambiado a icono hamburguesa (☰) por petición de usuario
+    with st.popover("☰", help=f"Menú de Usuario ({username})"):
         st.markdown(f"**Rol:** {role}")
         st.divider()
         
