@@ -1,6 +1,6 @@
 # path: src/services/simulated_ia.py
 # Creado: 2025-11-21
-# Última modificación: 2025-11-23
+# Última modificación: 2025-12-03
 """
 Módulo para la simulación de un modelo de IA para triaje traumatológico.
 Ahora configurable mediante JSON.
@@ -49,12 +49,13 @@ def simulacion_ia(motivo, edad, dolor, prompt_content=None):
 
     # 2. GUARDRAILS (Filtro de Seguridad)
     exclusion_keywords = config.get("exclusion_keywords", [])
+    warnings = []
     for word in exclusion_keywords:
         if word in motivo:
-            return {
-                "status": "EXCLUDED",
-                "msg": f"⚠️ ALERTA: Detectado síntoma '{word}' no compatible con Traumatología. Derivar a Urgencias Generales."
-            }
+            warnings.append(f"⚠️ ALERTA: Detectado síntoma '{word}' no compatible con Traumatología.")
+            
+    # Si hay warnings, los añadimos al razonamiento pero NO detenemos la ejecución
+    # El status será SUCCESS pero con flag de warning para la UI
 
     # 3. LÓGICA DE TRIAJE (ÁRBOL DE DECISIÓN)
     # Estructura: Signos Vitales -> Exclusiones -> Discriminadores -> Modificadores
@@ -120,6 +121,11 @@ def simulacion_ia(motivo, edad, dolor, prompt_content=None):
 
     # Construir respuesta
     razones_list = []
+    
+    # Añadir warnings al principio si existen
+    if warnings:
+        razones_list.extend(warnings)
+        
     # Añadir contexto básico
     razones_list.append(f"Paciente de {edad} años.")
     razones_list.append(f"Dolor nivel {dolor}/10.")
@@ -135,5 +141,6 @@ def simulacion_ia(motivo, edad, dolor, prompt_content=None):
         },
         "razones": razones_list, # Ahora devolvemos lista directamente
         "razonamiento": razones_list, # Legacy support
-        "status": "SUCCESS"
+        "status": "SUCCESS",
+        "warnings": warnings # Para manejo específico en UI si se desea
     }

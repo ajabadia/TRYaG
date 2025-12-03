@@ -147,6 +147,16 @@ class RolesRepository:
         self.collection.insert_one(role_data)
         return True
 
+    def delete_role(self, code: str) -> bool:
+        """Elimina un rol por su código."""
+        # Protección extra para roles de sistema (aunque la UI lo bloquea)
+        role = self.get_role_by_code(code)
+        if role and role.get("system_role", False):
+            return False
+            
+        result = self.collection.delete_one({"code": code})
+        return result.deleted_count > 0
+
 _roles_repo = None
 
 def get_roles_repository() -> RolesRepository:

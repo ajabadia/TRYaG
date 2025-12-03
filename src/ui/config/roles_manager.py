@@ -92,9 +92,9 @@ def render_roles_manager():
         selected_role_name = st.radio("Selecciona un rol:", role_names, label_visibility="collapsed")
         
         # Botón para crear nuevo rol (Placeholder por ahora)
+        # Botón para crear nuevo rol
         if st.button("➕ Nuevo Rol", use_container_width=True):
-            st.toast("Funcionalidad de crear rol pendiente de implementación completa.")
-            # Aquí se abriría un dialog para crear rol básico
+            create_role_dialog()
 
     # Buscar el objeto rol seleccionado
     selected_role = next((r for r in roles if r["nombre"] == selected_role_name), None)
@@ -174,5 +174,73 @@ def render_roles_manager():
                         st.rerun()
                     else:
                         st.error("Error al actualizar el rol.")
+                
+                # Botón Eliminar (Solo si no es system_role)
+                if not selected_role.get("system_role", False):
+                    st.divider()
+                    if st.button("🗑️ Eliminar Rol", type="primary", use_container_width=True, key=f"del_role_{selected_role['code']}"):
+                        @st.dialog("Confirmar Eliminación")
+                        def confirm_delete():
+                            st.warning(f"¿Estás seguro de que deseas eliminar el rol '{selected_role['nombre']}'? Esta acción no se puede deshacer.")
+                            if st.button("Sí, Eliminar", type="primary"):
+                                if repo.delete_role(selected_role["code"]):
+                                    st.success("Rol eliminado.")
+                                    time.sleep(1)
+                                    st.rerun()
+                                else:
+                                    st.error("Error al eliminar el rol.")
+                        confirm_delete()
+                else:
+                    st.caption("🔒 Este es un rol de sistema y no puede ser eliminado.")
 
-                        st.markdown('<div class="debug-footer">src/ui/config/roles_manager.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/config/roles_manager.py</div>', unsafe_allow_html=True)
+
+@st.dialog("Crear Nuevo Rol", width="medium")
+def create_role_dialog():
+    """Modal para crear un nuevo rol."""
+    st.markdown("### Nuevo Rol")
+    
+    with st.form("new_role_form"):
+        code = st.text_input("Código (Identificador único)", placeholder="ej: supervisor_enfermeria").lower().strip().replace(" ", "_")
+        name = st.text_input("Nombre del Rol", placeholder="ej: Supervisor de Enfermería")
+        desc = st.text_area("Descripción")
+        
+        # Copiar permisos de...
+        repo = get_roles_repository()
+        roles = repo.get_all_roles()
+        copy_from = st.selectbox("Copiar permisos de (Plantilla):", ["Ninguno (Vacío)"] + [r["nombre"] for r in roles])
+        
+        submitted = st.form_submit_button("Crear Rol")
+        
+        if submitted:
+            if not code or not name:
+                st.error("Código y Nombre son obligatorios.")
+                return
+            
+            # Verificar duplicados
+            if repo.get_role_by_code(code):
+                st.error("Ya existe un rol con este código.")
+                return
+            
+            # Preparar permisos
+            perms = {}
+            if copy_from != "Ninguno (Vacío)":
+                template_role = next((r for r in roles if r["nombre"] == copy_from), None)
+                if template_role:
+                    perms = template_role.get("permissions", {}).copy()
+            
+            new_role_data = {
+                "code": code,
+                "nombre": name,
+                "descripcion": desc,
+                "permissions": perms,
+                "system_role": False,
+                "nivel_acceso": 10 # Default bajo
+            }
+            
+            if repo.create_role(new_role_data):
+                st.success(f"Rol '{name}' creado exitosamente.")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.error("Error al crear el rol.")

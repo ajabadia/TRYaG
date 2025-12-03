@@ -209,8 +209,10 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 - [x] **Fase 4: Gestión de Cola y Reevaluación:**
     - [x] Panel de espera dinámico.
     - [x] Flujo de re-triaje.
-- [ ] **Fase 5: Roles y Configuración:**
+- [x] **Fase 5: Roles y Configuración:**
     - [x] Pantalla de configuración de rangos.
+    - [x] Gestión de Roles (Crear/Editar/Eliminar).
+    - [x] Asignación de Roles a Usuarios.
 - [x] **Fase 6: Integración IA:**
     - [x] Alertas predictivas.
     - [x] Optimización de análisis de riesgos (Botones y Lógica).
@@ -313,5 +315,15 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - **Configuración:** Nueva sección en `Configuración > Centro` para crear grupos y asignar centros.
     - **Dashboard:** Filtros por "Grupo de Centros" en el Dashboard Multi-Centro.
     - **[ ] Refactorización Futura:** Hacer que la dependencia sea estricta (Centro -> Grupo) añadiendo `group_id` en el modelo de Centro, en lugar de solo listar IDs en el Grupo.
+
+## 🔮 FASE 9: Producción y PWA (Postergada)
+**Objetivo:** Preparación para despliegue productivo, autenticación real y capacidades offline. (Pospuesto por riesgo técnico actual).
+
+- [ ] **9.1 PWA y Offline-First:**
+    - Service Workers, IndexedDB, Sincronización en segundo plano.
+- [ ] **9.2 Autenticación Real:**
+    - Integración con Auth0/Firebase, JWT, Seguridad.
+- [ ] **9.3 Despliegue:**
+    - Dockerización, HTTPS, CI/CD completo.
 
 

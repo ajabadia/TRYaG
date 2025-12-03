@@ -37,21 +37,24 @@ def render_step_final_disposition():
             dest = f"Consulta: {st.session_state.get('selected_consulta_code')}"
         record["destination"] = dest
         
-        pdf_bytes = generate_triage_pdf(record)
-        
-        # Nombre del archivo (Sanitizado ASCII)
-        import re
-        import unicodedata
-        raw_name = f"{p.get('nombre')}_{p.get('apellido1')}"
-        normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
-        safe_name = re.sub(r'[^\w\-_]', '_', normalized)
-        
-        file_name = f"Triaje_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+        # Cachear el PDF para evitar regeneración en cada interacción
+        if "cached_pdf_bytes" not in st.session_state or st.session_state.get("cached_pdf_patient") != p["patient_code"]:
+            with st.spinner("Generando informe PDF..."):
+                st.session_state.cached_pdf_bytes = generate_triage_pdf(record)
+                st.session_state.cached_pdf_patient = p["patient_code"]
+                
+                # Nombre del archivo (Sanitizado ASCII)
+                import re
+                import unicodedata
+                raw_name = f"{p.get('nombre')}_{p.get('apellido1')}"
+                normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
+                safe_name = re.sub(r'[^\w\-_]', '_', normalized)
+                st.session_state.cached_pdf_name = f"Triaje_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
         
         st.download_button(
             label="🖨️ Descargar Hoja de Triaje",
-            data=pdf_bytes,
-            file_name=file_name,
+            data=st.session_state.cached_pdf_bytes,
+            file_name=st.session_state.cached_pdf_name,
             mime="application/pdf",
             type="primary",
             icon="📄",

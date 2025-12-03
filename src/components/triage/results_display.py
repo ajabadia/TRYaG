@@ -22,6 +22,11 @@ def render_results_display():
         else:
             st.divider()
             
+            # --- WARNINGS DISPLAY ---
+            if "warnings" in resultado and resultado["warnings"]:
+                for w in resultado["warnings"]:
+                    st.warning(w, icon="⚠️")
+            
             # Cabecera con icono
             c_head_icon, c_head_text = st.columns([1, 20])
             with c_head_icon:
@@ -158,6 +163,12 @@ def render_results_display():
                 import json
                 from datetime import datetime
                 
+                # Obtener datos reales del paciente (desde selección previa)
+                patient_info = st.session_state.get('triage_patient', {})
+                p_ref = f"Patient/{patient_info.get('id') or datos_paciente.get('patient_code') or 'UNKNOWN'}"
+                p_name = f"{patient_info.get('nombre', '')} {patient_info.get('apellido1', '')}".strip()
+                if not p_name: p_name = "Paciente Desconocido"
+
                 # Simular Payload
                 fhir_payload = {
                     "resourceType": "Encounter",
@@ -168,8 +179,8 @@ def render_results_display():
                         "display": "emergency"
                     },
                     "subject": {
-                        "reference": f"Patient/{datos_paciente.get('patient_code') or 'UNKNOWN'}",
-                        "display": f"{datos_paciente.get('nombre') or 'Paciente'} {datos_paciente.get('apellido1') or 'Desconocido'}"
+                        "reference": p_ref,
+                        "display": p_name
                     },
                     "period": {
                         "start": datetime.now().isoformat(),
@@ -191,7 +202,7 @@ def render_results_display():
                     }
                 }
                 
-                st.code(json.dumps(fhir_payload, indent=2), language="json")
+                st.code(json.dumps(fhir_payload, indent=2, ensure_ascii=False), language="json")
                 
                 import time
                 with st.spinner("Conectando con bus de integración..."):

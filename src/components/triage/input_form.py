@@ -54,6 +54,10 @@ def procesar_respuesta_ia(resultado_ia, algo_result=None):
         # Preservar wait_time del algoritmo si la IA no lo da (la IA no suele darlo en este prompt)
         if "wait_time" not in final_result:
              final_result["wait_time"] = "N/A"
+             
+        # Preservar warnings si existen (para UI destacada)
+        if "warnings" in resultado_ia:
+            final_result["warnings"] = resultado_ia["warnings"]
 
     else:
         # Si no tiene nivel_sugerido, verificar si tiene la estructura correcta
@@ -350,10 +354,34 @@ def render_input_form():
             if st.button("Analizar sin IA", disabled=is_button_disabled, use_container_width=True):
                 with st.spinner("Ejecutando simulación..."):
                     st.session_state.datos_paciente['imagenes_confirmadas_ia'] = []
-                    resultado_simulado = simulacion_ia(st.session_state.datos_paciente['texto_medico'], st.session_state.datos_paciente['edad'], st.session_state.datos_paciente['dolor'])
-                    st.session_state.resultado = resultado_simulado
-                    if resultado_simulado and resultado_simulado.get("status") == "SUCCESS":
-                        st.session_state.analysis_complete = True
+                    
+                    # --- CÁLCULO DE TRIAJE AUTOMÁTICO (WORST CASE) ---
+                    from components.triage.vital_signs import get_all_configs
+                    from components.triage.triage_logic import calculate_worst_case, calculate_ptr_score
+                    
+                    configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))
+                    triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
+                    
+                    # --- CÁLCULO PTR ---
+                    vs_for_ptr = st.session_state.datos_paciente.get('vital_signs', {}).copy()
+                    vs_for_ptr['dolor'] = st.session_state.datos_paciente.get('dolor', 0)
+                    
+                    ptr_result = calculate_ptr_score(
+                        vs_for_ptr,
+                        st.session_state.datos_paciente
+                    )
+                    triage_result['ptr_result'] = ptr_result
+
+                    # Simulación
+                    resultado_simulado = simulacion_ia(
+                        st.session_state.datos_paciente['texto_medico'], 
+                        st.session_state.datos_paciente['edad'], 
+                        st.session_state.datos_paciente['dolor']
+                    )
+                    
+                    # Procesar igual que la IA real
+                    procesar_respuesta_ia(resultado_simulado, algo_result=triage_result)
+                    st.session_state.analysis_complete = True
                     st.rerun()
         
         with col_analisis_2:
@@ -434,8 +462,12 @@ def render_input_form():
                     triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
                     
                     # --- CÁLCULO PTR (NUEVO) ---
+                    # Preparar signos vitales enriquecidos con dolor
+                    vs_for_ptr = st.session_state.datos_paciente.get('vital_signs', {}).copy()
+                    vs_for_ptr['dolor'] = st.session_state.datos_paciente.get('dolor', 0)
+                    
                     ptr_result = calculate_ptr_score(
-                        st.session_state.datos_paciente.get('vital_signs', {}),
+                        vs_for_ptr,
                         st.session_state.datos_paciente
                     )
                     triage_result['ptr_result'] = ptr_result

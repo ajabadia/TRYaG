@@ -250,47 +250,46 @@ def _update_summary(key_suffix: str):
     # Concatenar al motivo de consulta existente (evitando duplicados si ya se añadió)
     current_text = st.session_state.datos_paciente.get('texto_medico', '')
     
-    # Definir función de actualización interna
-    def apply_update(new_content, mode="append"):
-        if mode == "append":
-            updated_text = current_text + "\n\n[ENTREVISTA GUIADA]:\n" + new_content if current_text else "[ENTREVISTA GUIADA]:\n" + new_content
-        elif mode == "overwrite":
-            # Intentar reemplazar el bloque existente
-            import re
-            # Regex para buscar el bloque: desde [ENTREVISTA GUIADA]: hasta el final o doble salto de línea
-            # Asumimos que es el último bloque o está delimitado
-            pattern = r"\[ENTREVISTA GUIADA\]:.*?(?=\n\n\[|$)" 
-            if re.search(pattern, current_text, re.DOTALL):
-                updated_text = re.sub(pattern, f"[ENTREVISTA GUIADA]:\n{new_content}", current_text, flags=re.DOTALL)
-            else:
-                # Fallback si no encuentra patrón exacto pero detectamos la etiqueta
-                updated_text = current_text + "\n\n[ENTREVISTA GUIADA]:\n" + new_content
-        
-        st.session_state.datos_paciente['texto_medico'] = updated_text
-        widget_key = f"texto_medico_input_{key_suffix}"
-        st.session_state[widget_key] = updated_text
-        st.toast("✅ Resumen actualizado.")
-        st.rerun()
-
     # Simple check para no duplicar masivamente
     if "[ENTREVISTA GUIADA]" not in current_text:
-        apply_update(final_text, mode="append")
+        _apply_summary_update(final_text, current_text, key_suffix, mode="append")
     else:
         # Diálogo de resolución de conflictos
-        @st.dialog("⚠️ Actualizar Resumen", width="small")
-        def resolve_conflict():
-            st.warning("Ya existe un resumen de entrevista en el motivo de consulta.")
-            st.markdown("¿Qué deseas hacer?")
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("➕ Añadir al final", use_container_width=True):
-                    apply_update(final_text, mode="append")
-            with col2:
-                if st.button("✏️ Sobrescribir", type="primary", use_container_width=True):
-                    apply_update(final_text, mode="overwrite")
-            
-            if st.button("❌ Cancelar", type="secondary", use_container_width=True):
-                st.rerun()
+        resolve_summary_conflict(final_text, current_text, key_suffix)
 
-        resolve_conflict()
+def _apply_summary_update(new_content, current_text, key_suffix, mode="append"):
+    """Aplica la actualización del resumen al texto médico."""
+    if mode == "append":
+        updated_text = current_text + "\n\n[ENTREVISTA GUIADA]:\n" + new_content if current_text else "[ENTREVISTA GUIADA]:\n" + new_content
+    elif mode == "overwrite":
+        # Intentar reemplazar el bloque existente
+        import re
+        # Regex para buscar el bloque: desde [ENTREVISTA GUIADA]: hasta el final o doble salto de línea
+        pattern = r"\[ENTREVISTA GUIADA\]:.*?(?=\n\n\[|$)" 
+        if re.search(pattern, current_text, re.DOTALL):
+            updated_text = re.sub(pattern, f"[ENTREVISTA GUIADA]:\n{new_content}", current_text, flags=re.DOTALL)
+        else:
+            # Fallback si no encuentra patrón exacto pero detectamos la etiqueta
+            updated_text = current_text + "\n\n[ENTREVISTA GUIADA]:\n" + new_content
+    
+    st.session_state.datos_paciente['texto_medico'] = updated_text
+    widget_key = f"texto_medico_input_{key_suffix}"
+    st.session_state[widget_key] = updated_text
+    st.toast("✅ Resumen actualizado.")
+    st.rerun()
+
+@st.dialog("⚠️ Actualizar Resumen", width="small")
+def resolve_summary_conflict(final_text, current_text, key_suffix):
+    st.warning("Ya existe un resumen de entrevista en el motivo de consulta.")
+    st.markdown("¿Qué deseas hacer?")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("➕ Añadir al final", use_container_width=True):
+            _apply_summary_update(final_text, current_text, key_suffix, mode="append")
+    with col2:
+        if st.button("✏️ Sobrescribir", type="primary", use_container_width=True):
+            _apply_summary_update(final_text, current_text, key_suffix, mode="overwrite")
+    
+    if st.button("❌ Cancelar", type="secondary", use_container_width=True):
+        st.rerun()
