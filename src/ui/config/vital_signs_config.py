@@ -55,12 +55,12 @@ def render_vital_signs_config():
             with st.form(key=f"edit_vs_{selected_ref.key}_{idx}"):
                 c1, c2 = st.columns(2)
                 with c1:
-                    new_min_age = st.number_input("Edad Mínima", 0, 120, cfg.min_age)
+                    new_min_age = st.number_input("Edad Mínima", 0, 150, cfg.min_age)
                     new_val_min = st.number_input("Límite Absoluto Mínimo (Error)", 0.0, 1000.0, float(cfg.val_min))
                     new_normal_min = st.number_input("Mínimo Normal (Verde)", 0.0, 1000.0, float(cfg.normal_min))
                     new_default = st.number_input("Valor por Defecto (Media)", 0.0, 1000.0, float(cfg.default_value))
                 with c2:
-                    new_max_age = st.number_input("Edad Máxima", 0, 120, cfg.max_age)
+                    new_max_age = st.number_input("Edad Máxima", 0, 150, cfg.max_age)
                     new_val_max = st.number_input("Límite Absoluto Máximo (Error)", 0.0, 1000.0, float(cfg.val_max))
                     new_normal_max = st.number_input("Máximo Normal (Verde)", 0.0, 1000.0, float(cfg.normal_max))
                 

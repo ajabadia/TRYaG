@@ -20,18 +20,20 @@ def _get_config(metric_key: str) -> Optional[PTRConfig]:
     return config
 
 def _evaluate_rule(value: float, rule) -> bool:
-    """Evalúa una regla individual."""
-    op = rule.operator
-    ref = rule.value
+    """Evalúa una regla individual basada en rangos min/max."""
+    # Soporte para objeto Pydantic o dict (por si acaso)
+    r_min = getattr(rule, 'min', None)
+    r_max = getattr(rule, 'max', None)
     
-    if op == "<": return value < ref
-    if op == "<=": return value <= ref
-    if op == ">": return value > ref
-    if op == ">=": return value >= ref
-    if op == "==": return value == ref
-    if op == "between":
-        return ref <= value <= (rule.value_max or ref)
-    return False
+    # Si es dict
+    if r_min is None and isinstance(rule, dict):
+        r_min = rule.get('min')
+        r_max = rule.get('max')
+        
+    if r_min is None or r_max is None:
+        return False
+        
+    return r_min <= value <= r_max
 
 def calculate_ptr_score(vital_signs: Dict[str, Any], context_flags: Dict[str, bool]) -> Dict[str, Any]:
     """
@@ -46,11 +48,21 @@ def calculate_ptr_score(vital_signs: Dict[str, Any], context_flags: Dict[str, bo
                 context_flags.get('ctx_is_immuno', False) or \
                 context_flags.get('ctx_is_onco', False)
 
-    # Métricas a evaluar
-    metrics_to_check = ['gcs', 'spo2', 'pas', 'fr', 'fc', 'temp', 'dolor']
+    # Métricas a evaluar (incluyendo dolor/eva)
+    metrics_to_check = ['gcs', 'spo2', 'pas', 'fr', 'fc', 'temp', 'dolor', 'eva']
 
     for key in metrics_to_check:
+        # Normalizar clave (dolor -> eva)
+        lookup_key = key
+        if key == 'dolor': lookup_key = 'eva'
+        
         val = vital_signs.get(key)
+        
+        # Si no está en vital_signs, buscar en el root (caso dolor)
+        if val is None and key == 'dolor':
+             # Esto debería venir en vital_signs si se procesó bien, pero por seguridad:
+             pass 
+
         if val is None:
             continue
             
@@ -59,26 +71,29 @@ def calculate_ptr_score(vital_signs: Dict[str, Any], context_flags: Dict[str, bo
         except:
             continue
 
-        config = _get_config(key)
+        config = _get_config(lookup_key)
         if not config:
-            continue
+            # Si buscamos 'dolor' y no hay config, intentamos 'eva'
+            if key == 'dolor': config = _get_config('eva')
+            if not config: continue
 
         # 1. Determinar puntos base según reglas
-        # Se asume que las reglas están ordenadas por prioridad o que se toma la primera que coincida (o la más grave).
-        # En la implementación hardcoded original, se usaban if/elif, lo que implica prioridad.
-        # Aquí iteraremos y tomaremos la primera regla que coincida.
-        # IMPORTANTE: Las reglas en DB deben estar ordenadas lógicamente (ej: <9 antes que <13).
-        
         base_points = 0
         matched_rule = None
         
+        # Iterar reglas y tomar la que dé MAYOR puntuación en caso de solapamiento (Peor caso)
+        # O la primera que coincida si son excluyentes.
         for rule in config.rules:
             if _evaluate_rule(val, rule):
-                base_points = rule.points
-                matched_rule = rule
-                break # Stop at first match (priority)
+                # Asumimos que si hay múltiples matches, queremos el de mayor puntos
+                r_points = getattr(rule, 'points', 0)
+                if isinstance(rule, dict): r_points = rule.get('points', 0)
+                
+                if r_points >= base_points:
+                    base_points = r_points
+                    matched_rule = rule
         
-        if base_points == 0:
+        if base_points == 0 and matched_rule is None:
             continue
 
         # 2. Aplicar multiplicadores
@@ -99,10 +114,9 @@ def calculate_ptr_score(vital_signs: Dict[str, Any], context_flags: Dict[str, bo
         score += points
         
         if points > 0:
-            rule_desc = matched_rule.description if matched_rule else ""
-            details.append(f"{config.name} ({val}): {base_points} {mult_desc} = +{points} [{rule_desc}]")
+            details.append(f"{config.name} ({val}): {base_points} {mult_desc} = +{points}")
 
-    # Interpretación (Hardcoded por ahora, podría moverse a DB también en TriageRangeConfig)
+    # Interpretación (Estudio 2.2)
     if score > 15:
         level = "Nivel I/II (Rojo/Naranja)"
         color = "red"
@@ -119,6 +133,9 @@ def calculate_ptr_score(vital_signs: Dict[str, Any], context_flags: Dict[str, bo
         level = "Nivel IV/V (Verde/Azul)"
         color = "green"
         prio = 4
+
+    if not details:
+        details.append("Sin criterios de riesgo identificados.")
 
     return {
         "score": score,

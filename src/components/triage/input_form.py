@@ -275,7 +275,7 @@ def render_input_form():
 
         if not is_step1_disabled:
             # Pasamos la edad explícitamente para que vital_signs_form pueda cargar la config correcta
-            render_vital_signs_form(age=st.session_state.datos_paciente.get('edad'))
+            render_vital_signs_form()
             
             # --- ALERTAS PREDICTIVAS (MODULARIZADO) ---
             # Solo mostrar si hay signos vitales registrados y está habilitado en config

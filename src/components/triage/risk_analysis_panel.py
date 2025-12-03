@@ -207,67 +207,7 @@ def render_risk_analysis_panel(patient_data, enable_predictive=True):
                 # --- VALIDACIÓN HUMANA ---
                 st.divider()
                 
-                # --- RECOMENDACIONES DE AUTOCUIDADO (NUEVO) ---
-                from services.recommendation_service import RecommendationService
-                from components.triage.recommendations_card import render_recommendations_card
-                
-                # Determinar nivel de prioridad para recomendaciones
-                rec_priority = 4 # Default Verde
-                
-                # Prioridad del Algoritmo (más preciso si existe)
-                if "ALGO" in results and results["ALGO"].get("status") == "SUCCESS":
-                    # Si guardamos la prioridad numérica en el futuro, usarla. 
-                    # Por ahora inferimos del riesgo
-                    r_algo = results["ALGO"].get("risk_level")
-                    if r_algo == "High": rec_priority = 2
-                    elif r_algo == "Medium": rec_priority = 3
-                    else: rec_priority = 4
-                
-                # Prioridad de IA (si no hay algo o es más grave)
-                if "AI" in results:
-                    r_ai = results["AI"].get("risk_level")
-                    ai_prio = 4
-                    if r_ai == "High": ai_prio = 2
-                    elif r_ai == "Medium": ai_prio = 3
-                    
-                    # Usar el más grave (menor número)
-                    rec_priority = min(rec_priority, ai_prio)
-
-                # Obtener datos para recomendaciones
-                main_symptom = patient_data.get('texto_medico', '')
-                pain_level = patient_data.get('vital_signs', {}).get('pain', 0)
-                # Intentar obtener dolor de datos del paciente si no está en vital_signs (ej: entrevista)
-                if not pain_level and 'dolor' in patient_data:
-                    pain_level = patient_data['dolor']
-                
-                interview_data = st.session_state.get('gi_responses', {})
-                
-                recs = RecommendationService.get_recommendations(
-                    triage_level=rec_priority,
-                    main_symptom=main_symptom,
-                    pain_level=pain_level,
-                    interview_data=interview_data
-                )
-                
-                st.divider()
-                st.markdown("**¿Es correcta esta predicción?**")
-                c_val_1, c_val_2 = st.columns(2)
-                
-                if st.button("👍 Correcto", key="pred_val_up", use_container_width=True):
-                    st.toast("Gracias por tu feedback (Positivo)", icon="✅")
-                    st.session_state.predictive_feedback = "positive"
-                    
-                if st.button("👎 Incorrecto", key="pred_val_down", use_container_width=True):
-                    st.toast("Gracias por tu feedback (Negativo)", icon="📝")
-                    st.session_state.predictive_feedback = "negative"
-                    
-                if 'predictive_feedback' in st.session_state:
-                    if st.session_state.predictive_feedback == "positive":
-                        st.caption("✅ Validado positivamente")
-                    else:
-                        st.caption("❌ Marcado como incorrecto")
-
-                st.divider()
-                render_recommendations_card(recs)
+                # --- RECOMENDACIONES DE AUTOCUIDADO (ELIMINADO - MOVIDO AL FINAL DEL TRIAJE) ---
+                pass
 
     st.markdown('<div class="debug-footer">src/components/triage/risk_analysis_panel.py</div>', unsafe_allow_html=True)

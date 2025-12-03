@@ -316,6 +316,14 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - **Dashboard:** Filtros por "Grupo de Centros" en el Dashboard Multi-Centro.
     - **[ ] Refactorización Futura:** Hacer que la dependencia sea estricta (Centro -> Grupo) añadiendo `group_id` en el modelo de Centro, en lugar de solo listar IDs en el Grupo.
 
+- [ ] **8.13 Completar Modo Formación (Futurible):**
+    - **Objetivo:** Implementar la simulación de casos y evaluación de competencia descrita en el funcional.
+    - **Estado Actual:** Parcialmente implementado (Toggle UI, Flag `is_training`, Aislamiento de datos).
+    - **Pendiente:**
+        - [ ] **Simulación:** Generador de datos ficticios (Mock Data) para rellenar formularios automáticamente.
+        - [ ] **Casos Clínicos:** Base de datos de casos predefinidos (JSON/DB) con "Gold Standard" (respuesta correcta esperada).
+        - [ ] **Evaluación:** Comparar decisión del usuario vs Gold Standard y mostrar feedback inmediato.
+
 ## 🔮 FASE 9: Producción y PWA (Postergada)
 **Objetivo:** Preparación para despliegue productivo, autenticación real y capacidades offline. (Pospuesto por riesgo técnico actual).
 

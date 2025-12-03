@@ -1,21 +1,21 @@
 # path: src/components/triage/vital_signs/form.py
 import streamlit as st
 from components.triage.triage_logic import calculate_worst_case, calculate_news_score
+from components.triage.ptr_logic import calculate_ptr_score
 from .utils import get_all_configs
 from .input import render_vital_sign_input
 
-def render_vital_signs_form(age: int = 40):
+def render_vital_signs_form():
     """Renderiza el formulario completo de signos vitales."""
     st.subheader("2. Signos Vitales")
     
-    if age is None: age = 40
+    # Obtener edad del paciente (Contexto)
+    age = st.session_state.datos_paciente.get('edad', 40)
     
     # Cargar configuraciones una sola vez
     configs = get_all_configs(age)
     
     # CSS para Grid Responsivo
-    # Cargar CSS externo
-    from utils.ui_utils import load_css
     from utils.ui_utils import load_css
     load_css("src/assets/css/components/forms.css")
 
@@ -28,13 +28,9 @@ def render_vital_signs_form(age: int = 40):
     sala_code = st.session_state.get("sala_seleccionada")
     devices = []
     if sala_code:
-        # Si es un objeto/dict, obtener código
-        if isinstance(sala_code, dict):
-            sala_code = sala_code.get("codigo")
-        
+        if isinstance(sala_code, dict): sala_code = sala_code.get("codigo")
         sala = get_sala(sala_code)
-        if sala:
-            devices = sala.get("devices", [])
+        if sala: devices = sala.get("devices", [])
 
     # Botón de Captura (solo si hay dispositivos)
     if devices:
@@ -44,7 +40,6 @@ def render_vital_signs_form(age: int = 40):
                 with st.spinner("Conectando con dispositivos médicos..."):
                     time.sleep(random.uniform(1.5, 3.0)) # Simular delay conexión
                     
-                    # Generar valores realistas
                     if "Monitor Multiparamétrico" in devices or "Pulsioxímetro" in devices:
                         if 'vital_signs' not in st.session_state.datos_paciente: st.session_state.datos_paciente['vital_signs'] = {}
                         st.session_state.datos_paciente['vital_signs']['fc'] = float(random.randint(60, 100))
@@ -79,7 +74,6 @@ def render_vital_signs_form(age: int = 40):
         render_vital_sign_input(c6, "temp", "🌡️ Temperatura", "°C", 20.0, 45.0, 36.5, 0.1, "Temperatura axilar/timpánica", configs.get("temp"))
 
         # Fila 3: Neurológico y Otros (GCS, Pupilas, Hidratación/O2)
-        # Nota: GCS estaba en fila 2, lo movemos aquí para balancear
         c7, c8, c9 = st.columns(3)
         
         # GCS
@@ -96,11 +90,9 @@ def render_vital_signs_form(age: int = 40):
                 key="vs_pupilas",
                 help="Normal: Reactivas y simétricas"
             )
-            
             if 'vital_signs' not in st.session_state.datos_paciente: st.session_state.datos_paciente['vital_signs'] = {}
             st.session_state.datos_paciente['vital_signs']['pupilas'] = pupilas
             
-            # Feedback Pupilas (Hardcoded visual)
             p_map = {"Normal": "🟢", "Lenta": "🟡", "Fijas": "🟠", "Anisocoria": "🔴", "Puntiformes": "🔴"}
             st.caption(f"Gravedad: {p_map.get(pupilas, '⚪')}")
 
@@ -125,64 +117,102 @@ def render_vital_signs_form(age: int = 40):
             )
              st.session_state.datos_paciente['vital_signs']['oxigeno_suplementario'] = o2
 
+        # Fila 4: Dolor (EVA) - Integrado desde HDA/Entrevista
+        st.divider()
+        c_eva, _ = st.columns([1, 2])
+        with c_eva:
+            # Recuperar dolor de session_state (puede venir de 'dolor' o 'hda_intensidad')
+            pain_level = st.session_state.datos_paciente.get('dolor', 0)
+            if not pain_level:
+                pain_level = st.session_state.datos_paciente.get('hda_intensidad', 0)
+            
+            # Asegurar que esté en vital_signs para el cálculo
+            st.session_state.datos_paciente['vital_signs']['dolor'] = pain_level
+            
+            st.markdown(f"**⚡ Escala de Dolor (EVA):** {pain_level}/10")
+            st.progress(int(pain_level) / 10)
+            if int(pain_level) >= 7:
+                st.error("Dolor Severo/Insoportable")
+            elif int(pain_level) >= 4:
+                st.warning("Dolor Moderado")
+            else:
+                st.success("Dolor Leve/Controlado")
+
     # --- RESULTADO EN TIEMPO REAL ---
-    st.markdown("### 🚦 Resultado de Triaje (Signos Vitales)")
+    st.markdown("### 🚦 Indicadores de Triaje")
     
-    # Calcular resultado Triaje
+    # 1. Triaje Vital (Peor Caso)
     result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
     
-    # Calcular NEWS
+    # 2. NEWS2
     news_result = calculate_news_score(st.session_state.datos_paciente.get('vital_signs', {}))
     
-    final_color = result["final_color"]
-    final_label = result["label"]
-    wait_time = result["wait_time"]
+    # 3. PTR (Puntuación Total de Riesgo)
+    ptr_result = calculate_ptr_score(
+        st.session_state.datos_paciente.get('vital_signs', {}),
+        st.session_state.datos_paciente # Pasamos todo el dict como contexto (tiene flags)
+    )
     
     # Mapeo de colores CSS
     css_colors = {
         "green": "#28a745", "yellow": "#ffc107", "orange": "#fd7e14", "red": "#dc3545", "black": "#343a40", "gray": "#6c757d"
     }
-    bg_color = css_colors.get(final_color, "#6c757d")
-    text_color = "black" if final_color == "yellow" else "white"
     
-    c_res1, c_res2 = st.columns(2)
-    with c_res1:
+    col_ind1, col_ind2, col_ind3 = st.columns(3)
+    
+    # Indicador 1: Triaje Vital
+    with col_ind1:
+        bg = css_colors.get(result["final_color"], "#6c757d")
+        fg = "black" if result["final_color"] == "yellow" else "white"
         st.markdown(f"""
-            <div style="background-color: {bg_color}; color: {text_color}; padding: 20px; border-radius: 10px; text-align: center; margin-top: 10px;">
-                <h3 style="margin:0;">Triaje: {final_label}</h3>
-                <p style="margin:5px 0 0 0; font-size: 1em;">Espera Máx: <strong>{wait_time}</strong></p>
+            <div style="background-color: {bg}; color: {fg}; padding: 15px; border-radius: 8px; text-align: center;">
+                <h4 style="margin:0;">Triaje Vital</h4>
+                <h2 style="margin:0;">{result['label']}</h2>
+                <p style="margin:5px 0 0 0;">Espera: {result['wait_time']}</p>
             </div>
         """, unsafe_allow_html=True)
-        
-    with c_res2:
-        n_color = news_result['color']
-        n_score = news_result['score']
-        n_risk = news_result['risk']
-        bg_color_n = css_colors.get(n_color, "#6c757d")
-        text_color_n = "black" if n_color == "yellow" else "white"
-        
+
+    # Indicador 2: NEWS2
+    with col_ind2:
+        bg = css_colors.get(news_result['color'], "#6c757d")
+        fg = "black" if news_result['color'] == "yellow" else "white"
         st.markdown(f"""
-            <div style="background-color: {bg_color_n}; color: {text_color_n}; padding: 20px; border-radius: 10px; text-align: center; margin-top: 10px;">
-                <h3 style="margin:0;">NEWS2: {n_score}</h3>
-                <p style="margin:5px 0 0 0; font-size: 1em;">Riesgo: <strong>{n_risk}</strong></p>
+            <div style="background-color: {bg}; color: {fg}; padding: 15px; border-radius: 8px; text-align: center;">
+                <h4 style="margin:0;">NEWS2</h4>
+                <h2 style="margin:0;">Score: {news_result['score']}</h2>
+                <p style="margin:5px 0 0 0;">{news_result['risk']}</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    # Indicador 3: PTR
+    with col_ind3:
+        bg = css_colors.get(ptr_result['color'], "#6c757d")
+        fg = "black" if ptr_result['color'] == "yellow" else "white"
+        st.markdown(f"""
+            <div style="background-color: {bg}; color: {fg}; padding: 15px; border-radius: 8px; text-align: center;">
+                <h4 style="margin:0;">PTR (Gemini)</h4>
+                <h2 style="margin:0;">Puntos: {ptr_result['score']}</h2>
+                <p style="margin:5px 0 0 0;">{ptr_result['level_text']}</p>
             </div>
         """, unsafe_allow_html=True)
     
     # Detalles (Expandible)
-    with st.expander("Ver detalles de clasificación y NEWS"):
-        c_det1, c_det2 = st.columns(2)
-        with c_det1:
-            st.markdown("##### Triaje")
+    with st.expander("🔍 Ver desglose detallado de indicadores"):
+        t1, t2, t3 = st.tabs(["Triaje Vital", "NEWS2", "PTR"])
+        
+        with t1:
             for det in result["details"]:
-                # Formatear el diccionario a string legible
                 metric = det.get('metric', '').upper()
-                val = det.get('value')
-                label = det.get('label')
-                st.write(f"- **{metric}**: {val} ({label})")
-        with c_det2:
-            st.markdown("##### NEWS2")
+                st.write(f"- **{metric}**: {det.get('value')} ({det.get('label')})")
+        
+        with t2:
             for det in news_result["details"]:
                 st.write(f"- {det}")
-            st.caption(f"Acción: {news_result['action']}")
+            st.info(f"Acción sugerida: {news_result['action']}")
+            
+        with t3:
+            for det in ptr_result["details"]:
+                st.write(f"- {det}")
+            st.caption("Puntuación Total de Riesgo basada en multiplicadores y contexto.")
 
     st.markdown('<div class="debug-footer">src/components/triage/vital_signs/form.py</div>', unsafe_allow_html=True)

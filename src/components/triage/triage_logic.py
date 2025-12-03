@@ -248,6 +248,9 @@ def calculate_news_score(vital_signs: Dict[str, Any]) -> Dict[str, Any]:
         action = "Emergencia / UCI / SVA"
         color = "red"
 
+    if not details:
+        details.append("Todos los parámetros fisiológicos en rango normal.")
+
     return {
         "score": score,
         "risk": risk,

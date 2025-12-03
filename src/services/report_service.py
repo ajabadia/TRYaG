@@ -216,8 +216,16 @@ def generate_report(data: dict) -> bytes:
         story.append(Paragraph("No hay análisis disponible.", styles['Normal']))
         
     story.append(Spacer(1, 20))
+
+    # --- 7. RECOMENDACIONES Y CUIDADOS (NUEVO) ---
+    recs = data.get('recommendations', [])
+    if recs:
+        story.append(Paragraph("6. Recomendaciones y Cuidados", styles['SectionHeader']))
+        for rec in recs:
+            story.append(Paragraph(f"• {rec}", styles['NormalJustified'], bulletText="•"))
+        story.append(Spacer(1, 20))
     
-    # --- 7. PIE DE PÁGINA / VALIDACIÓN ---
+    # --- 8. PIE DE PÁGINA / VALIDACIÓN ---
     story.append(Paragraph("Validación y Cierre", styles['SectionHeader']))
     
     val_data = [
@@ -302,7 +310,9 @@ def _extract_clinical_data(record: dict, is_draft: bool = False) -> dict:
             "triage_level_text": ia_res.get('nivel', {}).get('text', 'PENDIENTE'),
             "triage_level_color": ia_res.get('nivel', {}).get('color', 'gray'),
             "wait_time": ia_res.get('wait_time', ''),
+            "wait_time": ia_res.get('wait_time', ''),
             "ai_reasons": ia_res.get('razones', []),
+            "recommendations": record.get('recommendations', source.get('recommendations', [])),
             
             "status": record.get('status', 'Borrador').upper(),
             "disposition": record.get('disposition', '-'),
