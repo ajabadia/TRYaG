@@ -36,9 +36,13 @@ El proyecto sigue una arquitectura modular basada en componentes y servicios, se
     *   `common/body_map.py`: Mapa corporal interactivo con Plotly.
     *   `analytics/concordance_analysis.py`: Módulo de validación científica (Pandas).
 *   **`utils/`**: Funciones de utilidad (Iconos, PDFs, Imágenes).
+*   **`assets/`**: Recursos estáticos del proyecto.
+    *   `icons/`: Iconos SVG del sistema.
+    *   `logos/`: Logotipos de la aplicación y centros.
+*   **`scripts/`**: Scripts de mantenimiento y utilidades (Health Checks, Seeds).
 *   **`templates/`**: Plantillas HTML y de texto.
     *   `email_templates.py`: Templates Jinja2-like para emails transaccionales.
-*   **`static/`**: Recursos estáticos servidos directamente (Manifest, Service Worker, Iconos).
+*   **`static/`**: Recursos estáticos servidos directamente (Manifest, Service Worker).
 
 ### Patrones de Diseño
 
@@ -107,7 +111,11 @@ El sistema implementa un entorno de simulación aislado para entrenamiento:
 El sistema implementa capacidades PWA mediante la inyección de scripts en el frontend de Streamlit:
 
 1.  **Manifest (`static/manifest.json`):** Define metadatos, iconos y comportamiento de instalación (standalone).
-2.  **Service Worker (`static/sw.js`):** Intercepta peticiones de red para ofrecer una estrategia de caché (Network First) y servir una página offline personalizada.
+2.  **Service Worker (`static/sw.js`):**
+    *   **Estrategia Híbrida:**
+        *   *Stale-While-Revalidate* para activos estáticos (iconos, CSS, JS) para carga instantánea.
+        *   *Network First* para navegación y datos, con fallback a página offline.
+    *   **Gestión de Caché:** Versionado automático (`tryag-v2`) y limpieza de cachés antiguas.
 3.  **Installer (`pwa_installer.py`):** Componente Python que inyecta el registro del Service Worker y los tags `<link>` necesarios en el head de la aplicación.
 
 ## 🚀 Despliegue

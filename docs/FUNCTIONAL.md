@@ -491,7 +491,7 @@ El sistema ha sido habilitado como una **Progressive Web App (PWA)**, permitiend
 
 *   **Instalable:** Los usuarios pueden añadir la aplicación a su pantalla de inicio, eliminando la barra de navegación del navegador y ofreciendo una experiencia inmersiva.
 *   **Icono Adaptativo:** El icono de la aplicación se adapta automáticamente al tema del dispositivo (claro/oscuro).
-*   **Soporte Offline Básico:** En caso de pérdida total de conexión, la aplicación muestra una pantalla informativa amigable en lugar del error estándar del navegador.
+*   **Soporte Offline Robusto:** Gracias a una estrategia de caché avanzada, la aplicación carga instantáneamente y ofrece una experiencia fluida incluso con conexiones inestables. En caso de desconexión total, se muestra una interfaz de contingencia.
 *   **Acceso Rápido:** Facilita el acceso inmediato al triaje sin necesidad de recordar URLs.
 
 ---
