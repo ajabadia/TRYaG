@@ -2,8 +2,8 @@ import os
 from PIL import Image
 
 def generate_icons():
-    source_path = r"src/assets/assets/icons/logo.png"
-    dest_dir = r"src/static/static/icons"
+    source_path = r"src/assets/icons/logo.png"
+    dest_dir = r"src/static/icons"
     
     if not os.path.exists(source_path):
         print(f"Error: Source image not found at {source_path}")

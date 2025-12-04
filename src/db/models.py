@@ -358,7 +358,7 @@ class CenterGroup(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     name: str = Field(..., description="Nombre del grupo (ej: Zona Norte)")
     description: Optional[str] = Field(default=None)
-    center_ids: List[str] = Field(default_factory=list, description="IDs de los centros asignados")
+    center_ids: Optional[List[str]] = Field(default_factory=list, description="IDs de los centros asignados (Deprecated: Use group_id in Center)")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     

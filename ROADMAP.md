@@ -130,12 +130,11 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
         - [x] **Completado:** Completar el mapa con **TODOS** los archivos del proyecto (no solo los principales), incluyendo utilidades, configuraciones y scripts.
         - Analizar dependencias de invocación antes de editar.
         - Marcar como "POSIBLE DEPRECADO" si un archivo no tiene invocaciones detectadas.
-    - [ ] **Modo Desarrollador (Toggle):**
-        - Implementar opción en `Configuración > General` para habilitar/deshabilitar "Modo Desarrollador".
-        - Controlar visibilidad de los footers de archivo mediante CSS (clase `.debug-footer` + inyección de estilos condicional) para evitar lógica condicional en cada archivo.
-        - Controlar visibilidad de los footers de archivo mediante CSS (clase `.debug-footer` + inyección de estilos condicional) para evitar lógica condicional en cada archivo.
-        - **Tarea Futura:** Revisar que todas las etiquetas/footers respeten el estado del check (algunas no lo hacen actualmente).
-        - **Pendiente:** Revisar funcionalidad de ocultación CSS (actualmente no oculta correctamente en todos los casos) y verificar por qué no aplica `color: white` por defecto.
+    - [x] **Modo Desarrollador (Toggle):**
+        - [x] Implementar opción en `Configuración > General` para habilitar/deshabilitar "Modo Desarrollador".
+        - [x] Controlar visibilidad de los footers de archivo mediante CSS (clase `.debug-footer` + inyección de estilos condicional) para evitar lógica condicional en cada archivo.
+        - [x] **Tarea Futura:** Revisar que todas las etiquetas/footers respeten el estado del check (algunas no lo hacen actualmente).
+        - [x] **Pendiente:** Revisar funcionalidad de ocultación CSS (actualmente no oculta correctamente en todos los casos) y verificar por qué no aplica `color: white` por defecto.
 
 - [x] **Mejoras Módulo Webcam:**
     - [x] Permitir tomar múltiples fotos en una misma sesión.
@@ -309,18 +308,6 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - **Implementación:** Mockup de "Conectando...", delay aleatorio, y relleno automático de campos en `input_form.py`.
 
 
-- [x] **8.10 Grupos de Centros (Multi-Tenant):**
-    - **Objetivo:** Permitir la agrupación lógica de centros (ej: "Zona Norte", "Hospitales Privados") para gestión y reportes consolidados.
-    - **Modelo de Datos:** Crear colección `center_groups` con referencias a `centros`.
-    - **Configuración:** Nueva sección en `Configuración > Centro` para crear grupos y asignar centros.
-    - **Dashboard:** Filtros por "Grupo de Centros" en el Dashboard Multi-Centro.
-    - **[ ] Refactorización Futura:** Hacer que la dependencia sea estricta (Centro -> Grupo) añadiendo `group_id` en el modelo de Centro, en lugar de solo listar IDs en el Grupo.
-
-- [x] **8.13 Completar Modo Formación (Futurible):**
-    - **Objetivo:** Implementar la simulación de casos y evaluación de competencia descrita en el funcional.
-    - **Estado Actual:** Completado.
-    - **Pendiente:**
-        - [x] **Simulación:** Generador de datos ficticios (Mock Data) para rellenar formularios automáticamente.
         - [x] **Casos Clínicos:** Base de datos de casos predefinidos (JSON/DB) con "Gold Standard" (respuesta correcta esperada).
         - [x] **Evaluación:** Comparar decisión del usuario vs Gold Standard y mostrar feedback inmediato.
 
@@ -331,7 +318,8 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - Service Workers, IndexedDB, Sincronización en segundo plano.
 - [ ] **9.2 Autenticación Real:**
     - Integración con Auth0/Firebase, JWT, Seguridad.
-- [ ] **9.3 Despliegue:**
-    - Dockerización, HTTPS, CI/CD completo.
+- [x] **9.3 Despliegue:**
+    - [x] Dockerización (`Dockerfile`, `docker-compose.yml`).
+    - [ ] HTTPS, CI/CD completo.
 
 

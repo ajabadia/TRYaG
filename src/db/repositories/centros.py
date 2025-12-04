@@ -58,6 +58,7 @@ class CentrosRepository(BaseRepository):
         logo_path: Optional[str] = None,
         mensaje: Optional[str] = None,
         salas: Optional[List[Dict[str, Any]]] = None,
+        group_id: Optional[str] = None,
         updated_by: str = "admin"
     ) -> str:
         """
@@ -73,6 +74,7 @@ class CentrosRepository(BaseRepository):
             logo_path: Ruta al logo
             mensaje: Mensaje informativo
             salas: Lista de salas del centro
+            group_id: ID del grupo al que pertenece (Multi-tenant)
             updated_by: Usuario que realiza el cambio
             
         Returns:
@@ -90,6 +92,7 @@ class CentrosRepository(BaseRepository):
             "logo_path": logo_path,
             "mensaje": mensaje,
             "salas": salas or [],
+            "group_id": group_id,
             "updated_at": datetime.now(),
             "updated_by": updated_by
         }
@@ -236,6 +239,19 @@ class CentrosRepository(BaseRepository):
         
         salas = centro.get("salas", [])
         return [sala for sala in salas if sala.get("activa", False)]
+
+    def get_centers_by_group(self, group_id: str) -> List[Dict[str, Any]]:
+        """
+        Obtiene los centros pertenecientes a un grupo.
+        
+        Args:
+            group_id: ID del grupo
+            
+        Returns:
+            List[Dict]: Lista de centros
+        """
+        cursor = self.collection.find({"group_id": group_id})
+        return list(cursor)
 
 
 # Instancia singleton del repositorio

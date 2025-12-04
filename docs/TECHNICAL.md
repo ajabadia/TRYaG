@@ -114,6 +114,18 @@ El sistema implementa capacidades PWA mediante la inyección de scripts en el fr
 
 Ver [DEPLOYMENT.md](../DEPLOYMENT.md) para instrucciones detalladas sobre el despliegue en Streamlit Community Cloud.
 
+### Despliegue con Docker
+
+El proyecto está completamente "dockerizado" para facilitar su despliegue en cualquier entorno.
+
+*   **Dockerfile:** Define la imagen base (Python 3.11-slim), instala dependencias y copia el código fuente.
+*   **docker-compose.yml:** Orquesta el contenedor de la aplicación (`web`) junto con una instancia local de MongoDB (`mongo`), ideal para desarrollo o entornos aislados.
+
+Para levantar el entorno completo:
+```bash
+docker-compose up --build
+```
+
 ### Variables de Entorno Requeridas
 *   `MONGODB_URI`: Connection string a Atlas.
 *   `GOOGLE_API_KEY`: Clave de API de Google AI Studio.

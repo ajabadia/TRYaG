@@ -3,6 +3,7 @@ import streamlit as st
 from db.repositories.center_groups import get_center_group_repository
 from db.models import CenterGroup
 from db.repositories.general_config import get_general_config_repository
+from db.repositories.centros import get_centros_repository
 
 def render_center_groups_manager():
     """Renderiza el gestor de grupos de centros."""
@@ -10,14 +11,7 @@ def render_center_groups_manager():
     st.info("Agrupe centros para gestión consolidada (ej: Zona Norte, Hospitales Privados).")
 
     repo = get_center_group_repository()
-    config_repo = get_general_config_repository()
-    
-    # Obtener centros disponibles (simulado desde config por ahora, idealmente de una colección 'centros')
-    # Asumimos que los centros están en config o hardcoded en selectores. 
-    # Para este MVP, usaremos una lista de centros extraída de la configuración actual o permitiremos texto libre/IDs.
-    # MEJORA: Leer de una colección real de centros si existiera. 
-    # Por ahora, simulamos centros disponibles basados en lo que el usuario pueda haber configurado.
-    available_centers = ["Centro Principal", "Clínica Periférica", "Hospital Norte", "Hospital Sur"] 
+    centros_repo = get_centros_repository()
     
     groups = repo.get_all()
 
@@ -26,14 +20,13 @@ def render_center_groups_manager():
         with st.form("new_group_form"):
             new_name = st.text_input("Nombre del Grupo")
             new_desc = st.text_area("Descripción")
-            new_centers = st.multiselect("Asignar Centros Iniciales", available_centers)
             
             if st.form_submit_button("Crear Grupo"):
                 if new_name:
                     new_group = CenterGroup(
                         name=new_name,
                         description=new_desc,
-                        center_ids=new_centers
+                        center_ids=[] # Deprecated
                     )
                     repo.create(new_group)
                     st.success(f"Grupo '{new_name}' creado.")
@@ -53,7 +46,15 @@ def render_center_groups_manager():
                 st.markdown(f"### {group.name}")
                 if group.description:
                     st.caption(group.description)
-                st.write(f"**Centros Asignados:** {', '.join(group.center_ids) if group.center_ids else 'Ninguno'}")
+                
+                # Obtener centros asignados
+                assigned_centers = centros_repo.get_centers_by_group(str(group.id))
+                center_names = [c.get('denominacion', 'Sin nombre') for c in assigned_centers]
+                
+                if center_names:
+                    st.success(f"**Centros Asignados:** {', '.join(center_names)}")
+                else:
+                    st.warning("Sin centros asignados. (Asigne el grupo desde Configuración > Centro > Datos)")
             
             with c2:
                 if st.button("🗑️ Eliminar", key=f"del_{group.id}"):
@@ -65,17 +66,11 @@ def render_center_groups_manager():
                 with st.form(f"edit_group_{group.id}"):
                     edit_name = st.text_input("Nombre", value=group.name)
                     edit_desc = st.text_area("Descripción", value=group.description)
-                    edit_centers = st.multiselect(
-                        "Centros Asignados", 
-                        available_centers, 
-                        default=[c for c in group.center_ids if c in available_centers]
-                    )
                     
                     if st.form_submit_button("Guardar Cambios"):
                         repo.update(str(group.id), {
                             "name": edit_name,
-                            "description": edit_desc,
-                            "center_ids": edit_centers
+                            "description": edit_desc
                         })
                         st.success("Grupo actualizado.")
                         st.rerun()

@@ -6,6 +6,7 @@ Componente modular para la sección de información básica.
 """
 import streamlit as st
 from db.repositories.centros import get_centros_repository
+from db.repositories.center_groups import get_center_group_repository
 
 
 def render_datos_generales():
@@ -25,6 +26,20 @@ def render_datos_generales():
     except Exception as e:
         st.error(f"Error al cargar configuración: {e}")
         centro = {}
+    
+    # Cargar grupos disponibles
+    groups_repo = get_center_group_repository()
+    groups = groups_repo.get_all()
+    group_options = {g.name: str(g.id) for g in groups}
+    group_options["Ninguno"] = None
+    
+    current_group_id = centro.get('group_id')
+    # Encontrar el nombre del grupo actual
+    current_group_name = "Ninguno"
+    for g in groups:
+        if str(g.id) == current_group_id:
+            current_group_name = g.name
+            break
     
     with st.container(border=True):
         # Identificación
@@ -53,6 +68,15 @@ def render_datos_generales():
             help="Nombre oficial completo del centro médico",
             placeholder="Ej: Centro Médico Santa María"
         )
+        
+        # Selector de Grupo
+        selected_group_name = st.selectbox(
+            "Grupo de Centros (Organización)",
+            options=list(group_options.keys()),
+            index=list(group_options.keys()).index(current_group_name) if current_group_name in group_options else 0,
+            help="Grupo al que pertenece este centro (para gestión consolidada)"
+        )
+        selected_group_id = group_options[selected_group_name]
         
         st.markdown("---")
         
@@ -137,7 +161,8 @@ def render_datos_generales():
                         'telefono': telefono,
                         'logo_path': logo_path,
                         'mensaje': mensaje_centro,
-                        'salas': centro.get('salas', [])  # Mantener salas existentes
+                        'salas': centro.get('salas', []),  # Mantener salas existentes
+                        'group_id': selected_group_id
                     }
                     
                     centros_repo.create_or_update_centro(
@@ -150,6 +175,7 @@ def render_datos_generales():
                         logo_path=config_to_save.get('logo_path'),
                         mensaje=config_to_save.get('mensaje'),
                         salas=config_to_save.get('salas', []),
+                        group_id=config_to_save.get('group_id'),
                         updated_by="admin"
                     )
                     

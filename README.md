@@ -86,6 +86,17 @@ La documentación del proyecto está organizada en las siguientes secciones:
     streamlit run src/app.py
     ```
 
+### 🐳 Inicio Rápido con Docker
+
+Si prefieres no instalar dependencias locales:
+
+1.  **Asegúrate de tener Docker y Docker Compose instalados.**
+2.  **Ejecuta:**
+    ```bash
+    docker-compose up --build
+    ```
+3.  Accede a la aplicación en `http://localhost:8501`.
+
 ## 🧪 Testing
 
 El proyecto incluye una suite de pruebas automatizadas usando `pytest`.

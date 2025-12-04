@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/tryage_db
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    depends_on:
+      - mongo
+    volumes:
+      - ./src:/app/src  # Hot reload for development
+    networks:
+      - tryage-network
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - tryage-network
+
+volumes:
+  mongo_data:
+
+networks:
+  tryage-network:
+    driver: bridge

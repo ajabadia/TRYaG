@@ -43,3 +43,24 @@ def load_css(file_path: str):
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     else:
         st.warning(f"Archivo CSS no encontrado: {file_path}")
+
+def get_image_base64(path: str) -> str | None:
+    """
+    Lee una imagen y la convierte a base64 para incrustar en HTML.
+    
+    Args:
+        path (str): Ruta absoluta o relativa al archivo de imagen.
+        
+    Returns:
+        str | None: String base64 codificado o None si falla.
+    """
+    import base64
+    import os
+    
+    try:
+        if os.path.exists(path):
+            with open(path, "rb") as img_file:
+                return base64.b64encode(img_file.read()).decode()
+    except Exception:
+        pass
+    return None

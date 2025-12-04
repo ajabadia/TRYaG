@@ -519,7 +519,7 @@ El código sigue una arquitectura modular basada en servicios:
 
 ### 7.3 Despliegue
 
-* **Contenerización:** Docker Ready (Dockerfile optimizado para Streamlit).
+* **Contenerización:** Docker Ready (Dockerfile optimizado para Streamlit). Incluye orquestación con `docker-compose` para despliegue rápido junto a MongoDB.
 * **Estado:** Gestión de sesión mediante `st.session_state` (Server-side).
 
 ---

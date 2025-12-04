@@ -28,7 +28,7 @@ def render_splash_screen():
     with st.container():
         # 1. Cargar Logo TRYaGE (Título)
         root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        tryag_path = os.path.join(root_dir, "assets", "logos", "tryag.svg")
+        tryag_path = os.path.join(root_dir, "src", "assets", "logos", "tryag.svg")
         
         tryag_src = ""
         if os.path.exists(tryag_path):

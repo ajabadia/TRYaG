@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+.git
+.gitignore
+.env
+.venv
+venv
+.pytest_cache
+deprecated_files
+temp
+tests
+docs
+*.md
+!ROADMAP.md
+!TESTING_PLAN.md

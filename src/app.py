@@ -130,19 +130,31 @@ def mostrar_app_principal():
         if logo_path:
             try:
                 if logo_path.startswith("http"):
-                    st.image(logo_path, width=120)
+                    st.markdown(
+                        f'<img src="{logo_path}" style="max-height: 70px; max-width: 180px; width: auto; height: auto;">',
+                        unsafe_allow_html=True
+                    )
                 else:
-                    # Try direct path
+                    # Resolve path
+                    resolved_path = None
                     if os.path.exists(logo_path):
-                        st.image(logo_path, width=120)
+                        resolved_path = logo_path
                     else:
-                        # Try relative to root_dir
-                        # Assuming root_dir is current working directory or needs to be defined
-                        # For now, just check relative path
-                        if os.path.exists(logo_path):
-                            st.image(logo_path, width=120)
+                        if os.path.exists(os.path.abspath(logo_path)):
+                             resolved_path = os.path.abspath(logo_path)
+                    
+                    if resolved_path:
+                        from utils.ui_utils import get_image_base64
+                        b64 = get_image_base64(resolved_path)
+                        if b64:
+                            st.markdown(
+                                f'<img src="data:image/png;base64,{b64}" style="max-height: 70px; max-width: 180px; width: auto; height: auto;">',
+                                unsafe_allow_html=True
+                            )
                         else:
-                             render_icon("logo", size=80, color="#28a745")
+                            render_icon("logo", size=80, color="#28a745")
+                    else:
+                        render_icon("logo", size=80, color="#28a745")
             except Exception:
                 render_icon("logo", size=80, color="#28a745")
         else:
@@ -164,9 +176,6 @@ def mostrar_app_principal():
         pass
 
     # Initialize loading container (justo después del header)
-
-
-    # -----------------------------------------------------------------------
     # User Selector & Permissions Logic
     # -----------------------------------------------------------------------
     render_user_selector()
