@@ -44,7 +44,7 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
     if uploaded_video:
         try:
             # Guardar temporalmente
-            file_info = save_file_to_temp(uploaded_video.getvalue(), default_ext=f".{uploaded_video.name.split('.')[-1]}")
+            file_info = save_file_to_temp(uploaded_video, default_ext=f".{uploaded_video.name.split('.')[-1]}")
             
             wrapper = TempFileWrapper(
                 uploaded_video, 
@@ -65,7 +65,7 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
                  st.session_state[f"{key_prefix}_videos"].append(wrapper)
                  # Incrementar contador para limpiar uploader
                  st.session_state[f"{key_prefix}_reset_counter"] += 1
-                 st.rerun()
+                 # st.rerun() # REMOVIDO: Evitar cierre prematuro
                  
         except Exception as e:
             st.error(f"Error procesando video: {e}")
