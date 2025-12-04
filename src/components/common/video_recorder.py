@@ -20,6 +20,10 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
         st.info("Grabación bloqueada.")
         return
 
+    # Inicializar contador de reset si no existe
+    if f"{key_prefix}_reset_counter" not in st.session_state:
+        st.session_state[f"{key_prefix}_reset_counter"] = 0
+
     # --- IMPLEMENTACIÓN ROBUSTA (File Uploader) ---
     # La grabación nativa vía componente custom es inestable para videos largos (Base64 overhead).
     # Usamos file_uploader con capture="environment" (móviles) o subida directa.
