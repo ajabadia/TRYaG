@@ -100,6 +100,13 @@ def render_step_final_disposition():
                 safe_name = re.sub(r'[^\w\-_]', '_', normalized)
                 st.session_state.cached_pdf_name = f"Triaje_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
         
+        # Fallback de seguridad para el nombre del archivo
+        if "cached_pdf_name" not in st.session_state or not st.session_state.cached_pdf_name:
+            st.session_state.cached_pdf_name = f"Triaje_Report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+            
+        # Debug: Verificar nombre
+        # st.toast(f"PDF listo: {st.session_state.cached_pdf_name}")
+        
         st.download_button(
             label="🖨️ Descargar Hoja de Triaje",
             data=st.session_state.cached_pdf_bytes,

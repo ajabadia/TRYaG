@@ -101,7 +101,7 @@ def render_step_patient_selection() -> bool:
 
                     
                     # Avanzar
-                    st.session_state.triage_step = 1
+                    st.session_state.triage_step = 2
                     st.rerun()
         
         st.markdown('<div class="debug-footer">src/components/triage/step_patient_selection.py</div>', unsafe_allow_html=True)

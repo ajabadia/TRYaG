@@ -34,6 +34,10 @@ def mostrar_asistente_triaje():
     if not is_training and st.session_state.get('triage_room_code') and st.session_state.get('triage_step', 0) == 0:
         st.session_state.triage_step = 1
 
+    # En modo formación, el paso 0 no existe (no hay selección de sala).
+    if is_training and st.session_state.get('triage_step', 0) == 0:
+        st.session_state.triage_step = 1
+
     # Inicializar paso actual
     if 'triage_step' not in st.session_state:
         st.session_state.triage_step = 0
@@ -59,28 +63,26 @@ def mostrar_asistente_triaje():
     current_step_index = st.session_state.triage_step
     render_horizontal_stepper(steps, current_step_index)
     
-    # --- PASO 0: SELECCIÓN DE SALA (Normal) OR DATOS CASO (Training) ---
-    if st.session_state.triage_step == 0:
-        if is_training:
-             render_step_patient_selection()
-        else:
-             # Panel de Herramientas movido al menú global
-             sala_selected = render_step_sala_selection()
-             # Si se selecciona sala, el componente hace rerun.
-             # Al recargar, la lógica de arriba (auto-avance) nos moverá al paso 1.
+    # --- PASO 0: SELECCIÓN DE SALA (Solo Normal) ---
+    if st.session_state.triage_step == 0 and not is_training:
+         # Panel de Herramientas movido al menú global
+         sala_selected = render_step_sala_selection()
+         # Si se selecciona sala, el componente hace rerun.
+         # Al recargar, la lógica de arriba (auto-avance) nos moverá al paso 1.
     
     # --- PASO 1: SELECCIÓN DE PACIENTE / DATOS CASO ---
     elif st.session_state.triage_step == 1:
-        # Cabecera compacta de contexto
-        with st.container(border=True):
-            c_info, c_actions = st.columns([4, 1])
-            with c_info:
-                st.markdown(f"📍 **{st.session_state.get('triage_room_code')}** | Seleccione paciente para iniciar triaje")
-            with c_actions:
-                if st.button("Cambiar Sala", key="btn_change_room_header", use_container_width=True):
-                    st.session_state.triage_step = 0
-                    st.session_state.triage_room_code = None
-                    st.rerun()
+        # Cabecera compacta de contexto (Solo modo normal)
+        if not is_training:
+            with st.container(border=True):
+                c_info, c_actions = st.columns([4, 1])
+                with c_info:
+                    st.markdown(f"📍 **{st.session_state.get('triage_room_code')}** | Seleccione paciente para iniciar triaje")
+                with c_actions:
+                    if st.button("Cambiar Sala", key="btn_change_room_header", use_container_width=True):
+                        st.session_state.triage_step = 0
+                        st.session_state.triage_room_code = None
+                        st.rerun()
 
         patient_selected = render_step_patient_selection()
         

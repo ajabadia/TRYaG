@@ -23,24 +23,61 @@ def get_current_triage_record():
     
     # Resultado (puede ser None si es borrador)
     resultado = st.session_state.get('resultado', {})
-    if not resultado:
-        resultado = {
-            "final_priority": 0,
-            "final_color": "gray",
+    
+    # Adaptar estructura de resultado para report_service (ia_result)
+    # report_service espera: ia_result -> nivel -> {text, color}
+    ia_result = {}
+    if resultado:
+        ia_result = {
+            "nivel": {
+                "text": resultado.get('nivel_texto', 'PENDIENTE'),
+                "color": resultado.get('nivel_color', 'gray')
+            },
+            "wait_time": resultado.get('tiempo_espera', 'N/A'),
+            "razones": resultado.get('razonamiento', [])
+        }
+    else:
+        ia_result = {
+            "nivel": {"text": "PENDIENTE", "color": "gray"},
             "wait_time": "N/A",
-            "details": []
+            "razones": []
         }
 
+    # Construir registro base
     record = {
         "audit_id": st.session_state.get('current_audit_id', 'DRAFT'),
         "timestamp": st.session_state.get('triage_start_time', datetime.now()),
-        "patient_data": p,
+        # Flatten patient data for report_service (is_draft=True mode)
+        "nombre": p.get('nombre', ''),
+        "apellido1": p.get('apellido1', ''),
+        "edad": p.get('edad', ''),
+        "gender": p.get('sexo', ''),
+        "patient_id": p.get('patient_code', 'UNKNOWN'),
+        
         "vital_signs": vital_signs,
         "motivo_consulta": datos_paciente.get('texto_medico', ''),
-        "patient_background": background,
-        "triage_result": resultado,
+        "guided_interview_summary": datos_paciente.get('guided_interview', ''), # Assuming key
+        
+        # HDA fields (flattened)
+        "hda_aparicion": datos_paciente.get('hda', {}).get('aparicion', ''),
+        "hda_localizacion": datos_paciente.get('hda', {}).get('localizacion', ''),
+        "hda_intensidad": datos_paciente.get('hda', {}).get('intensidad', ''),
+        "hda_caracteristicas": datos_paciente.get('hda', {}).get('caracteristicas', ''),
+        "hda_irradiacion": datos_paciente.get('hda', {}).get('irradiacion', ''),
+        "hda_alivio": datos_paciente.get('hda', {}).get('alivio', ''),
+        "hda_sintomas_asoc": datos_paciente.get('hda', {}).get('sintomas_asoc', ''),
+
+        "patient_background": background, # This might need to be flattened too or report_service updated
+        # report_service uses: alergias_info_completa, antecedentes, historia_integral
+        "alergias": ", ".join(background['allergies']) if isinstance(background['allergies'], list) else str(background['allergies']),
+        "antecedentes": ", ".join(background['pathologies']) if isinstance(background['pathologies'], list) else str(background['pathologies']),
+        
+        "ia_result": ia_result,
+        "recommendations": st.session_state.get('recommendations', []),
+        
         "destination": "En proceso...",
-        "evaluator_id": st.session_state.get('username', 'Sistema')
+        "evaluator_id": st.session_state.get('username', 'Sistema'),
+        "status": "BORRADOR"
     }
     
     return record
