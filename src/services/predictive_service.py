@@ -7,7 +7,7 @@ Usa un prompt específico (triage_predictive) para detectar riesgos antes del tr
 import json
 from services.gemini_client import get_gemini_service
 from core.prompt_manager import PromptManager
-from config import get_model_triage
+from core.config import get_model_triage
 
 DEFAULT_PREDICTIVE_PROMPT = """## ROL ##
 Eres un sistema experto de alerta temprana clínica. Analizas signos vitales y antecedentes para detectar riesgos inminentes ANTES de la valoración médica completa.

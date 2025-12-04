@@ -18,7 +18,7 @@ def load_svg_icon(icon_name: str, size: int = 24, color: str = "currentColor") -
     Returns:
         HTML string con el SVG inline
     """
-    icon_path = os.path.join('assets', 'icons', f'{icon_name}.svg')
+    icon_path = os.path.join('src', 'assets', 'icons', f'{icon_name}.svg')
     
     if not os.path.exists(icon_path):
         return f"[{icon_name}]"  # Fallback si no existe

@@ -6,7 +6,7 @@ Servicio para la lógica de transcripción de audio con Gemini.
 import json
 from services.gemini_client import get_gemini_service
 from core.prompt_manager import PromptManager
-from config import get_model_transcription
+from core.config import get_model_transcription
 
 def transcribir_audio(file_obj=None, prompt_content=None, text_input=None, user_id="system"):
     """

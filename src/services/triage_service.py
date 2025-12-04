@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 from services.gemini_client import get_gemini_service
 from core.prompt_manager import PromptManager
-from config import get_model_triage
+from core.config import get_model_triage
 from db.repositories.triage import get_triage_repository
 from db.models import TriageRecord, AIReason, AIResponse
 

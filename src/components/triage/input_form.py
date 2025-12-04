@@ -7,7 +7,7 @@ import streamlit as st
 from PIL import Image
 from datetime import datetime
 from utils.icons import render_icon
-from config import get_min_chars_motivo
+from core.config import get_min_chars_motivo
 from components.common.audio_recorder import render_audio_recorder
 from components.common.webcam_manager import render_webcam_manager
 from components.common.video_recorder import render_video_recorder

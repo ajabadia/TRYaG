@@ -22,6 +22,8 @@ tests/
 ├── integration/            # Pruebas de integración (componentes interactuando)
 ├── conftest.py             # Configuración global de pytest y fixtures
 └── data/                   # Datos de prueba (fixtures JSON/Dicts)
+
+src/scripts/                # Scripts de verificación manual y utilidades (Legacy/Integration)
 ```
 
 ## 🗓️ Fases de Implementación
@@ -49,5 +51,5 @@ Verificar que los repositorios y servicios hablan correctamente con la base de d
 ## 🚀 Ejecución
 Comando estándar:
 ```bash
-pytest tests/ -v --cov=src
+$env:PYTHONPATH='src'; pytest tests/ -v
 ```

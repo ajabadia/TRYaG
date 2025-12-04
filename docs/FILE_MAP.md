@@ -5,7 +5,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | Ruta del Archivo | Descripción | Invocado Por | Estado |
 | :--- | :--- | :--- | :--- |
 | **src/app.py** | Punto de entrada principal. Configura Streamlit y el enrutamiento. | `streamlit run` | Activo |
-| **src/config.py** | Configuraciones globales y constantes. | Varios | Activo |
+| **src/core/config.py** | Configuraciones globales y constantes. | Varios | Activo |
 | **src/ui/main_view.py** | Orquestador de la vista "Asistente de Triaje". | `src/app.py` | Activo |
 | **src/ui/admission_view.py** | Vista principal de Admisión. | `src/app.py` | Activo |
 | **src/ui/boxes_view.py** | Vista de Gestión de Boxes (Atención). | `src/app.py` | Activo |
@@ -124,25 +124,26 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/common/body_map.py** | Mapa corporal interactivo. | `src/components/triage/guided_interview.py` | Activo |
 | **src/ui/components/common/user_menu.py** | Menú de usuario global (Header). | `src/ui/main_view.py` | Activo |
 | **src/scripts/check_models.py** | Script de comprobación de modelos. | CLI | Script |
-| **src/scripts/complete_phase1_setup.py** | Script de setup fase 1. | CLI | Script |
-| **src/scripts/consolidate_db.py** | Script de consolidación de DB. | CLI | Script |
-| **src/scripts/create_flow_indexes.py** | Script de creación de índices de flujo. | CLI | Script |
-| **src/scripts/migrate_centros_to_mongodb.py** | Script de migración de centros. | CLI | Script |
-| **src/scripts/migrate_salas_config.py** | Script de migración de salas. | CLI | Script |
-| **src/scripts/migrate_subtipo.py** | Script de migración de subtipos. | CLI | Script |
-| **src/scripts/generate_synthetic_data.py** | Script de generación de datos sintéticos. | CLI | Script |
+| **src/scripts/debug_predictive_error.py** | Debug de errores predictivos. | CLI | Script |
+| **src/scripts/debug_triage_data.py** | Debug de datos de triaje. | CLI | Script |
+| **src/scripts/init_vital_signs_db.py** | Inicialización de DB de signos vitales. | CLI | Script |
+| **src/scripts/inspect_vital_signs.py** | Inspección de signos vitales. | CLI | Script |
+| **src/scripts/inspect_vital_signs_db.py** | Inspección de DB de signos vitales. | CLI | Script |
+| **src/scripts/migrate_general_config.py** | Migración de configuración general. | CLI | Script |
+| **src/scripts/migrate_salas.py** | Migración de salas. | CLI | Script |
+| **src/scripts/seed_clinical_options.py** | Seed de opciones clínicas. | CLI | Script |
+| **src/scripts/seed_vital_signs.py** | Seed de signos vitales. | CLI | Script |
+| **src/scripts/test_gemini_model.py** | Test de modelo Gemini. | CLI | Script |
+| **src/scripts/test_new_model_import.py** | Test de importación de nuevos modelos. | CLI | Script |
+| **src/scripts/test_pdf_gen.py** | Test de generación de PDF. | CLI | Script |
+| **src/scripts/test_queue_logic.py** | Test de lógica de colas. | CLI | Script |
+| **src/scripts/test_triage_models.py** | Test de modelos de triaje. | CLI | Script |
+| **src/scripts/test_vital_signs_logic.py** | Test de lógica de signos vitales. | CLI | Script |
+| **src/scripts/update_prompts_model.py** | Actualización de modelos de prompts. | CLI | Script |
+| **src/scripts/update_triage_data.py** | Actualización de datos de triaje. | CLI | Script |
+| **src/scripts/verify_ai_model_management.py** | Verificación de gestión de modelos IA. | CLI | Script |
 | **src/templates/email_templates.py** | Plantillas de email. | `src/services/notification_service.py` | Activo |
-| **generate_synthetic_data.py** | Script raíz de generación de datos (Bypass gitignore). | CLI | Script |
-| **src/components/common/body_map.py** | Mapa corporal interactivo. | `src/components/triage/guided_interview.py` | Activo |
-| **src/components/triage/recommendations_card.py** | Tarjeta de recomendaciones de autocuidado. | `src/components/triage/risk_analysis_panel.py` | Activo |
-| **src/services/recommendation_service.py** | Servicio de generación de recomendaciones. | `src/components/triage/risk_analysis_panel.py` | Activo |
-| **src/components/analytics/concordance_analysis.py** | Análisis de concordancia IA vs Humano. | `src/ui/audit_panel/analysis_panel.py` | Activo |
 | **src/ui/audit_panel/tab_transcriptions_v2.py** | Versión 2 de pestaña transcripciones. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
-| **src/scripts/generate_synthetic_data.py** | Script de generación de datos sintéticos. | CLI | Script |
-| **src/services/ml_training_service.py** | Servicio de entrenamiento de modelos ML. | `src/ui/ml_predictions_panel.py` | Activo |
-| **generate_synthetic_data.py** | Script raíz de generación de datos (Bypass gitignore). | CLI | Script |
-| **src/db/repositories/center_groups.py** | Repositorio de Grupos de Centros. | Servicios/UI | Activo |
-| **src/ui/config/center_groups_manager.py** | UI para gestión de grupos de centros. | `src/ui/config/centro_tab.py` | Activo |
 | **src/ui/audit_panel/analysis_panel_modular.py** | Orquestador modular de Análisis Gráfico. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
 | **src/ui/audit_panel/debug_panel_modular.py** | Orquestador modular de Debug MongoDB. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
 | **src/ui/audit_panel/debug_modules/collection_inspector.py** | Inspector genérico de colecciones. | `src/ui/audit_panel/debug_panel_modular.py` | Activo |
@@ -156,3 +157,14 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/analytics/modules/feedback_analysis.py** | Módulo independiente de Análisis de Feedback. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
 | **src/components/analytics/modules/concordance_analysis.py** | Módulo independiente de Concordancia. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
 | **src/components/audit/generic_log_view.py** | Vista genérica de logs con detalles. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
+| **deprecated_files/generate_synthetic_data.py** | Script de generación de datos sintéticos. | CLI | Deprecado |
+| **deprecated_files/apply_debug_footers.py** | Script de debug. | CLI | Deprecado |
+| **deprecated_files/check_db_status.py** | Script de chequeo de estado. | CLI | Deprecado |
+| **deprecated_files/check_debug_footers.py** | Script de chequeo de debug. | CLI | Deprecado |
+| **deprecated_files/extract_clinical_options.py** | Script de extracción. | CLI | Deprecado |
+| **deprecated_files/extract_vital_signs.py** | Script de extracción. | CLI | Deprecado |
+| **deprecated_files/generate_synthetic_audit_logs.py** | Script de generación de logs. | CLI | Deprecado |
+| **deprecated_files/inspect_db_values.py** | Script de inspección. | CLI | Deprecado |
+| **deprecated_files/inspect_option_structure.py** | Script de inspección. | CLI | Deprecado |
+| **deprecated_files/inspect_vital_signs_structure.py** | Script de inspección. | CLI | Deprecado |
+| **deprecated_files/verify_refactor.py** | Script de verificación. | CLI | Deprecado |

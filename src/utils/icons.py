@@ -14,7 +14,7 @@ def get_icon_path(icon_name):
     """
     # Asumiendo que assets está en la raíz del proyecto, dos niveles arriba de src/utils
     base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    return os.path.join(base_path, 'assets', 'icons', f'{icon_name}.svg')
+    return os.path.join(base_path, 'src', 'assets', 'icons', f'{icon_name}.svg')
 
 def load_icon(icon_name):
     """

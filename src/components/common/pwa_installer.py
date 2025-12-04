@@ -12,7 +12,7 @@ def render_pwa_installer():
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/static/sw.js').then(function(registration) {
+                navigator.serviceWorker.register('src/static/sw.js').then(function(registration) {
                     console.log('ServiceWorker registration successful with scope: ', registration.scope);
                 }, function(err) {
                     console.log('ServiceWorker registration failed: ', err);
@@ -35,7 +35,7 @@ def render_pwa_installer():
     
     # HACK: Inyectar tags en el head usando st.markdown (funciona en versiones recientes para algunos tags)
     st.markdown("""
-        <link rel="manifest" href="static/manifest.json">
+        <link rel="manifest" href="src/static/manifest.json">
         <meta name="theme-color" content="#1f77b4">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black">
