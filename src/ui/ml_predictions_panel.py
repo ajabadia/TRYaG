@@ -101,7 +101,10 @@ def render_demand_prediction_tab(ml_service):
     df_pred = pd.DataFrame(predictions)
     
     # Gráfico
-    st.line_chart(df_pred.set_index('Hora')['Demanda Predicha'])
+    if not df_pred.empty:
+        st.line_chart(df_pred.set_index('Hora')['Demanda Predicha'])
+    else:
+        st.info("No hay datos de predicción disponibles.")
     
     # Tabla detallada
     with st.expander("Ver Datos Detallados"):
@@ -184,7 +187,10 @@ def render_wait_time_tab(ml_service):
         'Tiempo Estimado (min)': tiempos
     })
     
-    st.line_chart(df_projection.set_index('Pacientes en Espera'))
+    if not df_projection.empty:
+        st.line_chart(df_projection.set_index('Pacientes en Espera'))
+    else:
+        st.info("No hay datos de proyección disponibles.")
 
 
 def render_staffing_recommendations_tab(ml_service):

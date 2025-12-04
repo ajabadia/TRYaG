@@ -311,11 +311,14 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
         - [x] **Casos Clínicos:** Base de datos de casos predefinidos (JSON/DB) con "Gold Standard" (respuesta correcta esperada).
         - [x] **Evaluación:** Comparar decisión del usuario vs Gold Standard y mostrar feedback inmediato.
 
-## 🔮 FASE 9: Producción y PWA (Postergada)
-**Objetivo:** Preparación para despliegue productivo, autenticación real y capacidades offline. (Pospuesto por riesgo técnico actual).
+## 🔮 FASE 9: Producción y PWA (En Progreso)
+**Objetivo:** Preparación para despliegue productivo, autenticación real y capacidades offline.
 
-- [ ] **9.1 PWA y Offline-First:**
-    - Service Workers, IndexedDB, Sincronización en segundo plano.
+- [/] **9.1 PWA y Offline-First:**
+    - [x] Service Workers (Básico implementado).
+    - [x] IndexedDB (Implementado para contingencia).
+    - [x] Página Offline (`offline.html`).
+    - [ ] Sincronización en segundo plano (Pendiente integración).
 - [ ] **9.2 Autenticación Real:**
     - Integración con Auth0/Firebase, JWT, Seguridad.
 - [x] **9.3 Despliegue:**

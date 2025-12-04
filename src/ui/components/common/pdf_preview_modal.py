@@ -98,10 +98,8 @@ def show_pdf_preview_modal(record: dict, patient: dict):
             pdf_bytes = generate_triage_pdf(record)
             
             # Sanitizar nombre
-            raw_name = f"{patient.get('nombre', 'Paciente')}_{patient.get('apellido1', '')}"
-            normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
-            safe_name = re.sub(r'[^\w\-_]', '_', normalized)
-            file_name = f"Informe_{safe_name}_{datetime.now().strftime('%Y%m%d')}.pdf"
+            from services.report_service import get_report_filename
+            file_name = get_report_filename(patient, prefix="Informe")
             
             st.download_button(
                 label="⬇️ Generar y Descargar PDF",

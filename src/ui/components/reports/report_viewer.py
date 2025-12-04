@@ -124,34 +124,41 @@ def render_report_viewer(record: dict, patient: dict):
         st.markdown("### Generación de Documento")
         st.info("Pulse el botón para generar el PDF oficial. Esta acción puede tardar unos segundos.")
         
-        if st.button("🖨️ Generar PDF Ahora", type="primary", use_container_width=True):
+        # State key for this specific patient/record
+        pdf_key = f"pdf_bytes_{record.get('episode_id', 'temp')}"
+        name_key = f"pdf_name_{record.get('episode_id', 'temp')}"
+        
+        # Generate Button
+        if st.button("🖨️ Generar PDF Ahora", type="primary", use_container_width=True, key=f"btn_gen_{record.get('episode_id')}"):
             try:
-                # Preparar record final
-                record['patient_data'].update(patient)
-                
-                # Generar
-                pdf_bytes = generate_triage_pdf(record)
-                
-                # Nombre archivo
-                raw_name = f"{patient.get('nombre', 'Paciente')}_{patient.get('apellido1', '')}"
-                normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
-                safe_name = re.sub(r'[^\w\-_]', '_', normalized)
-                file_name = f"Informe_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
-                
-                st.success("PDF Generado Correctamente")
-                
-                st.download_button(
-                    label="⬇️ Descargar Archivo PDF",
-                    data=pdf_bytes,
-                    file_name=file_name,
-                    mime="application/pdf",
-                    type="secondary",
-                    icon="📥",
-                    use_container_width=True
-                )
+                with st.spinner("Generando documento..."):
+                    # Preparar record final
+                    record['patient_data'].update(patient)
+                    
+                    # Generar
+                    from services.report_service import get_report_filename
+                    
+                    st.session_state[pdf_key] = generate_triage_pdf(record)
+                    st.session_state[name_key] = get_report_filename(patient, prefix="Informe_Clinico")
+                    
+                    st.success("PDF Generado Correctamente")
+                    st.rerun() # Rerun to show download button
                 
             except Exception as e:
                 st.error(f"Error al generar el PDF: {str(e)}")
                 st.exception(e)
+
+        # Download Button (Show if generated)
+        if st.session_state.get(pdf_key):
+            st.download_button(
+                label="⬇️ Descargar Archivo PDF",
+                data=st.session_state[pdf_key],
+                file_name=st.session_state.get(name_key, "report.pdf"),
+                mime="application/pdf",
+                type="secondary",
+                icon="📥",
+                use_container_width=True,
+                key=f"btn_down_{record.get('episode_id')}"
+            )
 
     st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 15px; border-top: 1px solid #eee; padding-top: 5px;">src/ui/components/reports/report_viewer.py</div>', unsafe_allow_html=True)

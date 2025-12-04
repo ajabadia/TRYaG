@@ -483,20 +483,11 @@ Garantiza la continuidad operativa ante fallos de conexión a internet o caída 
   * Se desactiva el análisis de IA (Gemini).
   * El sistema pasa a un modo de "Triaje Manual Estructurado" basado en reglas locales.
 * **Almacenamiento Local:** Los datos se guardan temporalmente en el navegador del usuario.
-* **Sincronización:** Al restablecerse la conexión, el sistema permite sincronizar los registros locales con la base de datos central, marcándolos como "Generados en Contingencia".
+* **Sincronización:**
+  * **Exportación:** El usuario puede descargar los registros locales como un archivo JSON desde la barra lateral ("Sincronización Offline").
+  * **Importación:** Al recuperar la conexión, el usuario sube este archivo al servidor para integrar los datos en la base de datos central.
 
 ### 6.3 Aplicación Web Progresiva (PWA)
-
-El sistema ha sido habilitado como una **Progressive Web App (PWA)**, permitiendo su instalación como una aplicación nativa en dispositivos de escritorio y móviles.
-
-*   **Instalable:** Los usuarios pueden añadir la aplicación a su pantalla de inicio, eliminando la barra de navegación del navegador y ofreciendo una experiencia inmersiva.
-*   **Icono Adaptativo:** El icono de la aplicación se adapta automáticamente al tema del dispositivo (claro/oscuro).
-*   **Soporte Offline Robusto:** Gracias a una estrategia de caché avanzada, la aplicación carga instantáneamente y ofrece una experiencia fluida incluso con conexiones inestables. En caso de desconexión total, se muestra una interfaz de contingencia.
-*   **Acceso Rápido:** Facilita el acceso inmediato al triaje sin necesidad de recordar URLs.
-
----
-
-## 7. Arquitectura Técnica
 
 ### 7.1 Stack Tecnológico
 

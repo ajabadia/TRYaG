@@ -6,8 +6,43 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepTogether
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT
+import re
+import unicodedata
 
 from db.repositories.triage import get_triage_repository
+
+def get_report_filename(patient_data: dict, prefix: str = "Informe") -> str:
+    """
+    Genera un nombre de archivo seguro y estandarizado para los reportes PDF.
+    Formato: {Prefix}_{Nombre}_{Apellido}_{YYYYMMDD_HHMM}.pdf
+    """
+    try:
+        # Obtener nombre y apellido de forma robusta
+        nombre = patient_data.get('nombre', 'Paciente')
+        apellido = patient_data.get('apellido1', '')
+        
+        # Si viene en un dict anidado (ej. patient_snapshot)
+        if isinstance(nombre, dict): 
+            nombre = "Paciente"
+        
+        raw_name = f"{nombre}_{apellido}".strip("_")
+        if not raw_name:
+            raw_name = "Paciente_Desconocido"
+            
+        # Normalizar caracteres (tildes, ñ, etc)
+        normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
+        
+        # Sanitizar (solo letras, números, guiones y guiones bajos)
+        safe_name = re.sub(r'[^\w\-_]', '_', normalized)
+        
+        # Timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M')
+        
+        return f"{prefix}_{safe_name}_{timestamp}.pdf"
+    except Exception as e:
+        print(f"Error generating filename: {e}")
+        return f"{prefix}_Report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+
 
 # --- CONSTANTS & STYLES ---
 HEADER_COLOR = colors.HexColor("#0056b3") # Blue

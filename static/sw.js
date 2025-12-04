@@ -3,6 +3,8 @@ const OFFLINE_URL = '/static/offline.html';
 
 const ASSETS_TO_CACHE = [
     OFFLINE_URL,
+    '/static/css/offline.css',
+    '/static/js/offline_db.js',
     '/static/manifest.json',
     '/static/icons/icon-192x192.png',
     '/static/icons/icon-512x512.png',

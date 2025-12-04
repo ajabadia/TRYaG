@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triaje de Emergencia (Offline)</title>
+    <link rel="stylesheet" href="css/offline.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d32f2f">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🚨 Triaje de Contingencia</h1>
+            <p>Modo Offline - Los datos se guardarán localmente.</p>
+        </header>
+
+        <form id="triageForm">
+            <div class="card">
+                <h2>👤 Datos del Paciente</h2>
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo *</label>
+                    <input type="text" id="nombre" required placeholder="Ej: Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label for="dni">DNI / Identificación</label>
+                    <input type="text" id="dni" placeholder="Opcional">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edad">Edad</label>
+                        <input type="number" id="edad" min="0" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label for="genero">Género</label>
+                        <select id="genero">
+                            <option value="No Especificado">Seleccionar...</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>❤️ Signos Vitales (Si disponibles)</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>FC (lpm)</label>
+                        <input type="number" id="fc">
+                    </div>
+                    <div class="form-group">
+                        <label>SatO2 (%)</label>
+                        <input type="number" id="sat">
+                    </div>
+                    <div class="form-group">
+                        <label>TA Sistólica</label>
+                        <input type="number" id="tas">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📝 Motivo de Consulta *</h2>
+                <div class="form-group">
+                    <textarea id="motivo" rows="4" required placeholder="Describa brevemente el problema..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-save">💾 Guardar Registro</button>
+        </form>
+
+        <div id="statusMessage"></div>
+
+        <div class="pending-list">
+            <h3>Registros Pendientes: <span id="pendingCount">0</span></h3>
+            <button id="clearBtn" class="btn-secondary">Borrar Todo</button>
+        </div>
+    </div>
+
+    <script src="js/offline_db.js"></script>
+</body>
+
+</html>

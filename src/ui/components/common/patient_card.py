@@ -229,43 +229,77 @@ def render_patient_card(
                             st.session_state[f"show_finish_modal_{pid}"] = True
                             st.rerun()
 
-        # Botón de Informe (Modal)
+        # Botón de Informe (Modal/Descarga)
         if pid != 'N/A' and kwargs.get('show_report', True):
-            # Generar PDF bajo demanda
-            # Construimos un registro "wrapper" para el generador
-            record_wrapper = {
-                "patient_data": patient,
-                "vital_signs": patient.get('vital_signs', {}),
-                "triage_result": patient.get('triage_result', {}),
-                "timestamp": datetime.now(),
-                "audit_id": pid,
-                "evaluator_id": "Sistema"
-            }
+            # Keys para estado de este PDF específico
+            pdf_state_key = f"pdf_bytes_{pid}_{key_prefix}"
+            pdf_name_key = f"pdf_name_{pid}_{key_prefix}"
             
-            try:
-                # Generar PDF
-                pdf_bytes = generate_triage_pdf(record_wrapper)
+            # Si ya está generado, mostrar botón de descarga
+            if st.session_state.get(pdf_state_key):
+                import base64
                 
-                # Sanitizar nombre de archivo
-                raw_name = f"{patient.get('nombre', 'Paciente')}_{patient.get('apellido1', '')}"
-                # Normalizar y eliminar caracteres especiales
-                normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
-                safe_name = re.sub(r'[^\w\-_]', '_', normalized)
+                pdf_data = st.session_state[pdf_state_key]
+                file_name = st.session_state.get(pdf_name_key, "report.pdf")
+                b64_pdf = base64.b64encode(pdf_data).decode('utf-8')
                 
-                # Timestamp detallado para evitar caché/duplicados
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                file_name = f"Informe_{safe_name}_{timestamp}.pdf"
+                # Estilo similar a un botón primario de Streamlit
+                button_style = """
+                    display: inline-flex;
+                    -webkit-box-align: center;
+                    align-items: center;
+                    -webkit-box-pack: center;
+                    justify-content: center;
+                    font-weight: 400;
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 0.5rem;
+                    min-height: 38.4px;
+                    margin: 0px;
+                    line-height: 1.6;
+                    color: white;
+                    width: 100%;
+                    user-select: none;
+                    background-color: #ff4b4b;
+                    border: 1px solid #ff4b4b;
+                    text-decoration: none;
+                """
                 
-                st.download_button(
-                    label="📄 Informe PDF",
-                    data=pdf_bytes,
-                    file_name=file_name,
-                    mime="application/pdf",
-                    use_container_width=True,
-                    key=f"btn_dl_pdf_{pid}_{key_prefix}"
-                )
-            except Exception as e:
-                st.error(f"Error generando PDF: {e}")
+                href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="{file_name}" style="{button_style}" target="_blank">⬇️ Descargar</a>'
+                
+                c_down, c_clear = st.columns([3, 1])
+                with c_down:
+                    st.markdown(href, unsafe_allow_html=True)
+                with c_clear:
+                    if st.button("❌", key=f"btn_clr_pdf_{pid}_{key_prefix}", help="Cerrar descarga"):
+                        del st.session_state[pdf_state_key]
+                        del st.session_state[pdf_name_key]
+                        st.rerun()
+            else:
+                # Botón para generar
+                if st.button("📄 PDF", key=f"btn_gen_pdf_{pid}_{key_prefix}", help="Generar informe PDF", use_container_width=True):
+                    with st.spinner("Generando..."):
+                        try:
+                            # Construir registro wrapper
+                            record_wrapper = {
+                                "patient_data": patient,
+                                "vital_signs": patient.get('vital_signs', {}),
+                                "triage_result": patient.get('triage_result', {}),
+                                "timestamp": datetime.now(),
+                                "audit_id": pid,
+                                "evaluator_id": "Sistema"
+                            }
+                            
+                            # Generar
+                            from services.report_service import get_report_filename
+                            pdf_bytes = generate_triage_pdf(record_wrapper)
+                            file_name = get_report_filename(patient, prefix="Informe")
+                            
+                            # Guardar en sesión
+                            st.session_state[pdf_state_key] = pdf_bytes
+                            st.session_state[pdf_name_key] = file_name
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error: {e}")
 
     # --- MODALES DE ACCIONES ESTÁNDAR ---
     # Renderizar fuera del container principal para evitar problemas de anidamiento visual

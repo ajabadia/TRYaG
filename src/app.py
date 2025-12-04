@@ -1,7 +1,7 @@
 # src/app.py
 """Main entry point for the Triaje IA application.
 
-This module configures Streamlit, initializes session state, and assembles the UI.
+This module configures Streamlit, initializes session state, ands assembles the UI.
 """
 
 import sys
@@ -170,23 +170,15 @@ def mostrar_app_principal():
             st.markdown(
                 f'<p class="header-message">{mensaje}</p>', unsafe_allow_html=True
             )
-            
-    with col_menu:
-        # Menú de usuario movido al sidebar
-        pass
 
-    # Initialize loading container (justo después del header)
-    # User Selector & Permissions Logic
-    # -----------------------------------------------------------------------
-    render_user_selector()
-    
-    available_tabs_labels = get_available_tabs()
-
-    if not available_tabs_labels:
-        st.error("⛔ Acceso denegado. No tienes permisos asignados para ver ninguna sección.")
-        st.stop()
-
+    # Sidebar with user selector and tools
+    with st.sidebar:
+        render_user_selector()
+        from ui.components.common.offline_sync import render_offline_sync
+        render_offline_sync()
+        
     # Main tabs
+    available_tabs_labels = get_available_tabs()
     tabs = st.tabs(available_tabs_labels)
     
     for i, tab_label in enumerate(available_tabs_labels):

@@ -93,12 +93,8 @@ def render_step_final_disposition():
                 st.session_state.cached_pdf_patient = p["patient_code"]
                 
                 # Nombre del archivo (Sanitizado ASCII)
-                import re
-                import unicodedata
-                raw_name = f"{p.get('nombre')}_{p.get('apellido1')}"
-                normalized = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
-                safe_name = re.sub(r'[^\w\-_]', '_', normalized)
-                st.session_state.cached_pdf_name = f"Triaje_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+                from services.report_service import get_report_filename
+                st.session_state.cached_pdf_name = get_report_filename(p, prefix="Triaje")
         
         # Fallback de seguridad para el nombre del archivo
         if "cached_pdf_name" not in st.session_state or not st.session_state.cached_pdf_name:
