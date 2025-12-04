@@ -108,10 +108,17 @@ El sistema implementa un entorno de simulación aislado para entrenamiento:
 
 ### Progressive Web App (PWA)
 
-El sistema implementa capacidades PWA mediante la inyección de scripts en el frontend de Streamlit:
+El sistema implementa dos estrategias de resiliencia:
 
-1.  **Manifest (`static/manifest.json`):** Define metadatos, iconos y comportamiento de instalación (standalone).
-2.  **Service Worker (`static/sw.js`):**
+1.  **Modo Manual (Soft Fallback):**
+    *   Permite operar sin el servicio de IA (Gemini).
+    *   Los datos se persisten directamente en MongoDB (requiere conexión al servidor).
+    *   Gestionado por `contingency_service.py` (flag de estado) y `input_form.py`.
+
+2.  **Modo Offline Total (Hard Fallback / PWA):**
+    *   Permite operar sin conexión al servidor Streamlit.
+    *   **Manifest (`static/manifest.json`):** Habilita instalación como app nativa.
+    *   **Service Worker (`static/sw.js`):** Cachea `offline.html` y sirve esta página cuando falla la red.
     *   **Estrategia Híbrida:**
         *   *Stale-While-Revalidate* para activos estáticos (iconos, CSS, JS) para carga instantánea.
         *   *Network First* para navegación y datos, con fallback a página offline.
@@ -130,7 +137,8 @@ Ver [DEPLOYMENT.md](../DEPLOYMENT.md) para instrucciones detalladas sobre el des
 El proyecto está completamente "dockerizado" para facilitar su despliegue en cualquier entorno.
 
 *   **Dockerfile:** Define la imagen base (Python 3.11-slim), instala dependencias y copia el código fuente.
-*   **docker-compose.yml:** Orquesta el contenedor de la aplicación (`web`) junto con una instancia local de MongoDB (`mongo`), ideal para desarrollo o entornos aislados.
+*   **docker-compose.yml:** Orquesta el contenedor de la aplicación (`web`), MongoDB (`mongo`) y **Nginx** como proxy inverso.
+*   **Nginx:** Gestiona la terminación SSL (HTTPS) y el proxy de WebSockets para Streamlit.
 
 Para levantar el entorno completo:
 ```bash

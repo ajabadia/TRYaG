@@ -476,23 +476,44 @@ def render_input_form():
                     from services.contingency_service import is_contingency_active, save_triage_locally
                     
                     if is_contingency_active():
-                        # Lógica Offline: Usar Worst Case directamente
-                        st.warning("📴 MODO CONTINGENCIA: Análisis IA deshabilitado. Usando protocolo estándar.")
-                        import time
-                        time.sleep(1) # Simular proceso
+                        # Lógica Manual (Directo a DB)
+                        st.info("🛠️ MODO MANUAL: Guardando directamente en Base de Datos (Sin IA).")
                         
-                        st.session_state.resultado = {
+                        # Construir resultado manual
+                        manual_result = {
                             "status": "SUCCESS",
-                            "nivel_sugerido": triage_result.get('final_priority', 5), # Fallback a 5 si falla
+                            "nivel_sugerido": triage_result.get('final_priority', 5),
                             "razonamiento": [
-                                "Modo Contingencia Activo.",
+                                "Modo Manual Activo.",
                                 f"Clasificación basada en signos vitales: {triage_result.get('label')}",
-                                "Protocolo de seguridad activado."
-                            ]
+                                "Análisis IA omitido por usuario."
+                            ],
+                            "final_priority": triage_result.get('final_priority', 5),
+                            "final_color": triage_result.get('color', 'gray'),
+                            "nivel": triage_result.get('label', 'Nivel V')
                         }
                         
-                        # Guardar localmente
-                        save_triage_locally(st.session_state.datos_paciente, st.session_state.resultado)
+                        st.session_state.resultado = manual_result
+                        
+                        # Guardar en DB (usando el servicio de flujo)
+                        from services.patient_flow_service import save_triage_data
+                        
+                        # Preparar datos completos para guardado
+                        full_data = {
+                            "datos_paciente": st.session_state.datos_paciente,
+                            "resultado": manual_result,
+                            "evaluator_id": st.session_state.current_user['username'] if 'current_user' in st.session_state else 'unknown',
+                            "contingency_mode": True, # Flag para indicar que fue manual
+                            "is_training": st.session_state.get('training_mode', False)
+                        }
+                        
+                        patient_code = st.session_state.datos_paciente.get('patient_code', 'unknown')
+                        
+                        if save_triage_data(patient_code, full_data):
+                            st.success("✅ Triaje guardado correctamente en Base de Datos.")
+                        else:
+                            st.error("❌ Error al guardar en Base de Datos.")
+                        
                         st.session_state.analysis_complete = True
                         st.rerun()
                         

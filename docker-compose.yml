@@ -16,6 +16,19 @@ services:
     networks:
       - tryage-network
 
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - web
+    networks:
+      - tryage-network
+
   mongo:
     image: mongo:latest
     ports:

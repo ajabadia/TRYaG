@@ -352,7 +352,7 @@ def save_triage_data(patient_code: str, triage_data: Dict[str, Any]) -> bool:
             save_triage_locally(patient_data, result)
             set_contingency_mode(True)
             
-            st.warning("⚠️ Error de conexión con Base de Datos. El registro se ha guardado LOCALMENTE y se ha activado el Modo Contingencia.")
+            st.warning("⚠️ Error de conexión con Base de Datos. El registro se ha guardado LOCALMENTE (RAM) como medida de emergencia.")
             return True # Retornamos True para que el flujo continúe (aunque sea en modo offline)
             
         except Exception as local_e:

@@ -91,6 +91,10 @@ def render_user_selector():
         f"🔑 {role_name}"
     )
 
+    # 3. Sesión (Movido aquí por solicitud)
+    if st.sidebar.button("Cerrar Sesión", key="btn_logout_sidebar", use_container_width=True):
+        st.warning("Funcionalidad de Logout pendiente de implementar en Auth Service.")
+
     # --- INTEGRACIÓN MENÚ DE USUARIO (Migrado desde user_menu.py) ---
     st.sidebar.divider()
     
@@ -100,7 +104,7 @@ def render_user_selector():
     # Modo Contingencia
     from services.contingency_service import is_contingency_active, set_contingency_mode, get_unsynced_count
     is_offline = is_contingency_active()
-    new_state = st.sidebar.toggle("Modo Contingencia (Offline)", value=is_offline, key="toggle_offline_sidebar")
+    new_state = st.sidebar.toggle("Modo Manual (Sin IA)", value=is_offline, key="toggle_offline_sidebar", help="Activa este modo para guardar directamente en Base de Datos sin pasar por el análisis de Gemini.")
     
     if new_state != is_offline:
         set_contingency_mode(new_state)
@@ -130,8 +134,5 @@ def render_user_selector():
         
     st.sidebar.divider()
     
-    # 3. Sesión
-    if st.sidebar.button("Cerrar Sesión", key="btn_logout_sidebar", use_container_width=True):
-        st.warning("Funcionalidad de Logout pendiente de implementar en Auth Service.")
 
     st.markdown('<div class="debug-footer">src/components/common/user_selector.py</div>', unsafe_allow_html=True)

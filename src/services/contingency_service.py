@@ -14,10 +14,9 @@ def set_contingency_mode(enabled: bool):
     _ensure_initialized()
     st.session_state.contingency_mode = enabled
     if enabled:
-        st.toast("⚠️ MODO CONTINGENCIA ACTIVADO: Funcionalidad Reducida", icon="📴")
+        st.toast("⚠️ MODO MANUAL ACTIVADO: Análisis IA deshabilitado", icon="🛠️")
     else:
-        st.toast("✅ CONEXIÓN RESTABLECIDA: Sincronizando datos...", icon="📶")
-        sync_local_data()
+        st.toast("✅ MODO AUTOMÁTICO: IA Reactivada", icon="🤖")
 
 def is_contingency_active() -> bool:
     """Retorna True si el modo de contingencia está activo."""

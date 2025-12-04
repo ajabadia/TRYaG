@@ -19,6 +19,58 @@ def render_offline_sync():
         st.markdown("##### 1. Exportar datos locales")
         st.caption("Si trabajaste sin conexión, descarga tus registros aquí.")
         
+        # Script para detectar registros pendientes automáticamente
+        detect_js = """
+        <script>
+        (async function() {
+            try {
+                // Esperar a que se cargue offline_db.js si es necesario
+                if (typeof window.checkPendingRecords === 'function') {
+                    const count = await window.checkPendingRecords();
+                    if (count > 0) {
+                        // Enviar mensaje a Streamlit (si fuera bidireccional real)
+                        // Por ahora, manipulamos el DOM para mostrar aviso visual si no estamos en la sidebar
+                        // Ojo: Esto es un hack visual. Lo ideal es que el usuario vea el badge.
+                        
+                        // Crear un elemento de aviso flotante si no existe
+                        if (!document.getElementById('offline-warning-badge')) {
+                            const badge = document.createElement('div');
+                            badge.id = 'offline-warning-badge';
+                            badge.innerHTML = `⚠️ ${count} Registros Offline`;
+                            badge.style.cssText = `
+                                position: fixed;
+                                bottom: 20px;
+                                right: 20px;
+                                background-color: #ff4b4b;
+                                color: white;
+                                padding: 10px 15px;
+                                border-radius: 5px;
+                                z-index: 999999;
+                                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                                font-family: sans-serif;
+                                font-weight: bold;
+                                cursor: pointer;
+                            `;
+                            badge.onclick = () => {
+                                // Intentar abrir la sidebar (no siempre posible desde JS puro en Streamlit)
+                                alert("Tienes registros pendientes de sincronizar. Abre la barra lateral > Sincronización Offline.");
+                            };
+                            document.body.appendChild(badge);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error checking offline records:", e);
+            }
+        })();
+        </script>
+        """
+        components.html(detect_js, height=0, width=0)
+
+        # 1. Botón para buscar y exportar datos locales (JS)
+        st.markdown("##### 1. Exportar datos locales")
+        st.caption("Si trabajaste sin conexión, descarga tus registros aquí.")
+        
         # Script para leer IndexedDB y generar un archivo de descarga
         export_js = """
         <script>

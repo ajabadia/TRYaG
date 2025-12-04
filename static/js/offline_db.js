@@ -64,7 +64,38 @@ function updatePendingCount() {
     const countRequest = store.count();
 
     countRequest.onsuccess = () => {
-        document.getElementById('pendingCount').innerText = countRequest.result;
+        const count = countRequest.result;
+        const badge = document.getElementById('pendingCount');
+        if (badge) badge.innerText = count;
+
+        // Disparar evento para que Streamlit lo pueda leer si es necesario
+        // o simplemente para depuración
+        console.log("Pending records:", count);
+    };
+}
+
+// Función expuesta para ser llamada desde Python/Streamlit via components.html
+window.checkPendingRecords = function () {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                performCount(resolve);
+            };
+            request.onerror = (e) => reject(e);
+        } else {
+            performCount(resolve);
+        }
+    });
+};
+
+function performCount(resolve) {
+    const transaction = db.transaction([STORE_NAME], "readonly");
+    const store = transaction.objectStore(STORE_NAME);
+    const countRequest = store.count();
+    countRequest.onsuccess = () => {
+        resolve(countRequest.result);
     };
 }
 

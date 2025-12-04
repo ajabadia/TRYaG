@@ -478,16 +478,20 @@ Diseñado para el entrenamiento de nuevo personal sin afectar a los datos reales
 
 Garantiza la continuidad operativa ante fallos de conexión a internet o caída de los servicios de IA.
 
-* **Activación:** Manual (por el supervisor) o automática (al detectar fallos repetidos de conexión).
-* **Funcionalidad Reducida:**
-  * Se desactiva el análisis de IA (Gemini).
-  * El sistema pasa a un modo de "Triaje Manual Estructurado" basado en reglas locales.
-* **Almacenamiento Local:** Los datos se guardan temporalmente en el navegador del usuario.
-* **Sincronización:**
-  * **Exportación:** El usuario puede descargar los registros locales como un archivo JSON desde la barra lateral ("Sincronización Offline").
-  * **Importación:** Al recuperar la conexión, el usuario sube este archivo al servidor para integrar los datos en la base de datos central.
+### 6.2 Modos de Operación Alternativos
+* **Modo Manual (Sin IA):**
+    * **Objetivo:** Permitir el triaje rápido cuando la IA no es necesaria o falla, pero **hay conexión al servidor**.
+    * **Funcionamiento:** Se desactiva el análisis de Gemini. El triaje se guarda directamente en la Base de Datos central.
+    * **Activación:** Toggle "Modo Manual" en la barra lateral.
 
-### 6.3 Aplicación Web Progresiva (PWA)
+* **Modo Offline Total (PWA):**
+    * **Objetivo:** Permitir el triaje cuando **NO hay conexión a internet/servidor**.
+    * **Funcionamiento:** Se usa una versión simplificada de la app (`offline.html`). Los datos se guardan en el navegador.
+    * **Sincronización:** Al recuperar la conexión, se usa la herramienta "Sincronización Offline" para subir los datos.
+
+### 6.3 Aplicación Web Progresiva (PWA) y Sincronización
+* **Detección Automática:** Al recuperar la conexión, el sistema detecta automáticamente si existen registros pendientes en el dispositivo y muestra una alerta visual.
+* **Sincronización:** A través del panel lateral, el usuario puede descargar los registros locales y subirlos al servidor para su consolidación.
 
 ### 7.1 Stack Tecnológico
 
