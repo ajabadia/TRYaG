@@ -17,3 +17,4 @@ fpdf2
 joblib
 scikit-learn
 reportlab
+streamlit-webrtc

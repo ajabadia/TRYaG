@@ -24,12 +24,18 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
     if f"{key_prefix}_reset_counter" not in st.session_state:
         st.session_state[f"{key_prefix}_reset_counter"] = 0
 
-    # --- IMPLEMENTACIÓN ROBUSTA (File Uploader) ---
-    # La grabación nativa vía componente custom es inestable para videos largos (Base64 overhead).
-    # Usamos file_uploader con capture="environment" (móviles) o subida directa.
+    # --- OPCIÓN 1: GRABADOR NATIVO (JS) ---
+    from components.common.webcam_video import render_js_recorder
+    
+    with st.expander("📹 Abrir Grabador de Cámara", expanded=False):
+        st.caption("1. Graba tu video. 2. Descárgalo. 3. Súbelo en el campo de abajo.")
+        render_js_recorder()
+
+    # --- OPCIÓN 2: SUBIDA DE ARCHIVO ---
+    st.markdown("##### Subir Video Grabado")
     
     uploaded_video = st.file_uploader(
-        "Subir video o Grabar (Móvil)", 
+        "Arrastra aquí el video descargado o selecciona uno", 
         type=['mp4', 'mov', 'avi', 'webm'], 
         accept_multiple_files=False,
         key=f"{key_prefix}_uploader_{st.session_state[f'{key_prefix}_reset_counter']}"

@@ -153,9 +153,20 @@ def _render_video_card(file_obj, index, file_md5, disabled=False):
 
     st.video(video_source)
     
-    c_icon, c_name = st.columns([0.15, 0.85])
+    c_icon, c_name, c_dl = st.columns([0.15, 0.70, 0.15])
     with c_icon: render_icon("videocam", size=16)
     with c_name: st.caption(file_obj.name)
+    with c_dl:
+        # Botón de descarga explícito con nombre correcto
+        with open(video_source, "rb") as f:
+            st.download_button(
+                label="⬇️",
+                data=f,
+                file_name=file_obj.name,
+                mime="video/webm",
+                key=f"dl_vid_{index}_{file_md5}",
+                help=f"Descargar {file_obj.name}"
+            )
     
     # Videos también pueden tener transcripción
     if transcription:
