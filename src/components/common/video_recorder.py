@@ -26,16 +26,61 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
 
     # --- OPCIÓN 1: GRABADOR NATIVO (JS) ---
     from components.common.webcam_video import render_js_recorder
+    import os
     
     with st.expander("📹 Abrir Grabador de Cámara", expanded=False):
-        st.caption("1. Graba tu video. 2. Descárgalo. 3. Súbelo en el campo de abajo.")
-        render_js_recorder()
+        st.caption("Graba tu video y espera a que aparezca el mensaje de confirmación.")
+        
+        # Generamos el nombre esperado
+        expected_filename = render_js_recorder()
+        
+        # Botón para "recoger" el video subido
+        if st.button("🔄 Procesar Video Grabado", key=f"{key_prefix}_check_upload"):
+            with st.spinner("Procesando video..."):
+                temp_path = os.path.join("temp", expected_filename)
+                
+                if os.path.exists(temp_path):
+                    # Crear wrapper simulando upload
+                    try:
+                        # Leer contenido a BytesIO para compatibilidad con TempFileWrapper
+                        from io import BytesIO
+                        with open(temp_path, "rb") as f:
+                            content = f.read()
+                        
+                        file_obj = BytesIO(content)
+                        file_obj.name = expected_filename
+                        
+                        wrapper = TempFileWrapper(
+                            file_obj, 
+                            expected_filename, 
+                            temp_path=temp_path, 
+                            file_type="video/webm"
+                        )
+                        
+                        # Añadir a lista
+                        if f"{key_prefix}_videos" not in st.session_state:
+                            st.session_state[f"{key_prefix}_videos"] = []
+                            
+                        st.session_state[f"{key_prefix}_videos"].append(wrapper)
+                        st.success("Video importado correctamente.")
+                        
+                        # Limpiar el nombre de archivo persistido para permitir nueva grabación
+                        if "recorder_filename" in st.session_state:
+                            del st.session_state["recorder_filename"]
+                            
+                        # NO hacemos rerun aquí para evitar parpadeos/cierres del modal.
+                        # Al seguir la ejecución, la lista de abajo se actualizará sola.
+                        
+                    except Exception as e:
+                        st.error(f"Error importando video: {e}")
+                else:
+                    st.warning("No se encontró el video. Asegúrate de haber terminado de grabar y que salga el mensaje de confirmación.")
 
-    # --- OPCIÓN 2: SUBIDA DE ARCHIVO ---
-    st.markdown("##### Subir Video Grabado")
+    # --- OPCIÓN 2: SUBIDA DE ARCHIVO (Solo si no se usa el grabador o como backup) ---
+    st.markdown("##### O subir video manualmente")
     
     uploaded_video = st.file_uploader(
-        "Arrastra aquí el video descargado o selecciona uno", 
+        "Arrastra aquí el video o selecciona uno", 
         type=['mp4', 'mov', 'avi', 'webm'], 
         accept_multiple_files=False,
         key=f"{key_prefix}_uploader_{st.session_state[f'{key_prefix}_reset_counter']}"
@@ -83,6 +128,12 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
                 st.video(vid.temp_path)
             with c_del:
                 if st.button("🗑️", key=f"{key_prefix}_del_{i}"):
+                    # Cerrar archivo si está abierto
+                    if hasattr(vid, '_file_obj') and not vid._file_obj.closed:
+                         try:
+                             vid._file_obj.close()
+                         except: pass
+                    
                     st.session_state[f"{key_prefix}_videos"].pop(i)
                     st.rerun()
     
@@ -91,12 +142,13 @@ def render_video_recorder(key_prefix="video", on_video_ready=None, disabled=Fals
     
     with c_save:
         if st.button("✅ Guardar Videos", key=f"{key_prefix}_save", type="primary", use_container_width=True, disabled=not videos or disabled):
-            if on_video_ready:
-                on_video_ready(st.session_state[f"{key_prefix}_videos"])
-            # Limpiar
-            if f"{key_prefix}_videos" in st.session_state:
-                del st.session_state[f"{key_prefix}_videos"]
-            st.rerun()
+            with st.spinner("Guardando y vinculando videos..."):
+                if on_video_ready:
+                    on_video_ready(st.session_state[f"{key_prefix}_videos"])
+                # Limpiar
+                if f"{key_prefix}_videos" in st.session_state:
+                    del st.session_state[f"{key_prefix}_videos"]
+                st.rerun()
         
     with c_cancel:
         if st.button("❌ Cancelar", key=f"{key_prefix}_cancel", use_container_width=True):
