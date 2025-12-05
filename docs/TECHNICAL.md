@@ -71,6 +71,14 @@ La interacción con la IA se centraliza en `src/services/gemini_client.py`.
 *   **MongoDB:** Almacenamiento persistente de toda la información crítica (Pacientes, Historial, Configuración).
 *   **Borradores (`triage_draft`):** Colección específica para el auto-guardado de sesiones de triaje en curso.
 
+### Autenticación (Simulada)
+
+Para el entorno de piloto, se ha implementado un flujo de autenticación simplificado pero funcional en `src/ui/login_view.py`.
+
+*   **Intercepción:** `app.py` verifica la existencia de `st.session_state.current_user` al inicio. Si no existe, renderiza `login_view` y detiene la ejecución (`st.stop()`).
+*   **Validación:** Se valida la entrada del usuario contra el campo `internal_id` del documento de usuario en MongoDB.
+*   **Seguridad:** Aunque simplificada, la sesión se gestiona en el servidor (`session_state`) y no se exponen credenciales reales. El disclaimer se fuerza en cada login.
+
 ### Sistema de Notificaciones
 
 El sistema utiliza una arquitectura de bus de eventos desacoplada para gestionar las notificaciones:

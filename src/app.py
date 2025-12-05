@@ -85,6 +85,12 @@ def init_background_services():
 def mostrar_app_principal():
     """Render the main Streamlit interface."""
     
+    # Check Authentication
+    if "current_user" not in st.session_state or not st.session_state.current_user:
+        from ui.login_view import render_login_view
+        render_login_view()
+        st.stop()
+    
     # PWA Installer (Injects manifest and SW)
     from components.common.pwa_installer import render_pwa_installer
     render_pwa_installer()
@@ -179,6 +185,16 @@ def mostrar_app_principal():
         
     # Main tabs
     available_tabs_labels = get_available_tabs()
+    
+    if not available_tabs_labels:
+        st.error("⛔ No tienes permisos asignados para acceder a ninguna sección del sistema.")
+        st.info("Contacta con el administrador para revisar tu rol y permisos.")
+        if st.button("Cerrar Sesión"):
+            st.session_state.current_user = None
+            st.session_state.login_selected_user = None
+            st.rerun()
+        st.stop()
+
     tabs = st.tabs(available_tabs_labels)
     
     for i, tab_label in enumerate(available_tabs_labels):

@@ -319,8 +319,8 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - [x] IndexedDB (Implementado para contingencia).
     - [x] Página Offline (`offline.html`).
     - [ ] Sincronización en segundo plano (Pendiente integración).
-- [ ] **9.2 Autenticación Real:**
-    - Integración con Auth0/Firebase, JWT, Seguridad.
+- [x] **9.2 Autenticación Real:**
+    - [x] (Descartado para Demo) Integración con Auth0/Firebase, JWT, Seguridad.
 - [x] **9.3 Despliegue:**
     - [x] Dockerización (`Dockerfile`, `docker-compose.yml`).
     - [ ] HTTPS, CI/CD completo.

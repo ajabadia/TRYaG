@@ -36,16 +36,9 @@ def render_user_selector():
     current_user = st.session_state.get("current_user")
     index = 0
     
-    # Si no hay usuario seleccionado, seleccionar el primero (Superadmin por defecto si está)
+    # Si no hay usuario seleccionado, no hacemos nada (app.py redirige a login)
     if not current_user:
-        # Intentar buscar superadmin por defecto
-        superadmin = next((u for u in users if u["username"] == "superadmin"), None)
-        if superadmin:
-            st.session_state.current_user = superadmin
-            current_user = superadmin
-        else:
-            st.session_state.current_user = list(user_options.values())[0]
-            current_user = st.session_state.current_user
+        return
 
     if current_user:
         # Reconstruct key for current user
@@ -93,7 +86,9 @@ def render_user_selector():
 
     # 3. Sesión (Movido aquí por solicitud)
     if st.sidebar.button("Cerrar Sesión", key="btn_logout_sidebar", use_container_width=True):
-        st.warning("Funcionalidad de Logout pendiente de implementar en Auth Service.")
+        st.session_state.current_user = None
+        st.session_state.login_selected_user = None
+        st.rerun()
 
     # --- INTEGRACIÓN MENÚ DE USUARIO (Migrado desde user_menu.py) ---
     st.sidebar.divider()

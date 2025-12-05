@@ -35,6 +35,15 @@ Se ha implementado un punto de acceso unificado en la cabecera de la aplicación
   * **Modo Formación:** Activación del modo de entrenamiento.
   * **Cerrar Sesión:** (Placeholder) Salida segura del sistema.
 
+### 2.2 Acceso y Autenticación (Simulación)
+
+Para facilitar la demostración y el uso en entorno de piloto, se ha implementado un sistema de **Login Simulado** que sustituye a la autenticación tradicional (SSO/LDAP).
+
+*   **Selección Visual:** El usuario selecciona su perfil desde una cuadrícula de tarjetas con los usuarios disponibles.
+*   **Contraseña:** Se utiliza el **ID Interno de Empleado** (ej. `EMP-001`) como contraseña de acceso.
+*   **Aviso Legal (Disclaimer):** Es obligatorio aceptar explícitamente los términos de uso y responsabilidad clínica en **cada inicio de sesión**.
+*   **Cierre de Sesión:** El botón "Cerrar Sesión" del menú de usuario devuelve al usuario a la pantalla de selección, limpiando la sesión actual.
+
 ---
 
 ## 3. Ciclo de Vida del Flujo de Paciente
