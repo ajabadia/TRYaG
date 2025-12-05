@@ -157,19 +157,6 @@ El desarrollo de este sistema se basa en estándares internacionales y guías cl
 *   **HL7 FHIR:** Health Level Seven International. (2019). *HL7 FHIR Release 4*. Recuperado de http://hl7.org/fhir/R4/
 *   **CIE-10:** Organización Mundial de la Salud. (2019). *Clasificación Internacional de Enfermedades, 10.ª revisión*. Recuperado de https://icd.who.int/browse10/2019/en
 *   **LOINC:** Regenstrief Institute. (2024). *Logical Observation Identifiers Names and Codes*. Recuperado de https://loinc.org/
-*   **Sistema de Triaje Manchester:** Mackway-Jones, K., Marsden, J., & Windle, J. (Eds.). (2014). *Emergency Triage: Manchester Triage Group* (3rd ed.). Wiley-Blackwell.
-
-## 🚀 Despliegue
-
-Ver [DEPLOYMENT.md](../DEPLOYMENT.md) para instrucciones detalladas sobre el despliegue en Streamlit Community Cloud.
-
-### Despliegue con Docker
-
-El proyecto está completamente "dockerizado" para facilitar su despliegue en cualquier entorno.
-
-*   **Dockerfile:** Define la imagen base (Python 3.11-slim), instala dependencias y copia el código fuente.
-*   **docker-compose.yml:** Orquesta el contenedor de la aplicación (`web`), MongoDB (`mongo`) y **Nginx** como proxy inverso.
-*   **Nginx:** Gestiona la terminación SSL (HTTPS) y el proxy de WebSockets para Streamlit.
 
 Para levantar el entorno completo:
 ```bash

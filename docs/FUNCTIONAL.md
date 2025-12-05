@@ -1,13 +1,3 @@
-# Documentación Funcional - Asistente de Triaje IA
-
-## 1. Introducción
-
-El **Asistente de Triaje IA** es una aplicación web diseñada para optimizar el proceso de clasificación de pacientes en servicios de urgencias de Traumatología. Utiliza inteligencia artificial generativa (Google Gemini) para analizar datos clínicos, transcripciones de voz e imágenes, sugiriendo niveles de prioridad y especialidades médicas.
-
-El sistema está construido sobre **Streamlit** y utiliza **MongoDB** como base de datos, garantizando una interfaz ágil y persistencia de datos robusta.
-
----
-
 ## 2. Roles de Usuario y Permisos
 
 El acceso a las funcionalidades del sistema está segmentado por roles, definidos en la configuración del centro.

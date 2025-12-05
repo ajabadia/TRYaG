@@ -60,6 +60,19 @@ Verificar la resiliencia del sistema ante fallos de red.
     *   Evento `window.online` dispara alerta de sincronización.
     *   Carga correcta de datos desde JSON local.
 
+### Fase 4: Advanced Testing (E2E & Load) (✅ Completada)
+Simular el comportamiento real del usuario y la carga del sistema.
+
+1.  **End-to-End (E2E) con Playwright:**
+    *   **Propósito:** Validar flujos críticos completos (Login -> Triaje -> Alta) en un navegador real.
+    *   **Frecuencia:** Ejecutar antes de cada deploy a producción o cambios mayores en UI.
+    *   **Comando:** `pytest tests/e2e`
+
+2.  **Pruebas de Carga con Locust:**
+    *   **Propósito:** Asegurar que el sistema soporta concurrencia (ej: 50 enfermeros simultáneos).
+    *   **Frecuencia:** Ejecutar antes de campañas de despliegue masivo.
+    *   **Comando:** `locust -f tests/load/locustfile.py`
+
 ## 🚀 Ejecución
 Comando estándar:
 ```bash

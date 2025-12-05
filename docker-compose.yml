@@ -12,7 +12,7 @@ services:
       - mongo
     volumes:
       - ./src:/app/src # Hot reload for development
-      - ./static:/app/static
+      - ./src/static:/app/src/static
     networks:
       - tryage-network
 

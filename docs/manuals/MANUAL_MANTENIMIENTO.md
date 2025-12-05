@@ -57,20 +57,6 @@ Aquí se da de alta al personal del centro.
 
 ### 3.2 Gestión de Usuarios (Credenciales)
 Acceda a **"⚙️ Configuración" > "🔐 Usuarios"**.
-Aquí se crean las cuentas de acceso vinculadas a una Persona.
-1.  **Nuevo Usuario:** Seleccione una Persona existente de la lista.
-2.  **Username:** Identificador único.
-3.  **ID Interno:** Contraseña para el login.
-4.  **Rol:** Asigne los permisos (Médico, Enfermería, Admin).
-
-### 3.3 Desbloqueo de Usuarios
-Si un usuario bloquea su cuenta por intentos fallidos:
-1.  Busque al usuario en la lista.
-2.  Verá un indicador rojo "BLOQUEADO".
-3.  Pulse el botón **"Desbloquear"** en su tarjeta para restablecer el contador a 0 inmediatamente.
-
----
-
 ## 4. Gestión de Inteligencia Artificial
 
 El comportamiento de la IA se puede ajustar sin tocar código. Acceda a **"⚙️ Configuración" > "🧠 Inteligencia Artificial"**.

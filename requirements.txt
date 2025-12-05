@@ -20,3 +20,9 @@ reportlab
 streamlit-webrtc
 streamlit-js-eval
 pywebpush
+chromadb
+pypdf
+langchain-text-splitters
+playwright
+pytest-playwright
+locust
