@@ -191,6 +191,7 @@ El sistema dispone de una arquitectura modular para la captura exhaustiva de dat
   * 📷 **Foto:** Captura directa desde webcam (ej. lesiones cutáneas).
   * 🎥 **Video:** Grabación de video corto (ej. marcha, movilidad).
   * 📁 **Archivos:** Subida de PDFs o imágenes externas.
+  * 📍 **Ubicación:** Captura de coordenadas GPS para contexto extrahospitalario.
 * **Importación HCE:** Simulación de conexión para traer informes previos.
 
 **3. Entrevista Guiada Inteligente (`guided_interview`)**

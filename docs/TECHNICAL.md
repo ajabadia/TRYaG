@@ -143,6 +143,22 @@ El sistema incluye etiquetas discretas en el pie de cada componente UI para faci
 *   **Visibilidad:** Por defecto están ocultas (`display: none`).
 *   **Activación:** Cuando `st.session_state.developer_mode` es `True`, `app.py` inyecta un estilo global que anula la ocultación (`display: block`), haciéndolas visibles en toda la aplicación sin necesidad de lógica condicional en cada archivo.
 
+### 4.5 Interoperabilidad (FHIR)
+El sistema implementa un servicio de exportación compatible con HL7 FHIR R4.
+- **Servicio:** `src/services/fhir_service.py`
+- **Recursos Soportados:**
+    - `Patient`: Datos demográficos.
+    - `Encounter`: Datos del episodio de triaje.
+    - `Observation`: Signos vitales codificados con LOINC.
+
+## 📚 Bibliografía y Referencias
+El desarrollo de este sistema se basa en estándares internacionales y guías clínicas reconocidas:
+
+*   **HL7 FHIR:** Health Level Seven International. (2019). *HL7 FHIR Release 4*. Recuperado de http://hl7.org/fhir/R4/
+*   **CIE-10:** Organización Mundial de la Salud. (2019). *Clasificación Internacional de Enfermedades, 10.ª revisión*. Recuperado de https://icd.who.int/browse10/2019/en
+*   **LOINC:** Regenstrief Institute. (2024). *Logical Observation Identifiers Names and Codes*. Recuperado de https://loinc.org/
+*   **Sistema de Triaje Manchester:** Mackway-Jones, K., Marsden, J., & Windle, J. (Eds.). (2014). *Emergency Triage: Manchester Triage Group* (3rd ed.). Wiley-Blackwell.
+
 ## 🚀 Despliegue
 
 Ver [DEPLOYMENT.md](../DEPLOYMENT.md) para instrucciones detalladas sobre el despliegue en Streamlit Community Cloud.

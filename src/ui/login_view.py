@@ -2,6 +2,8 @@ import streamlit as st
 from db.repositories.users import get_users_repository
 from utils.icons import render_icon
 from utils.ui_utils import load_css
+from ui.config.config_loader import load_centro_config
+from components.common.footer import render_footer
 
 def render_login_view():
     """
@@ -65,8 +67,8 @@ def render_login_view():
     # Título y Logo
     col_logo, col_title = st.columns([1, 4])
     with col_title:
-        st.title("Asistente de Triaje IA")
-        st.markdown("##### Piloto de Traumatología")
+        pass # Titulo eliminado por solicitud usuario
+
     
     st.divider()
     
@@ -118,10 +120,10 @@ def render_login_view():
             st.markdown(
                 """
                 <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; border: 1px solid #ffeeba; margin: 15px 0;">
-                    <strong>⚠️ AVISO LEGAL IMPORTANTE</strong><br>
-                    Esta herramienta es un sistema de apoyo a la decisión clínica basado en Inteligencia Artificial.
-                    <strong>NO sustituye el juicio clínico profesional.</strong><br>
-                    Al acceder, usted acepta la responsabilidad de verificar todas las sugerencias de la IA.
+                    <strong>⚠️ AVISO LEGAL IMPORTANTE</strong><br><br>
+                    <strong>Herramienta de Apoyo:</strong> Este asistente es una herramienta de apoyo a la decisión clínica basado en Inteligencia Artificial y no reemplaza el juicio de un profesional sanitario cualificado.<br><br>
+                    <strong>Decisión Final Humana:</strong> La responsabilidad de la decisión final sobre el triaje y el tratamiento del paciente recae siempre en el profesional sanitario.<br><br>
+                    <strong>Sistema de Alto Riesgo:</strong> Esta aplicación se considera un sistema de IA de alto riesgo según la Ley de IA de la UE. Su uso está sujeto a supervisión y auditoría. Al acceder, usted acepta la responsabilidad de verificar todas las sugerencias de la IA.
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -234,5 +236,9 @@ def render_login_view():
                         )
 
     st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Footer estándar
+    centro_config = load_centro_config()
+    render_footer(centro_config)
     
     st.markdown('<div class="debug-footer">src/ui/login_view.py</div>', unsafe_allow_html=True)

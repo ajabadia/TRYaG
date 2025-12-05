@@ -326,3 +326,22 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - [x] HTTPS, CI/CD completo.
 
 
+
+## 🚀 FASE 10: Futuro e Innovación (Planificada)
+**Objetivo:** Llevar el piloto a un nivel de producto comercial con interoperabilidad, IA avanzada y experiencia móvil nativa.
+
+- [x] **10.1 Interoperabilidad Clínica:**
+    - [x] **Estándar HL7/FHIR:** Implementar exportación de episodios de triaje en formato JSON FHIR (Resources: Patient, Encounter, Observation).
+    - [x] **Codificación Automática:** Integrar servicio para mapear síntomas/diagnósticos a códigos CIE-10 o SNOMED CT usando la IA.
+
+- [ ] **10.2 Calidad y Testing Profundo:**
+    - [ ] **Tests E2E:** Configurar suite con Playwright para simular flujos completos de usuario (Admisión -> Triaje -> Alta).
+    - [ ] **Tests de Carga:** Script con Locust para simular concurrencia y validar estabilidad.
+
+- [ ] **10.3 Experiencia Móvil (PWA Avanzada):**
+    - [ ] **Notificaciones Push:** Integrar Firebase Cloud Messaging (FCM) para alertas de "Paciente en espera crítica".
+    - [x] **Geolocalización:** Capturar coordenadas GPS en triajes extrahospitalarios (si aplica).
+
+- [ ] **10.4 IA Avanzada (RAG):**
+    - [ ] **Base de Conocimiento:** Ingestar PDFs de protocolos médicos locales en una base vectorial (ChromaDB/FAISS).
+    - [ ] **Consultas Contextuales:** Configurar Gemini para consultar esta base antes de emitir sugerencias ("Grounding").

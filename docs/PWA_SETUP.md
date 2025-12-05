@@ -42,6 +42,11 @@ La aplicación ahora es una **Progressive Web App** instalable en dispositivos m
 - Toggle "Simular Modo Offline" en panel lateral
 - Permite probar flujos de contingencia sin desconexión física
 
+✅ **Geolocalización (GPS)**
+- Captura de coordenadas nativas del dispositivo
+- Integración en formulario de triaje (Contexto Clínico)
+- Requiere permiso del navegador
+
 ---
 
 ## 🎨 Generar Iconos

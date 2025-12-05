@@ -62,7 +62,7 @@ def render_footer(centro_config):
         # Logo
         # Ruta relativa desde la raíz de ejecución (donde se corre streamlit run src/app.py)
         # Asumiendo que se corre desde 'web/'
-        logo_path = os.path.join("assets", "logos", "tryag.svg")
+        logo_path = os.path.join("src", "assets", "logos", "tryag.svg")
         
         if os.path.exists(logo_path):
             st.image(logo_path, width=80)

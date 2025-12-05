@@ -278,6 +278,9 @@ def save_triage_data(patient_code: str, triage_data: Dict[str, Any]) -> bool:
             "prompt_type": "triage_gemini",
             "is_reevaluation": False, # TODO: Detectar si es reevaluación
             
+            # Geolocalización (Extraída de datos_paciente si existe)
+            "location": triage_data.get('datos_paciente', {}).get('ubicacion'),
+            
             # Nuevos campos persistidos explícitamente
             "extended_history": {
                 "ant_familiares": triage_data.get('datos_paciente', {}).get('ant_familiares'),

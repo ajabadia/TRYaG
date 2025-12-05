@@ -65,8 +65,38 @@ def render_clinical_context_form(reset_count: int, disabled: bool = False):
                 
                 # Mantener compatibilidad con flag booleano antiguo para lógica interna
                 st.session_state.datos_paciente['criterio_inmunodeprimido'] = True
-            else:
                 st.session_state.datos_paciente['criterio_inmunodeprimido'] = False
                 st.session_state.datos_paciente['criterio_inmunodeprimido_det'] = []
+
+            # --- GEOLOCALIZACIÓN (PWA) ---
+            st.markdown("---")
+            st.markdown("**📍 Ubicación (GPS)**")
+            
+            try:
+                from streamlit_js_eval import get_geolocation
+                
+                # Usar columnas para centrar y destacar el botón
+                col_geo, col_info = st.columns([1, 2])
+                
+                with col_geo:
+                    # El componente renderiza un botón. Intentamos forzar texto si la librería lo permite, 
+                    # o confiamos en el default "Get Location".
+                    # Nota: streamlit-js-eval no siempre acepta 'label' en todas las versiones, 
+                    # pero si no lo acepta, lo ignorará o usará kwargs.
+                    loc = get_geolocation(component_key=f"geo_btn_{reset_count}")
+
+                with col_info:
+                    if loc and 'coords' in loc:
+                        lat = loc['coords']['latitude']
+                        lon = loc['coords']['longitude']
+                        st.success(f"✅ GPS: {lat:.4f}, {lon:.4f}")
+                        st.session_state.datos_paciente['ubicacion'] = {"lat": lat, "lon": lon}
+                    else:
+                        st.info("⬅️ Pulse el botón para obtener coordenadas.")
+                    
+            except ImportError:
+                st.warning("Librería 'streamlit-js-eval' no instalada.")
+            except Exception as e:
+                st.error(f"Error GPS: {str(e)}")
 
     st.markdown('<div class="debug-footer">src/components/triage/clinical_context.py</div>', unsafe_allow_html=True)

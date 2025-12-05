@@ -219,6 +219,7 @@ class TriageRecord(BaseModel):
     # Datos Clínicos
     vital_signs: Optional[VitalSigns] = Field(default=None, description="Signos vitales registrados")
     sintomas_detectados: List[str] = Field(default_factory=list)
+    location: Optional[Dict[str, float]] = Field(default=None, description="Coordenadas GPS (lat, lon)")
     
     # Resultado Triaje
     status: Literal["draft", "completed"] = Field(default="completed", description="Estado del registro")
