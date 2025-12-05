@@ -21,7 +21,7 @@ def mostrar_panel_analisis_modular(
     Panel de Análisis Gráfico Modular.
     Orquesta los submódulos independientes.
     """
-    st.subheader("📊 Análisis Gráfico (Modular)")
+    st.subheader("📊 Análisis Gráfico")
 
     # Dataframes base (copias para seguridad)
     df_analisis = df_audit_base.copy()
@@ -29,44 +29,46 @@ def mostrar_panel_analisis_modular(
     df_trans_base = df_trans.copy() if df_trans is not None else pd.DataFrame()
     df_feedback_base = df_feedback.copy() if df_feedback is not None else pd.DataFrame()
 
-    # Pestañas
-    tab_resumen, tab_evol, tab_triaje, tab_concordancia, tab_files, tab_trans, tab_relacional, tab_prompts, tab_feedback = st.tabs([
-        "🎯 Resumen General",
-        "📈 Evolución Temporal",
-        "🏥 Análisis de Triaje",
-        "🧪 Validación Científica",
-        "📂 Análisis de Archivos",
-        "🎙️ Análisis de Transcripciones",
-        "🔗 Análisis Relacional",
-        "📜 Análisis de Prompts",
-        "🐛 Análisis de Feedback",
-    ])
+    # Categorización
+    category = st.radio(
+        "Categoría de Análisis:",
+        ["⚙️ General & Evolución", "🏥 Actividad Clínica", "🤖 Inteligencia Artificial"],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
 
-    with tab_resumen:
-        render_kpis_module(df_analisis, df_files_base, df_trans_base, key_prefix=f"{key_prefix}_kpis")
+    if category == "⚙️ General & Evolución":
+        tabs = st.tabs(["🎯 Resumen General", "📈 Evolución Temporal"])
         
-    with tab_evol:
-        render_evolution_module(df_analisis, df_files_base, key_prefix=f"{key_prefix}_evol")
+        with tabs[0]:
+            render_kpis_module(df_analisis, df_files_base, df_trans_base, key_prefix=f"{key_prefix}_kpis")
+        with tabs[1]:
+            render_evolution_module(df_analisis, df_files_base, key_prefix=f"{key_prefix}_evol")
+
+    elif category == "🏥 Actividad Clínica":
+        tabs = st.tabs([
+            "🏥 Análisis de Triaje", "🧪 Validación Científica", 
+            "📂 Análisis de Archivos", "🎙️ Análisis de Transcripciones", 
+            "🔗 Análisis Relacional"
+        ])
         
-    with tab_triaje:
-        render_triage_analysis_module(df_analisis, key_prefix=f"{key_prefix}_triage")
+        with tabs[0]:
+            render_triage_analysis_module(df_analisis, key_prefix=f"{key_prefix}_triage")
+        with tabs[1]:
+            render_concordance_analysis_module(df_analisis, key_prefix=f"{key_prefix}_concordance")
+        with tabs[2]:
+            render_file_analysis_module(df_files_base, key_prefix=f"{key_prefix}_files")
+        with tabs[3]:
+            render_transcription_analysis_module(df_trans_base, key_prefix=f"{key_prefix}_trans")
+        with tabs[4]:
+            render_relational_analysis_module(df_files_base, df_trans_base, key_prefix=f"{key_prefix}_rel")
+
+    elif category == "🤖 Inteligencia Artificial":
+        tabs = st.tabs(["📜 Análisis de Prompts", "🐛 Análisis de Feedback"])
         
-    with tab_concordancia:
-        render_concordance_analysis_module(df_analisis, key_prefix=f"{key_prefix}_concordance")
-        
-    with tab_files:
-        render_file_analysis_module(df_files_base, key_prefix=f"{key_prefix}_files")
-        
-    with tab_trans:
-        render_transcription_analysis_module(df_trans_base, key_prefix=f"{key_prefix}_trans")
-        
-    with tab_relacional:
-        render_relational_analysis_module(df_files_base, df_trans_base, key_prefix=f"{key_prefix}_rel")
-        
-    with tab_prompts:
-        render_prompt_analysis_module(key_prefix=f"{key_prefix}_prompts")
-        
-    with tab_feedback:
-        render_feedback_analysis_module(df_feedback_base, key_prefix=f"{key_prefix}_feedback")
+        with tabs[0]:
+            render_prompt_analysis_module(key_prefix=f"{key_prefix}_prompts")
+        with tabs[1]:
+            render_feedback_analysis_module(df_feedback_base, key_prefix=f"{key_prefix}_feedback")
 
     st.markdown('<div class="debug-footer">src/ui/audit_panel/analysis_panel_modular.py</div>', unsafe_allow_html=True)

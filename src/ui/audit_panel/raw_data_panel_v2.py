@@ -14,7 +14,7 @@ def mostrar_panel_datos_brutos_v2(df_audit_base, df_files, df_trans, df_feedback
     Renderiza la pestaña "Datos en Bruto" V2.
     Utiliza el componente genérico para todas las colecciones solicitadas.
     """
-    st.subheader("Registro Completo de Decisiones (Modular)")
+    st.subheader("Registro Completo de Decisiones")
 
     # Lista de pestañas solicitadas
     # 1. audit_log
@@ -33,87 +33,70 @@ def mostrar_panel_datos_brutos_v2(df_audit_base, df_files, df_trans, df_feedback
     # 14. users
     # + Log de Prompts (Especial)
 
-    tabs = st.tabs([
-        "📋 Auditoría General",
-        "📂 Archivos",
-        "🎙️ Transcripciones",
-        "🐛 Feedback",
-        "🤖 AI Audit",
-        "🧠 AI Models",
-        "🔔 Notificaciones",
-        "🌊 Flujo Pacientes",
-        "👤 Pacientes",
-        "👥 Personal",
-        "🧪 Tests Prompts",
-        "🏥 Triaje",
-        "📅 Turnos",
-        "🔐 Usuarios",
-        "🔑 Accesos (Login)",
-        "📜 Versiones Prompts" # Mantenemos el especial al final
-    ])
+    # Categorización para mejorar la navegación (Responsive)
+    category = st.radio(
+        "Categoría de Datos:",
+        ["🏥 Actividad Clínica", "👥 Gestión & Usuarios", "🤖 Inteligencia Artificial", "⚙️ Sistema"],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
 
-    # 1. audit_log
-    with tabs[0]:
-        render_generic_log_view(collection_name="audit_log", key_prefix="raw_audit", title="Log de Auditoría")
+    if category == "🏥 Actividad Clínica":
+        tabs = st.tabs([
+            "🏥 Triaje", "👤 Pacientes", "🌊 Flujo Pacientes", 
+            "🎙️ Transcripciones", "📂 Archivos"
+        ])
+        
+        with tabs[0]: # Triaje
+            render_generic_log_view(collection_name="triage_records", key_prefix="raw_triage", title="Registros de Triaje")
+        with tabs[1]: # Pacientes
+            render_generic_log_view(collection_name="patients", key_prefix="raw_patients", date_field="created_at", title="Pacientes")
+        with tabs[2]: # Flujo
+            render_generic_log_view(collection_name="patient_flow", key_prefix="raw_flow", date_field="start_time", title="Flujo de Pacientes")
+        with tabs[3]: # Transcripciones
+            render_generic_log_view(collection_name="transcriptions_records", key_prefix="raw_trans", title="Log de Transcripciones")
+        with tabs[4]: # Archivos
+            render_generic_log_view(collection_name="file_import_records", key_prefix="raw_files", title="Log de Archivos")
 
-    # 2. file_import_records
-    with tabs[1]:
-        render_generic_log_view(collection_name="file_import_records", key_prefix="raw_files", title="Log de Archivos")
+    elif category == "👥 Gestión & Usuarios":
+        tabs = st.tabs([
+            "🔐 Usuarios", "🔑 Accesos (Login)", "👥 Personal", "📅 Turnos"
+        ])
+        
+        with tabs[0]: # Usuarios
+            render_generic_log_view(collection_name="users", key_prefix="raw_users", date_field="created_at", title="Usuarios Sistema")
+        with tabs[1]: # Login
+            render_generic_log_view(collection_name="login_logs", key_prefix="raw_login", date_field="timestamp", title="Accesos y Logins")
+        with tabs[2]: # Personal
+            render_generic_log_view(collection_name="people", key_prefix="raw_people", date_field="created_at", title="Personal (Staff)")
+        with tabs[3]: # Turnos
+            render_generic_log_view(collection_name="turnos", key_prefix="raw_turnos", date_field="fecha", title="Turnos")
 
-    # 3. transcriptions_records
-    with tabs[2]:
-        render_generic_log_view(collection_name="transcriptions_records", key_prefix="raw_trans", title="Log de Transcripciones")
+    elif category == "🤖 Inteligencia Artificial":
+        tabs = st.tabs([
+            "🤖 AI Audit", "🧠 AI Models", "🧪 Tests Prompts", 
+            "📜 Versiones Prompts", "🐛 Feedback"
+        ])
+        
+        with tabs[0]: # AI Audit
+            render_generic_log_view(collection_name="ai_audit_logs", key_prefix="raw_ai_audit", date_field="timestamp_start", title="Auditoría IA")
+        with tabs[1]: # AI Models
+            render_generic_log_view(collection_name="ai_models", key_prefix="raw_ai_models", date_field="created_at", title="Modelos IA")
+        with tabs[2]: # Tests Prompts
+            render_generic_log_view(collection_name="prompt_tests", key_prefix="raw_prompt_test", date_field="created_at", title="Tests de Prompts")
+        with tabs[3]: # Versiones
+            render_prompt_log_final(key_prefix="raw_prompts_special")
+        with tabs[4]: # Feedback
+            render_generic_log_view(collection_name="feedback_reports", key_prefix="raw_feedback", title="Reportes de Feedback")
 
-    # 4. feedback_reports
-    with tabs[3]:
-        render_generic_log_view(collection_name="feedback_reports", key_prefix="raw_feedback", title="Reportes de Feedback")
-
-    # 5. ai_audit_logs
-    with tabs[4]:
-        render_generic_log_view(collection_name="ai_audit_logs", key_prefix="raw_ai_audit", date_field="timestamp_start", title="Auditoría IA")
-
-    # 6. ai_models
-    with tabs[5]:
-        render_generic_log_view(collection_name="ai_models", key_prefix="raw_ai_models", date_field="created_at", title="Modelos IA")
-
-    # 7. notifications
-    with tabs[6]:
-        render_generic_log_view(collection_name="notifications", key_prefix="raw_notif", date_field="created_at", title="Notificaciones")
-
-    # 8. patient_flow
-    with tabs[7]:
-        render_generic_log_view(collection_name="patient_flow", key_prefix="raw_flow", date_field="start_time", title="Flujo de Pacientes")
-
-    # 9. patients
-    with tabs[8]:
-        render_generic_log_view(collection_name="patients", key_prefix="raw_patients", date_field="created_at", title="Pacientes")
-
-    # 10. people
-    with tabs[9]:
-        render_generic_log_view(collection_name="people", key_prefix="raw_people", date_field="created_at", title="Personal (Staff)")
-
-    # 11. prompt_test
-    with tabs[10]:
-        render_generic_log_view(collection_name="prompt_tests", key_prefix="raw_prompt_test", date_field="created_at", title="Tests de Prompts")
-
-    # 12. triage_records
-    with tabs[11]:
-        render_generic_log_view(collection_name="triage_records", key_prefix="raw_triage", title="Registros de Triaje")
-
-    # 13. turnos
-    with tabs[12]:
-        render_generic_log_view(collection_name="turnos", key_prefix="raw_turnos", date_field="fecha", title="Turnos")
-
-    # 14. users
-    with tabs[13]:
-        render_generic_log_view(collection_name="users", key_prefix="raw_users", date_field="created_at", title="Usuarios Sistema")
-
-    # 15. Login Logs (Nuevo)
-    with tabs[14]:
-        render_generic_log_view(collection_name="login_logs", key_prefix="raw_login", date_field="timestamp", title="Accesos y Logins")
-
-    # 16. Log de Prompts (Especial)
-    with tabs[15]:
-        render_prompt_log_final(key_prefix="raw_prompts_special")
+    elif category == "⚙️ Sistema":
+        tabs = st.tabs([
+            "📋 Auditoría General", "🔔 Notificaciones"
+        ])
+        
+        with tabs[0]: # Auditoría General
+            render_generic_log_view(collection_name="audit_log", key_prefix="raw_audit", title="Log de Auditoría")
+        with tabs[1]: # Notificaciones
+            render_generic_log_view(collection_name="notifications", key_prefix="raw_notif", date_field="created_at", title="Notificaciones")
 
     st.markdown('<div class="debug-footer">src/ui/audit_panel/raw_data_panel_v2.py</div>', unsafe_allow_html=True)
