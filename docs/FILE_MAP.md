@@ -125,25 +125,25 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/triage/recommendations_card.py** | Tarjeta de recomendaciones de autocuidado. | `src/components/triage/risk_analysis_panel.py` | Activo |
 | **src/components/common/body_map.py** | Mapa corporal interactivo. | `src/components/triage/guided_interview.py` | Activo |
 | **src/ui/components/common/user_menu.py** | Menú de usuario global (Header). | `src/ui/main_view.py` | Activo |
-| **src/scripts/check_models.py** | Script de comprobación de modelos. | CLI | Script |
-| **src/scripts/debug_predictive_error.py** | Debug de errores predictivos. | CLI | Script |
-| **src/scripts/debug_triage_data.py** | Debug de datos de triaje. | CLI | Script |
-| **src/scripts/init_vital_signs_db.py** | Inicialización de DB de signos vitales. | CLI | Script |
-| **src/scripts/inspect_vital_signs.py** | Inspección de signos vitales. | CLI | Script |
-| **src/scripts/inspect_vital_signs_db.py** | Inspección de DB de signos vitales. | CLI | Script |
-| **src/scripts/migrate_general_config.py** | Migración de configuración general. | CLI | Script |
-| **src/scripts/migrate_salas.py** | Migración de salas. | CLI | Script |
-| **src/scripts/seed_clinical_options.py** | Seed de opciones clínicas. | CLI | Script |
-| **src/scripts/seed_vital_signs.py** | Seed de signos vitales. | CLI | Script |
-| **src/scripts/test_gemini_model.py** | Test de modelo Gemini. | CLI | Script |
-| **src/scripts/test_new_model_import.py** | Test de importación de nuevos modelos. | CLI | Script |
-| **src/scripts/test_pdf_gen.py** | Test de generación de PDF. | CLI | Script |
-| **src/scripts/test_queue_logic.py** | Test de lógica de colas. | CLI | Script |
-| **src/scripts/test_triage_models.py** | Test de modelos de triaje. | CLI | Script |
-| **src/scripts/test_vital_signs_logic.py** | Test de lógica de signos vitales. | CLI | Script |
-| **src/scripts/update_prompts_model.py** | Actualización de modelos de prompts. | CLI | Script |
-| **src/scripts/update_triage_data.py** | Actualización de datos de triaje. | CLI | Script |
-| **src/scripts/verify_ai_model_management.py** | Verificación de gestión de modelos IA. | CLI | Script |
+| **deprecated_files/check_models.py** | Script de comprobación de modelos. | CLI | Deprecado |
+| **deprecated_files/debug_predictive_error.py** | Debug de errores predictivos. | CLI | Deprecado |
+| **deprecated_files/debug_triage_data.py** | Debug de datos de triaje. | CLI | Deprecado |
+| **deprecated_files/init_vital_signs_db.py** | Inicialización de DB de signos vitales. | CLI | Deprecado |
+| **deprecated_files/inspect_vital_signs.py** | Inspección de signos vitales. | CLI | Deprecado |
+| **deprecated_files/inspect_vital_signs_db.py** | Inspección de DB de signos vitales. | CLI | Deprecado |
+| **deprecated_files/migrate_general_config.py** | Migración de configuración general. | CLI | Deprecado |
+| **deprecated_files/migrate_salas.py** | Migración de salas. | CLI | Deprecado |
+| **deprecated_files/seed_clinical_options.py** | Seed de opciones clínicas. | CLI | Deprecado |
+| **deprecated_files/seed_vital_signs.py** | Seed de signos vitales. | CLI | Deprecado |
+| **deprecated_files/test_gemini_model.py** | Test de modelo Gemini. | CLI | Deprecado |
+| **deprecated_files/test_new_model_import.py** | Test de importación de nuevos modelos. | CLI | Deprecado |
+| **deprecated_files/test_pdf_gen.py** | Test de generación de PDF. | CLI | Deprecado |
+| **deprecated_files/test_queue_logic.py** | Test de lógica de colas. | CLI | Deprecado |
+| **deprecated_files/test_triage_models.py** | Test de modelos de triaje. | CLI | Deprecado |
+| **deprecated_files/test_vital_signs_logic.py** | Test de lógica de signos vitales. | CLI | Deprecado |
+| **deprecated_files/update_prompts_model.py** | Actualización de modelos de prompts. | CLI | Deprecado |
+| **deprecated_files/update_triage_data.py** | Actualización de datos de triaje. | CLI | Deprecado |
+| **deprecated_files/verify_ai_model_management.py** | Verificación de gestión de modelos IA. | CLI | Deprecado |
 | **src/templates/email_templates.py** | Plantillas de email. | `src/services/notification_service.py` | Activo |
 | **src/ui/audit_panel/tab_transcriptions_v2.py** | Versión 2 de pestaña transcripciones. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
 | **src/ui/audit_panel/analysis_panel_modular.py** | Orquestador modular de Análisis Gráfico. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
@@ -178,8 +178,11 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/components/reports/report_viewer.py** | Visor de reportes PDF. | Varios | Activo |
 | **src/db/repositories/login_logs.py** | Repositorio de Logs de Login. | `src/ui/login_view.py` | Activo |
 | **src/utils/network_utils.py** | Utilidades de red (IP). | `src/ui/login_view.py` | Activo |
-| **src/scripts/check_login_logs.py** | Script de verificación de logs de login. | CLI | Script |
-| **src/scripts/init_lockout_fields.py** | Script de inicialización de campos de bloqueo. | CLI | Script |
-| **src/scripts/inspect_users_lockout.py** | Script de inspección de bloqueos de usuario. | CLI | Script |
-| **src/scripts/test_login_logging.py** | Script de test de logging de login. | CLI | Script |
-| **src/scripts/generate_icons.py** | Script de generación de iconos. | CLI | Script |
+| **deprecated_files/check_login_logs.py** | Script de verificación de logs de login. | CLI | Deprecado |
+| **deprecated_files/init_lockout_fields.py** | Script de inicialización de campos de bloqueo. | CLI | Deprecado |
+| **deprecated_files/inspect_users_lockout.py** | Script de inspección de bloqueos de usuario. | CLI | Deprecado |
+| **deprecated_files/test_login_logging.py** | Script de test de logging de login. | CLI | Deprecado |
+| **deprecated_files/generate_icons.py** | Script de generación de iconos. | CLI | Deprecado |
+| **deprecated_files/check_assets.py** | Script de chequeo de assets. | CLI | Deprecado |
+| **deprecated_files/check_config.py** | Script de chequeo de configuración. | CLI | Deprecado |
+| **deprecated_files/prompt_editor_deprecated.py** | Editor de prompts antiguo. | N/A | Deprecado |
