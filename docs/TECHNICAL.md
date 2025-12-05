@@ -174,4 +174,50 @@ El proyecto incluye una suite de pruebas automatizadas usando `pytest`.
 ### Configuración
 1.  Instalar dependencias de prueba:
     ```bash
+    pip install -r requirements.txt
+    playwright install
+    ```
+
+### Ejecución de Pruebas
+
+**1. Pruebas Unitarias:**
+Validan la lógica interna de los servicios y repositorios.
+```bash
+pytest tests/unit
+```
+
+**2. Pruebas E2E (End-to-End):**
+Validan el flujo completo del usuario en un navegador real. Requieren que la aplicación esté corriendo.
+```bash
+# Terminal 1: Iniciar App
+streamlit run src/app.py
+
+# Terminal 2: Ejecutar Tests
+pytest tests/e2e
+```
+
+**3. Pruebas de Carga:**
+Simulan múltiples usuarios concurrentes para verificar el rendimiento.
+```bash
+locust -f tests/load/locustfile.py --host http://localhost:8501
+```
+
+## 9. CI/CD Pipeline
+El proyecto utiliza **GitHub Actions** para la integración continua.
+
+### Workflow: `tests.yml`
+Se ejecuta en cada `push` y `pull_request` a las ramas principales.
+1.  **Setup:** Python 3.11, instalación de dependencias.
+2.  **Unit Tests:** Ejecución de pruebas unitarias con `pytest`.
+3.  **E2E Tests:** Ejecución de pruebas de navegador con `playwright`.
+
+### Ejecución Local
+Para replicar el pipeline localmente:
+```bash
+# Instalar dependencias
+pip install -r requirements.txt
+playwright install
+
+# Ejecutar tests
+pytest tests/
 ```

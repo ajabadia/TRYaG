@@ -4,44 +4,6 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 
 | Ruta del Archivo | Descripción | Invocado Por | Estado |
 | :--- | :--- | :--- | :--- |
-| **deprecated_files/apply_debug_footers.py** | Script de debug. | CLI | Deprecado |
-| **deprecated_files/check_assets.py** | Script de chequeo de assets. | CLI | Deprecado |
-| **deprecated_files/check_config.py** | Script de chequeo de configuración. | CLI | Deprecado |
-| **deprecated_files/check_db_status.py** | Script de chequeo de estado. | CLI | Deprecado |
-| **deprecated_files/check_debug_footers.py** | Script de chequeo de debug. | CLI | Deprecado |
-| **deprecated_files/check_login_logs.py** | Script de verificación de logs de login. | CLI | Deprecado |
-| **deprecated_files/check_models.py** | Script de comprobación de modelos. | CLI | Deprecado |
-| **deprecated_files/debug_predictive_error.py** | Debug de errores predictivos. | CLI | Deprecado |
-| **deprecated_files/debug_triage_data.py** | Debug de datos de triaje. | CLI | Deprecado |
-| **deprecated_files/extract_clinical_options.py** | Script de extracción. | CLI | Deprecado |
-| **deprecated_files/extract_vital_signs.py** | Script de extracción. | CLI | Deprecado |
-| **deprecated_files/generate_icons.py** | Script de generación de iconos. | CLI | Deprecado |
-| **deprecated_files/generate_synthetic_audit_logs.py** | Script de generación de logs. | CLI | Deprecado |
-| **deprecated_files/generate_synthetic_data.py** | Script de generación de datos sintéticos. | CLI | Deprecado |
-| **deprecated_files/init_lockout_fields.py** | Script de inicialización de campos de bloqueo. | CLI | Deprecado |
-| **deprecated_files/init_vital_signs_db.py** | Inicialización de DB de signos vitales. | CLI | Deprecado |
-| **deprecated_files/inspect_db_values.py** | Script de inspección. | CLI | Deprecado |
-| **deprecated_files/inspect_option_structure.py** | Script de inspección. | CLI | Deprecado |
-| **deprecated_files/inspect_users_lockout.py** | Script de inspección de bloqueos de usuario. | CLI | Deprecado |
-| **deprecated_files/inspect_vital_signs.py** | Inspección de signos vitales. | CLI | Deprecado |
-| **deprecated_files/inspect_vital_signs_db.py** | Inspección de DB de signos vitales. | CLI | Deprecado |
-| **deprecated_files/inspect_vital_signs_structure.py** | Script de inspección. | CLI | Deprecado |
-| **deprecated_files/migrate_general_config.py** | Migración de configuración general. | CLI | Deprecado |
-| **deprecated_files/migrate_salas.py** | Migración de salas. | CLI | Deprecado |
-| **deprecated_files/prompt_editor_deprecated.py** | Editor de prompts antiguo. | N/A | Deprecado |
-| **deprecated_files/seed_clinical_options.py** | Seed de opciones clínicas. | CLI | Deprecado |
-| **deprecated_files/seed_vital_signs.py** | Seed de signos vitales. | CLI | Deprecado |
-| **deprecated_files/test_gemini_model.py** | Test de modelo Gemini. | CLI | Deprecado |
-| **deprecated_files/test_login_logging.py** | Script de test de logging de login. | CLI | Deprecado |
-| **deprecated_files/test_new_model_import.py** | Test de importación de nuevos modelos. | CLI | Deprecado |
-| **deprecated_files/test_pdf_gen.py** | Test de generación de PDF. | CLI | Deprecado |
-| **deprecated_files/test_queue_logic.py** | Test de lógica de colas. | CLI | Deprecado |
-| **deprecated_files/test_triage_models.py** | Test de modelos de triaje. | CLI | Deprecado |
-| **deprecated_files/test_vital_signs_logic.py** | Test de lógica de signos vitales. | CLI | Deprecado |
-| **deprecated_files/update_prompts_model.py** | Actualización de modelos de prompts. | CLI | Deprecado |
-| **deprecated_files/update_triage_data.py** | Actualización de datos de triaje. | CLI | Deprecado |
-| **deprecated_files/verify_ai_model_management.py** | Verificación de gestión de modelos IA. | CLI | Deprecado |
-| **deprecated_files/verify_refactor.py** | Script de verificación. | CLI | Deprecado |
 | **src/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/app.py** | Punto de entrada principal. Configura Streamlit y el enrutamiento. | `streamlit run` | Activo |
 | **src/assets/icons/EMOJI_MAP.py** | Mapa de emojis a iconos Material. | `src/utils/icon_utils.py` | Activo |

@@ -329,3 +329,81 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 - [ ] **10.4 IA Avanzada (RAG):**
     - [ ] **Base de Conocimiento:** Ingestar PDFs de protocolos médicos locales en una base vectorial (ChromaDB/FAISS).
     - [ ] **Consultas Contextuales:** Configurar Gemini para consultar esta base antes de emitir sugerencias ("Grounding").
+
+## 🚀 FASE 11: Innovación y UX Avanzada (Próxima Sesión)
+**Objetivo:** Transformar la experiencia de usuario con interfaces híbridas, predictivas y conversacionales.
+**Nota Importante:** Cada subtarea completada debe reflejarse inmediatamente en `docs/FUNCTIONAL.md`, `docs/TECHNICAL.md` y `docs/FILE_MAP.md`.
+
+- [ ] **11.1 Experiencia Híbrida de Voz (Assisted Transcription):**
+    - [ ] **Implementación Técnica:**
+        - Integrar `Web Speech API` (o librería `speech_recognition` en Python si es local) para STT.
+        - Crear componente `AudioTranscriber` en `src/components/common`.
+        - Añadir botón "Escucha Activa" (Toggle) en `input_form.py`.
+    - [ ] **Flujo de Datos:**
+        - El texto transcrito se debe volcar en tiempo real a un área de texto visible.
+        - Al finalizar, guardar el texto crudo como archivo `.txt` adjunto al episodio (`evidence_files`).
+    - [ ] **Documentación Requerida:**
+        - `FUNCTIONAL.md`: Explicar cómo activar el modo escucha y su privacidad.
+        - `TECHNICAL.md`: Detallar la API de voz utilizada y limitaciones de navegador.
+
+- [ ] **11.2 Interfaz Contextual (Liquid UI):**
+    - [ ] **Implementación Técnica:**
+        - Refactorizar `input_form.py` para usar `st.empty()` y contenedores dinámicos.
+        - Crear lógica de reglas en `src/services/ui_rules_engine.py` (ej: `if motivo == 'Trauma' -> show_body_map`).
+    - [ ] **Input Híbrido:**
+        - Crear componente `SpeechInput` que combine `st.text_input` con un botón de micro.
+    - [ ] **Documentación Requerida:**
+        - `FUNCTIONAL.md`: Listar las reglas de adaptación de la interfaz.
+        - `TECHNICAL.md`: Explicar el motor de reglas de UI.
+
+- [ ] **11.3 Copiloto RAG Proactivo:**
+    - [ ] **Implementación Técnica:**
+        - Implementar `st.toast` o `st.sidebar.info` para alertas no intrusivas.
+        - Crear `ProactiveService` que analice el `session_state` en cada re-run.
+        - Conectar con `RAGService` para búsquedas silenciosas en segundo plano.
+    - [ ] **Documentación Requerida:**
+        - `FUNCTIONAL.md`: Describir qué tipo de alertas puede esperar el usuario.
+        - `TECHNICAL.md`: Explicar el impacto en rendimiento de las búsquedas en background.
+
+- [ ] **11.4 Triaje Conversacional Dual:**
+    - [ ] **Implementación Técnica:**
+        - Crear nueva vista `ChatTriageView`.
+        - Implementar parser de lenguaje natural (usando Gemini) para extraer JSON del chat.
+        - Sincronizar el JSON extraído con `st.session_state.datos_paciente`.
+    - [ ] **Documentación Requerida:**
+        - `MANUAL_USUARIO.md`: Guía de "Cómo realizar un triaje por chat".
+
+## 🔌 FASE 12: API REST & Microservicios (Interoperabilidad)
+**Objetivo:** Desacoplar la lógica de negocio de la UI (Streamlit) para permitir que terceros (HIS, Apps Móviles, CRMs) consuman nuestros servicios.
+**Nota Importante:** Documentar cada endpoint en `docs/TECHNICAL.md` y actualizar `docs/FILE_MAP.md` con la nueva estructura `src/api/`.
+
+- [ ] **12.1 Infraestructura API (FastAPI):**
+    - [ ] **Setup:**
+        - Instalar `fastapi`, `uvicorn`.
+        - Crear estructura `src/api/` (`main.py`, `routers/`, `schemas/`).
+        - Configurar ejecución paralela (Streamlit + FastAPI) en `docker-compose.yml`.
+    - [ ] **Seguridad:**
+        - Implementar `APIKeyHeader` para autenticación básica de clientes.
+
+- [ ] **12.2 Endpoints Core (Triage as a Service):**
+    - [ ] `POST /triage/analyze`:
+        - Input: `PatientDataSchema` (Síntomas, Constantes).
+        - Logic: Invocar `TriageService.analyze()`.
+        - Output: `TriageResultSchema` (Nivel, Color, Razonamiento).
+    - [ ] `POST /predict/risk`:
+        - Input: `VitalSignsSchema`.
+        - Logic: Invocar `PredictiveService.calculate_ptr()`.
+        - Output: `RiskScoreSchema`.
+
+- [ ] **12.3 Endpoints IA (Intelligence as a Service):**
+    - [ ] `POST /rag/query`:
+        - Input: `QuerySchema` (Texto).
+        - Logic: Invocar `RAGService.search()`.
+        - Output: `ContextSchema` (Fragmentos, Fuentes).
+
+- [ ] **12.4 Integración HIS (Webhooks):**
+    - [ ] **Implementación:**
+        - Crear sistema de suscripción a eventos (simple observer pattern).
+        - Enviar POST request a URL configurada cuando `TriageRecord` se guarda.
+    - [ ] **Documentación:**
+        - `TECHNICAL.md`: Especificar el formato del payload JSON de los webhooks.

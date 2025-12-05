@@ -75,6 +75,10 @@ def main():
     
     # Add existing files that still exist
     for f in existing_filenames:
+        if f.startswith('docs') or f.startswith('deprecated_files'):
+             print(f"Removing excluded file: {f}")
+             continue
+             
         if f in actual_files:
             files_to_write.append((f, existing_map[f]))
         elif f.startswith('src'):
