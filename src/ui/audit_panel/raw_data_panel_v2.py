@@ -48,6 +48,7 @@ def mostrar_panel_datos_brutos_v2(df_audit_base, df_files, df_trans, df_feedback
         "🏥 Triaje",
         "📅 Turnos",
         "🔐 Usuarios",
+        "🔑 Accesos (Login)",
         "📜 Versiones Prompts" # Mantenemos el especial al final
     ])
 
@@ -107,8 +108,12 @@ def mostrar_panel_datos_brutos_v2(df_audit_base, df_files, df_trans, df_feedback
     with tabs[13]:
         render_generic_log_view(collection_name="users", key_prefix="raw_users", date_field="created_at", title="Usuarios Sistema")
 
-    # 15. Log de Prompts (Especial)
+    # 15. Login Logs (Nuevo)
     with tabs[14]:
+        render_generic_log_view(collection_name="login_logs", key_prefix="raw_login", date_field="timestamp", title="Accesos y Logins")
+
+    # 16. Log de Prompts (Especial)
+    with tabs[15]:
         render_prompt_log_final(key_prefix="raw_prompts_special")
 
     st.markdown('<div class="debug-footer">src/ui/audit_panel/raw_data_panel_v2.py</div>', unsafe_allow_html=True)

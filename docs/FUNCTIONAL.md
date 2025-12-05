@@ -282,14 +282,26 @@ Al pulsar "Analizar con IA", el sistema compila toda la información (texto, vit
 * **Métricas en Tiempo Real:** Ocupación por sala, tiempos de estancia.
 * **Detección de Anomalías:** Alertas sobre pacientes en salas "fantasma" o inactivas.
 
-### 5.5 Gestión de Turnos
+### 5.5 Gestión de Turnos y Personal
 
 **Objetivo:** Planificación y control del personal en las distintas áreas.
 
-* **Calendario Semanal:** Vista visual de la cobertura de personal por días.
-* **Asignación de Turnos:** Creación de turnos temporales asociados a una sala específica.
-* **Resolución de Conflictos:** El sistema detecta automáticamente solapamientos de horarios o conflictos con asignaciones fijas ("Sala Base").
-  * *Prioridad:* Un turno activo temporal prevalece sobre la asignación fija del usuario.
+El sistema ofrece dos niveles de gestión de personal:
+
+#### A. Asignación Fija (Sala Base)
+Define la ubicación habitual de un profesional (ej. "Dr. House siempre está en Consulta 1").
+*   **Configuración:** Desde `Configuración > Asignación de Salas`.
+*   **Uso:** Sirve como valor por defecto cuando no hay turnos específicos definidos.
+
+#### B. Gestión Avanzada de Turnos (Calendario)
+Herramienta para la planificación temporal y rotaciones.
+*   **Vista Calendario:** Visualización mensual de la cobertura.
+*   **Creación Rápida:** Asignación de turnos temporales (ej. "Mañana de 8:00 a 15:00 en Triaje").
+*   **Detección de Conflictos:** El sistema alerta si:
+    *   Un usuario tiene dos turnos solapados.
+    *   Un turno temporal entra en conflicto con la asignación fija (prevalece el turno temporal).
+*   **Estadísticas:** Métricas de cobertura por sala y carga de trabajo por usuario.
+*   **Exportación:** Generación de informes en Excel/CSV para RRHH.
 
 ### 5.6 Auditoría y Análisis (Control y Calidad)
 

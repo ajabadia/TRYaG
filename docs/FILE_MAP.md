@@ -168,3 +168,9 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **deprecated_files/inspect_option_structure.py** | Script de inspección. | CLI | Deprecado |
 | **deprecated_files/inspect_vital_signs_structure.py** | Script de inspección. | CLI | Deprecado |
 | **deprecated_files/verify_refactor.py** | Script de verificación. | CLI | Deprecado |
+| **src/ui/login_view.py** | Vista de Login Simulado. | `src/app.py` | Activo |
+| **src/ui/shift_manager_advanced.py** | Gestor avanzado de turnos (Calendario, Conflictos). | `src/ui/config_panel.py` | Activo |
+| **src/ui/components/common/offline_sync.py** | Componente de sincronización offline. | `src/app.py` | Activo |
+| **src/ui/components/reports/report_viewer.py** | Visor de reportes PDF. | Varios | Activo |
+| **src/db/repositories/login_logs.py** | Repositorio de Logs de Login. | `src/ui/login_view.py` | Activo |
+| **src/utils/network_utils.py** | Utilidades de red (IP). | `src/ui/login_view.py` | Activo |

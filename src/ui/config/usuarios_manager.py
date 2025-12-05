@@ -40,6 +40,19 @@ def render_user_card(user: dict):
             
             if st.button(btn_label, key=f"toggle_usr_{user.get('_id')}", help=btn_help):
                 _toggle_user_status(user)
+                
+            # Botón Desbloquear (Solo si está bloqueado)
+            if user.get("locked_until") and user["locked_until"] > datetime.now():
+                if st.button("🔓", key=f"unlock_usr_{user.get('_id')}", help="Desbloquear usuario (Resetear intentos)"):
+                    _unlock_user(user)
+
+def _unlock_user(user: dict):
+    """Desbloquea manualmente un usuario."""
+    repo = get_users_repository()
+    repo.reset_failed_attempts(str(user["_id"]))
+    st.toast(f"Usuario {user.get('username')} desbloqueado.")
+    time.sleep(0.5)
+    st.rerun()
 
 def _toggle_user_status(user: dict):
     """Cambia el estado activo/inactivo de un usuario."""

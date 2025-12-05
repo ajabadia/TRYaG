@@ -418,6 +418,9 @@ class Person(BaseModel):
     
     # Metadata
     activo: bool = Field(default=True, description="Si el registro está activo")
+    failed_login_attempts: int = Field(default=0, description="Intentos fallidos consecutivos")
+    lockout_level: int = Field(default=0, description="Nivel de bloqueo exponencial (0, 1, 2...)")
+    locked_until: Optional[datetime] = Field(default=None, description="Fecha hasta la que está bloqueado")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     
@@ -568,3 +571,23 @@ class PTRConfig(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+
+# ============================================================================
+# LOGIN LOGS
+# ============================================================================
+
+class LoginLog(BaseModel):
+    """Registro de inicio de sesión (Simulado o Real)."""
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    user_id: str = Field(..., description="ID del usuario")
+    username: str = Field(..., description="Nombre de usuario")
+    timestamp: datetime = Field(default_factory=datetime.now)
+    action: Literal["login", "logout", "switch_user"] = Field(..., description="Tipo de acción")
+    success: bool = Field(default=True)
+    ip_address: Optional[str] = Field(default=None)
+    details: Optional[Dict[str, Any]] = Field(default=None)
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str, datetime: lambda v: v.isoformat()}

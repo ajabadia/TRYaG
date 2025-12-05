@@ -61,6 +61,63 @@ class UsersRepository:
         """Obtiene usuarios filtrados por rol."""
         return list(self.collection.find({"rol": role_code, "activo": True}))
 
+    def increment_failed_attempts(self, user_id: str) -> int:
+        """Incrementa el contador de intentos fallidos y devuelve el nuevo valor."""
+        result = self.collection.find_one_and_update(
+            {"_id": ObjectId(user_id)},
+            {"$inc": {"failed_login_attempts": 1}},
+            return_document=True
+        )
+        return result.get("failed_login_attempts", 0) if result else 0
+
+    def reset_failed_attempts(self, user_id: str):
+        """Resetea el contador de intentos fallidos, nivel de bloqueo y desbloquea."""
+        self.collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {
+                "failed_login_attempts": 0, 
+                "locked_until": None,
+                "lockout_level": 0
+            }}
+        )
+
+    def lock_user(self, user_id: str, minutes: int = 30):
+        """Bloquea al usuario por un tiempo determinado (Método simple)."""
+        from datetime import timedelta
+        unlock_time = datetime.now() + timedelta(minutes=minutes)
+        self.collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"locked_until": unlock_time}}
+        )
+
+    def apply_exponential_lockout(self, user_id: str) -> int:
+        """
+        Aplica bloqueo exponencial: 30min * 2^nivel.
+        Incrementa el nivel y resetea el contador de intentos para la próxima ronda.
+        Devuelve los minutos de bloqueo aplicados.
+        """
+        from datetime import timedelta
+        
+        user = self.get_by_id(user_id)
+        if not user:
+            return 0
+            
+        level = user.get("lockout_level", 0)
+        minutes = 30 * (2 ** level)
+        
+        unlock_time = datetime.now() + timedelta(minutes=minutes)
+        
+        self.collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {
+                "locked_until": unlock_time,
+                "failed_login_attempts": 0 # Resetear para que tenga otros 5 intentos tras desbloqueo
+            }, "$inc": {
+                "lockout_level": 1
+            }}
+        )
+        return minutes
+
 _users_repo = None
 
 def get_users_repository() -> UsersRepository:

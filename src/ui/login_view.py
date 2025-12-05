@@ -135,18 +135,105 @@ def render_login_view():
                 # Validar contraseña (internal_id)
                 correct_id = st.session_state.login_selected_user.get('internal_id')
                 
+                # Preparar repositorio de logs
+                try:
+                    from db.repositories.login_logs import get_login_logs_repository
+                    log_repo = get_login_logs_repository()
+                except Exception:
+                    log_repo = None
+
+                # Obtener IP del cliente
+                from utils.network_utils import get_client_ip
+                client_ip = get_client_ip()
+                
+                # --- CHECK LOCKOUT ---
+                current_attempts = st.session_state.login_selected_user.get("failed_login_attempts", 0)
+                locked_until = st.session_state.login_selected_user.get("locked_until")
+                
+                from datetime import datetime
+                if locked_until and locked_until > datetime.now():
+                    st.error(f"⛔ Usuario bloqueado temporalmente por seguridad hasta {locked_until.strftime('%H:%M')}.")
+                    if log_repo:
+                        log_repo.log_login(
+                            user_id=st.session_state.login_selected_user["_id"],
+                            username=st.session_state.login_selected_user.get("username", "unknown"),
+                            success=False,
+                            ip_address=client_ip,
+                            details={"reason": "account_locked", "locked_until": locked_until.isoformat()}
+                        )
+                    return # Stop execution
+                # ---------------------
+
                 if not correct_id:
+                    if log_repo:
+                        log_repo.log_login(
+                            user_id=st.session_state.login_selected_user["_id"],
+                            username=st.session_state.login_selected_user.get("username", "unknown"),
+                            success=False,
+                            ip_address=client_ip,
+                            details={"reason": "configuration_error", "message": "User has no internal_id"}
+                        )
                     st.error("Error de configuración: Este usuario no tiene ID interno asignado.")
                 elif password == correct_id:
                     if disclaimer_check:
                         # LOGIN EXITOSO
                         st.session_state.current_user = st.session_state.login_selected_user
+                        
+                        # Resetear contador de fallos
+                        repo.reset_failed_attempts(st.session_state.current_user["_id"])
+                        
+                        # Registrar Log Exitoso
+                        if log_repo:
+                            log_repo.log_login(
+                                user_id=st.session_state.current_user["_id"],
+                                username=st.session_state.current_user.get("username", "unknown"),
+                                success=True,
+                                ip_address=client_ip,
+                                details={"method": "simulated_internal_id"}
+                            )
+
                         st.success("Acceso concedido. Cargando...")
                         st.rerun()
                     else:
+                        # Fallo por Disclaimer
+                        if log_repo:
+                            log_repo.log_login(
+                                user_id=st.session_state.login_selected_user["_id"],
+                                username=st.session_state.login_selected_user.get("username", "unknown"),
+                                success=False,
+                                ip_address=client_ip,
+                                details={"reason": "disclaimer_rejected"}
+                            )
                         st.warning("Debe aceptar el aviso legal para continuar.")
                 else:
-                    st.error("Contraseña incorrecta.")
+                    # Fallo por Contraseña
+                    
+                    # Incrementar contador
+                    new_count = repo.increment_failed_attempts(st.session_state.login_selected_user["_id"])
+                    
+                    # Bloquear si llega a 5
+                    if new_count >= 5:
+                        minutes_locked = repo.apply_exponential_lockout(st.session_state.login_selected_user["_id"])
+                        st.error(f"⛔ Demasiados intentos fallidos. Usuario bloqueado por {minutes_locked} minutos.")
+                        details_reason = "account_locked_max_attempts"
+                    else:
+                        st.error(f"Contraseña incorrecta. Intentos restantes: {5 - new_count}")
+                        details_reason = "incorrect_password"
+
+                    if log_repo:
+                        log_repo.log_login(
+                            user_id=st.session_state.login_selected_user["_id"],
+                            username=st.session_state.login_selected_user.get("username", "unknown"),
+                            success=False,
+                            ip_address=client_ip,
+                            details={
+                                "reason": details_reason, 
+                                "input_length": len(password),
+                                "attempt_count": new_count
+                            }
+                        )
 
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('<div class="debug-footer">src/ui/login_view.py</div>', unsafe_allow_html=True)
+    
+    if st.session_state.get("developer_mode", False):
+        st.markdown('<div class="debug-footer">src/ui/login_view.py</div>', unsafe_allow_html=True)

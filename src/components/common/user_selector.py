@@ -13,79 +13,50 @@ def render_user_selector():
     Renderiza un selector de usuarios en la barra lateral.
     Actualiza st.session_state.current_user con el usuario seleccionado.
     """
-    repo = get_users_repository()
-    users = repo.get_all_users(active_only=True)
+    # --- NUEVA LÓGICA: Mostrar Info + Botón de Cambio (Logout) ---
     
-    if not users:
-        st.sidebar.error("No hay usuarios activos.")
-        return
-
-    # Mapeo para el selectbox: "Nombre (Rol)" -> User Object
-    # Usamos el ID como clave única para evitar problemas con nombres duplicados
-    user_options = {}
-    for u in users:
-        nombre_display = u.get('nombre_completo')
-        if not nombre_display:
-            # Fallback: Construct from parts or use username
-            parts = [u.get('nombre', ''), u.get('apellidos', '')]
-            nombre_display = " ".join(p for p in parts if p).strip() or u['username']
-            
-        user_options[f"{nombre_display} ({u['username']})"] = u
-    
-    # Determinar índice actual
     current_user = st.session_state.get("current_user")
-    index = 0
     
-    # Si no hay usuario seleccionado, no hacemos nada (app.py redirige a login)
     if not current_user:
         return
 
-    if current_user:
-        # Reconstruct key for current user
-        c_nombre = current_user.get('nombre_completo')
-        if not c_nombre:
-             parts = [current_user.get('nombre', ''), current_user.get('apellidos', '')]
-             c_nombre = " ".join(p for p in parts if p).strip() or current_user['username']
-             
-        current_key = f"{c_nombre} ({current_user['username']})"
-        if current_key in user_options:
-            index = list(user_options.keys()).index(current_key)
-    
     st.sidebar.markdown("---")
     st.sidebar.subheader("👤 Usuario Actual")
     
-    selected_key = st.sidebar.selectbox(
-        "Cambiar Usuario",
-        options=list(user_options.keys()),
-        index=index,
-        label_visibility="collapsed",
-        key="user_selector_sidebar"
-    )
-    
-    selected_user = user_options[selected_key]
-    
-    # Actualizar session_state si cambia (comparando IDs)
-    if current_user and str(current_user["_id"]) != str(selected_user["_id"]):
-        st.session_state.current_user = selected_user
-        st.rerun()
-        
-    # Mostrar info del usuario seleccionado
-    role_def = get_role_by_code(selected_user.get("rol"))
-    role_name = role_def["nombre"] if role_def else selected_user.get("rol")
-    
-    display_name = selected_user.get('nombre_completo')
+    # Mostrar info del usuario
+    display_name = current_user.get('nombre_completo')
     if not display_name:
-         parts = [selected_user.get('nombre', ''), selected_user.get('apellidos', '')]
-         display_name = " ".join(p for p in parts if p).strip() or selected_user['username']
+         parts = [current_user.get('nombre', ''), current_user.get('apellidos', '')]
+         display_name = " ".join(p for p in parts if p).strip() or current_user['username']
+         
+    role_def = get_role_by_code(current_user.get("rol"))
+    role_name = role_def["nombre"] if role_def else current_user.get("rol")
 
     st.sidebar.info(
         f"**{display_name}**\n\n"
-        f"🆔 {selected_user.get('internal_id', '-')}\n\n"
+        f"🆔 {current_user.get('internal_id', '-')}\n\n"
         f"🔑 {role_name}"
     )
 
-    # 3. Sesión (Movido aquí por solicitud)
-    if st.sidebar.button("Cerrar Sesión", key="btn_logout_sidebar", use_container_width=True):
+    # Botón para cambiar de usuario (Logout explícito)
+    if st.sidebar.button("🔄 Cambiar Usuario / Salir", key="btn_switch_user_sidebar", use_container_width=True):
+        # Registrar Logout
+        try:
+            from db.repositories.login_logs import get_login_logs_repository
+            from utils.network_utils import get_client_ip
+            
+            log_repo = get_login_logs_repository()
+            client_ip = get_client_ip()
+            
+            log_repo.log_logout(
+                user_id=current_user["_id"],
+                username=current_user.get("username", "unknown"),
+                ip_address=client_ip
+            )
+        except Exception as e:
+            print(f"Error logging logout: {e}")
+            
+        # Limpiar sesión
         st.session_state.current_user = None
         st.session_state.login_selected_user = None
         st.rerun()
