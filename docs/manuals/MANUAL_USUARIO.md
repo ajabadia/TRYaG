@@ -12,7 +12,12 @@ Al acceder a la aplicación, se mostrará la pantalla de selección de usuario.
 3.  **Aviso Legal:** Marque la casilla "He leído y acepto..." para confirmar que entiende que esta es una herramienta de apoyo y no sustituye el juicio clínico.
 4.  **Entrar:** Pulse el botón "Entrar al Sistema".
 
-> **Nota:** Si necesita cambiar de usuario durante la sesión, abra el menú lateral (izquierda) y pulse "Cerrar Sesión".
+> **Seguridad:** El sistema cuenta con protección contra intentos fallidos.
+> *   Tras **5 intentos fallidos**, el usuario se bloqueará temporalmente.
+> *   El tiempo de bloqueo aumenta exponencialmente (30 min, 1 hora, 2 horas...) con cada reincidencia.
+> *   Contacte con un administrador si necesita desbloqueo inmediato.
+
+> **Nota:** Si necesita cambiar de usuario durante la sesión, abra el menú lateral (izquierda) y pulse "Cambiar Usuario / Salir".
 
 ---
 

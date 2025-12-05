@@ -56,7 +56,7 @@ def render_prompt_manager():
     _render_prompt_editor_logic(selected_key)
     
     # Footer
-    st.markdown('<div style="color: #888; font-size: 0.7em; text-align: right; margin-top: 20px;">src/components/config/prompt_manager.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/components/config/prompt_manager.py</div>', unsafe_allow_html=True)
 
 
 def _render_prompt_editor_logic(prompt_type):

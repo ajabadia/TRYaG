@@ -20,7 +20,7 @@ PAGE_SIZE = 25
 
 def mostrar_registro_auditoria_v2():
     """Muestra el panel de auditoría V2."""
-    st.header("📋 Panel de Auditoría y Supervisión (V2 Modular)")
+    st.header("📋 Panel de Auditoría y Supervisión")
 
     if "num_audit_records_to_show" not in st.session_state:
         st.session_state.num_audit_records_to_show = PAGE_SIZE

@@ -15,6 +15,19 @@ def render_offline_sync():
     st.sidebar.markdown("---")
     with st.sidebar.expander("📡 Sincronización Offline", expanded=False):
         
+        # Toggle para Simular Offline (User Request)
+        simulate_offline = st.checkbox("Simular Modo Offline", help="Fuerza la aparición de indicadores offline para pruebas.")
+        if simulate_offline:
+            st.error("🔴 MODO OFFLINE SIMULADO")
+            # Inyectar JS para simular evento offline (visual)
+            st.components.v1.html("""
+                <script>
+                    console.log("Simulando offline...");
+                    // No podemos cambiar navigator.onLine, pero podemos disparar eventos
+                    window.dispatchEvent(new Event('offline'));
+                </script>
+            """, height=0)
+
         # 1. Botón para buscar y exportar datos locales (JS)
         st.markdown("##### 1. Exportar datos locales")
         st.caption("Si trabajaste sin conexión, descarga tus registros aquí.")

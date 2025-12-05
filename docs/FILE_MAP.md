@@ -174,3 +174,8 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/components/reports/report_viewer.py** | Visor de reportes PDF. | Varios | Activo |
 | **src/db/repositories/login_logs.py** | Repositorio de Logs de Login. | `src/ui/login_view.py` | Activo |
 | **src/utils/network_utils.py** | Utilidades de red (IP). | `src/ui/login_view.py` | Activo |
+| **src/scripts/check_login_logs.py** | Script de verificación de logs de login. | CLI | Script |
+| **src/scripts/init_lockout_fields.py** | Script de inicialización de campos de bloqueo. | CLI | Script |
+| **src/scripts/inspect_users_lockout.py** | Script de inspección de bloqueos de usuario. | CLI | Script |
+| **src/scripts/test_login_logging.py** | Script de test de logging de login. | CLI | Script |
+| **src/scripts/generate_icons.py** | Script de generación de iconos. | CLI | Script |

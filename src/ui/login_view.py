@@ -8,7 +8,7 @@ def render_login_view():
     Renderiza la pantalla de login simulado.
     """
     # Cargar estilos específicos si es necesario
-    # load_css("src/assets/css/pages/login.css") # Si existiera
+    load_css("src/assets/css/styles.css")
     
     st.markdown(
         """
@@ -235,5 +235,4 @@ def render_login_view():
 
     st.markdown('</div>', unsafe_allow_html=True)
     
-    if st.session_state.get("developer_mode", False):
-        st.markdown('<div class="debug-footer">src/ui/login_view.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/login_view.py</div>', unsafe_allow_html=True)

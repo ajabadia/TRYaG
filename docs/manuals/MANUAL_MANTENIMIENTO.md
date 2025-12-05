@@ -11,6 +11,12 @@ Aquí puede personalizar la identidad de la aplicación:
 *   **Mensaje de Cabecera:** Texto informativo o avisos (ej. "Mantenimiento programado a las 22:00").
 *   **Logo:** Ruta al archivo de imagen del logotipo corporativo.
 
+### 1.1 Configuración de Equipo (Hardware)
+En la sección **"🖥️ Configuración Equipo"** puede seleccionar los dispositivos predeterminados para este puesto de trabajo:
+*   **Cámara:** Seleccione la webcam a usar para fotos y video.
+*   **Micrófono:** Seleccione el dispositivo de entrada de audio.
+*   **Calidad de Video:** Ajuste la resolución (Baja/Media/Alta) según el ancho de banda disponible.
+
 ---
 
 ## 2. Gestión de Salas (Infraestructura)
@@ -38,17 +44,30 @@ Use los iconos de lápiz (editar) o papelera (borrar) junto a cada sala en la li
 
 ---
 
-## 3. Gestión de Usuarios
+## 3. Gestión de Usuarios y Personal
 
-Acceda a **"⚙️ Configuración" > "👥 Usuarios"**.
+El sistema distingue entre **Personas** (Ficha del empleado) y **Usuarios** (Credenciales de acceso).
 
-### 3.1 Alta de Usuario
-1.  Rellene el formulario "Nuevo Usuario".
-2.  **Username:** Identificador único para el sistema.
-3.  **Nombre/Apellidos:** Nombre real del profesional.
-4.  **ID Interno:** Código usado como **contraseña** en el login simulado (ej. `EMP-123`).
-5.  **Rol:** Determina los permisos (Ver tabla de roles en Documentación Funcional).
-6.  Pulse **"Crear Usuario"**.
+### 3.1 Gestión de Personas (Staff)
+Acceda a **"⚙️ Configuración" > "👥 Personas"**.
+Aquí se da de alta al personal del centro.
+1.  **Crear Persona:** Introduzca Nombre, Apellidos, DNI, Categoría Profesional y Nº Colegiado.
+2.  **Identificaciones:** Puede añadir múltiples documentos (DNI, Pasaporte).
+3.  **Contacto:** Teléfonos y emails.
+
+### 3.2 Gestión de Usuarios (Credenciales)
+Acceda a **"⚙️ Configuración" > "🔐 Usuarios"**.
+Aquí se crean las cuentas de acceso vinculadas a una Persona.
+1.  **Nuevo Usuario:** Seleccione una Persona existente de la lista.
+2.  **Username:** Identificador único.
+3.  **ID Interno:** Contraseña para el login.
+4.  **Rol:** Asigne los permisos (Médico, Enfermería, Admin).
+
+### 3.3 Desbloqueo de Usuarios
+Si un usuario bloquea su cuenta por intentos fallidos:
+1.  Busque al usuario en la lista.
+2.  Verá un indicador rojo "BLOQUEADO".
+3.  Pulse el botón **"Desbloquear"** en su tarjeta para restablecer el contador a 0 inmediatamente.
 
 ---
 

@@ -57,13 +57,19 @@ def render_file_analysis(df_files, key_prefix="file_analysis"):
         files_per_audit.columns = ['audit_id', 'num_files']
         
         # Histograma de distribución
-        fig, ax = plt.subplots()
-        ax.hist(files_per_audit['num_files'], bins=20, edgecolor='black')
-        ax.set_xlabel('Número de Archivos')
-        ax.set_ylabel('Frecuencia (Auditorías)')
-        ax.set_title('Distribución de Archivos por Auditoría')
-        st.pyplot(fig)
-        plt.close(fig)
+        # Histograma de distribución (Altair)
+        import altair as alt
+        
+        chart = alt.Chart(files_per_audit).mark_bar().encode(
+            x=alt.X('num_files', bin=alt.Bin(maxbins=20), title='Número de Archivos'),
+            y=alt.Y('count()', title='Frecuencia (Auditorías)'),
+            tooltip=[alt.Tooltip('num_files', bin=True, title='Rango Archivos'), 'count()']
+        ).properties(
+            title='Distribución de Archivos por Auditoría',
+            height=300
+        ).interactive()
+        
+        st.altair_chart(chart, use_container_width=True)
         
         # Estadísticas
         col_stats1, col_stats2, col_stats3 = st.columns(3)

@@ -19,55 +19,57 @@ El panel se organiza en cuatro grandes secciones (pestañas superiores):
 
 ## 2. 📉 Datos en Bruto (Logs)
 
-Esta sección permite consultar el historial completo de eventos del sistema. Está dividida en múltiples pestañas temáticas para facilitar la búsqueda.
+Esta sección permite consultar el historial completo de eventos del sistema. Para facilitar la navegación, los datos se han organizado en **Categorías**:
 
-### Colecciones Disponibles
-*   **📋 Auditoría General:** Registro cronológico de todas las acciones importantes (inicios de sesión, validaciones, errores).
-*   **📂 Archivos:** Historial de documentos e imágenes subidos por los usuarios.
-*   **🎙️ Transcripciones:** Log de audios procesados y su conversión a texto.
-*   **🐛 Feedback:** Reportes de errores y sugerencias enviados por los usuarios.
-*   **🤖 AI Audit:** Registro detallado de cada interacción con la IA (prompt enviado y respuesta recibida).
+### 🏥 Actividad Clínica
 *   **🏥 Triaje:** Histórico de episodios de triaje (borradores y finalizados).
-*   **📅 Turnos:** Registro de asignaciones de personal y turnos.
-*   **👤 Pacientes / Personal / Usuarios:** Tablas maestras de identidades.
+*   **👤 Pacientes:** Tabla maestra de pacientes registrados.
+*   **🌊 Flujo Pacientes:** Registro de movimientos y estados de los pacientes.
+*   **🎙️ Transcripciones:** Log de audios procesados y su conversión a texto.
+*   **📂 Archivos:** Historial de documentos e imágenes subidos.
+
+### 👥 Gestión & Usuarios
+*   **🔐 Usuarios:** Tabla maestra de usuarios del sistema.
+*   **🔑 Accesos (Login):** Historial de inicios de sesión, cierres y bloqueos.
+*   **👥 Personal:** Tabla maestra de personal (Staff).
+*   **📅 Turnos:** Registro de asignaciones de turnos.
+
+### 🤖 Inteligencia Artificial
+*   **🤖 AI Audit:** Registro detallado de interacciones con la IA (prompts/respuestas).
+*   **🧠 AI Models:** Registro de modelos de IA utilizados.
+*   **🧪 Tests Prompts:** Resultados de tests de prompts.
+*   **📜 Versiones Prompts:** Historial de cambios en los prompts.
+*   **🐛 Feedback:** Reportes de errores y sugerencias de usuarios.
+
+### ⚙️ Sistema
+*   **📋 Auditoría General:** Log cronológico de acciones del sistema.
 *   **🔔 Notificaciones:** Historial de alertas enviadas.
 
 ### Funcionalidades de la Tabla
 *   **Filtros:** Use los encabezados de columna para filtrar por texto, fecha o valor.
 *   **Exportar:** Botón para descargar la vista actual en formato CSV/Excel.
-*   **Detalle:** Al hacer clic en una fila, se despliega una vista JSON con todos los campos técnicos del registro.
+*   **Detalle:** Al hacer clic en una fila, se despliega una vista JSON con todos los campos técnicos.
 
 ---
 
 ## 3. 📈 Análisis Gráfico (Módulos)
 
-Esta sección ofrece visualizaciones avanzadas para la toma de decisiones.
+Esta sección ofrece visualizaciones avanzadas organizadas por categorías:
 
-### 3.1 🎯 Resumen General (KPIs)
-Indicadores clave de rendimiento del servicio:
-*   **Total Triajes:** Volumen de pacientes atendidos en el periodo.
-*   **Tiempo Medio:** Duración promedio del proceso de triaje.
-*   **Nivel Promedio:** Gravedad media de los casos.
+### ⚙️ General & Evolución
+*   **🎯 Resumen General (KPIs):** Indicadores clave (Total Triajes, Tiempo Medio, Nivel Promedio).
+*   **📈 Evolución Temporal:** Gráficos de línea mostrando la tendencia de actividad diaria/semanal.
 
-### 3.2 🏥 Análisis de Triaje
-Desglose detallado de la actividad clínica:
-*   **Distribución por Niveles:** Gráfico de barras (Nivel 1 a 5).
-*   **Distribución por Especialidad:** Gráfico de sectores (Trauma vs General).
-*   **Tabla Interactiva:** Listado de triajes con posibilidad de seleccionar para ver el detalle clínico completo (motivo, vitales, decisión).
+### 🏥 Actividad Clínica
+*   **🏥 Análisis de Triaje:** Distribución por niveles (1-5) y especialidades. Tabla interactiva de casos.
+*   **🧪 Validación Científica:** Matriz de confusión IA vs Humano, métricas de Sobre/Sub-triaje.
+*   **📂 Análisis de Archivos:** Estadísticas de uso de adjuntos (imágenes, PDFs).
+*   **🎙️ Análisis de Transcripciones:** Métricas sobre el uso del dictado por voz.
+*   **🔗 Análisis Relacional:** Relación entre tipos de adjuntos y decisiones clínicas.
 
-### 3.3 🧪 Validación Científica (Concordancia)
-Herramienta para evaluar la calidad de la IA comparándola con el humano ("Gold Standard").
-*   **Matriz de Confusión:** Gráfico que cruza la propuesta de la IA con la decisión final del médico.
-    *   *Diagonal:* Aciertos.
-    *   *Fuera de diagonal:* Discrepancias.
-*   **Métricas de Riesgo:**
-    *   *Sobre-Triaje:* IA asigna mayor gravedad (Ineficiencia).
-    *   *Sub-Triaje:* IA asigna menor gravedad (Riesgo clínico).
-
-### 3.4 📜 Análisis de Prompts
-Gestión de la ingeniería de instrucciones de la IA.
-*   **Listado:** Muestra todas las versiones de prompts creadas.
-*   **Detalle:** Permite ver el texto exacto de las instrucciones enviadas al modelo.
+### 🤖 Inteligencia Artificial
+*   **📜 Análisis de Prompts:** Historial y rendimiento de las distintas versiones de instrucciones.
+*   **🐛 Análisis de Feedback:** Resumen de valoraciones y reportes de los usuarios.
 
 ---
 

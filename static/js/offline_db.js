@@ -119,3 +119,21 @@ function showMessage(msg, type) {
         el.className = "";
     }, 3000);
 }
+
+// Detección de conexión (Auto-Sync trigger)
+window.addEventListener('online', () => {
+    console.log("Conexión restaurada");
+    showMessage("🌐 Conexión restaurada. Sincronizando...", "success");
+
+    // Si estamos en offline.html, podríamos sugerir recargar
+    if (window.location.pathname.includes("offline.html")) {
+        setTimeout(() => {
+            if (confirm("Conexión detectada. ¿Volver a la aplicación principal?")) {
+                window.location.href = "/";
+            }
+        }, 1000);
+    }
+
+    // Si estamos en la app principal (inyectado), el script de offline_sync.py 
+    // se encargará de detectar los registros pendientes.
+});

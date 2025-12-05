@@ -389,7 +389,7 @@ def render_patient_card(
         finish_dialog()
 
     # Etiqueta de componente
-    st.markdown('<div style="color: #ccc; font-size: 0.6em; text-align: right;">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)
+    st.markdown('<div class="debug-footer">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)
 
 from services.patient_service import calcular_edad
 

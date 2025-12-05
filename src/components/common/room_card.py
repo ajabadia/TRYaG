@@ -199,7 +199,7 @@ def render_room_card(
             if sala_llena and not is_selected:
                 st.warning("⚠️ Sala llena (Capacidad excedida)")
         
-        st.markdown('<div style="color: #ccc; font-size: 0.6em; text-align: right; margin-top: 5px;">src/components/common/room_card.py</div>', unsafe_allow_html=True)
+        st.markdown('<div class="debug-footer">src/components/common/room_card.py</div>', unsafe_allow_html=True)
     
     return button_clicked
 
