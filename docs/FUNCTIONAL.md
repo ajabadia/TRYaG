@@ -321,7 +321,7 @@ Herramienta para la planificación temporal y rotaciones.
 * **Logs Técnicos:**
   * *Log de Transcripciones:* Revisión de audios y textos generados.
   * *Log de Prompts:* Inspección de las instrucciones enviadas a la IA (para depuración).
-  * *Log de Archivos:* Histórico de ficheros procesados.
+  * *Log de Archivos:* Histórico de ficheros procesados (con gráficos interactivos).
 
 ### 5.7 Reporte de Errores y Feedback
 
@@ -511,8 +511,9 @@ Garantiza la continuidad operativa ante fallos de conexión a internet o caída 
     * **Sincronización:** Al recuperar la conexión, se usa la herramienta "Sincronización Offline" para subir los datos.
 
 ### 6.3 Aplicación Web Progresiva (PWA) y Sincronización
-* **Detección Automática:** Al recuperar la conexión, el sistema detecta automáticamente si existen registros pendientes en el dispositivo y muestra una alerta visual.
+* **Detección Automática:** Al recuperar la conexión a internet (`window.online`), el sistema detecta automáticamente si existen registros pendientes en el dispositivo y muestra una alerta visual ("Conexión restaurada").
 * **Sincronización:** A través del panel lateral, el usuario puede descargar los registros locales y subirlos al servidor para su consolidación.
+* **Simulación de Offline:** Para pruebas y formación, se incluye un interruptor "Simular Modo Offline" en el panel lateral que fuerza al navegador a comportarse como si no tuviera red, permitiendo probar el flujo de contingencia sin desconectar el cable.
 
 ### 7.1 Stack Tecnológico
 

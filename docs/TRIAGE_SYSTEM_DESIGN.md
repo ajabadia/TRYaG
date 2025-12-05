@@ -88,3 +88,21 @@ El color final del triaje se determina por la métrica con mayor gravedad presen
 5.  **Fase 5: Roles y Configuración:** Login simulado, permisos y pantalla de configuración de rangos. (✅ Completado)
 6.  **Fase 6: Integración IA:** Alertas predictivas y análisis con Gemini. (✅ Completado)
 7.  **Fase 7: Informes:** Generación de la hoja de triaje. (✅ Completado)
+8.  **Fase 8: Mejoras Técnicas:** Video nativo, PWA Offline, Auditoría Modular. (✅ Completado)
+
+## 7. Nuevas Capacidades Implementadas (v3.0+)
+
+### 7.1 Resiliencia y Offline (PWA)
+*   **Funcionamiento sin red:** El sistema permite realizar triajes completos sin conexión a internet.
+*   **Sincronización:** Los datos se guardan localmente en `IndexedDB` y se sincronizan automáticamente al recuperar la conexión.
+*   **Simulación:** Herramienta para probar protocolos de contingencia.
+
+### 7.2 Multimedia Avanzada
+*   **Video Nativo:** Grabación directa desde el navegador sin dependencias externas.
+*   **Audio/Voz:** Transcripción automática de anamnesis con Whisper/Gemini.
+*   **Fotos:** Captura de evidencias visuales (heridas, documentos).
+
+### 7.3 Flujo Flexible
+*   **Derivación Universal:** El profesional puede derivar al paciente a cualquier destino (Alta, Consulta, Box, etc.) independientemente de la sugerencia de la IA.
+*   **Rechazo Gestionado:** Protocolo de rechazo con motivo obligatorio y registro de auditoría.
+*   **Detección de Duplicados:** Alerta si el paciente ya está siendo atendido en otra sala.

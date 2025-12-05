@@ -73,6 +73,18 @@ Interfaz gráfica en `Configuración > Usuarios` (`src/ui/config/usuarios_manage
 - Crear nuevos usuarios (vinculándolos automáticamente a `people`).
 - Editar roles y funciones.
 - Activar/Desactivar acceso.
+- **Desbloquear Usuarios:** Botón para resetear manualmente el contador de intentos fallidos.
+
+### 5.4 Seguridad y Bloqueo (Lockout)
+El sistema implementa un mecanismo de protección contra fuerza bruta:
+- **Límite de Intentos:** 5 intentos fallidos consecutivos.
+- **Bloqueo Exponencial:**
+  - 1º Bloqueo: 30 minutos.
+  - 2º Bloqueo: 1 hora.
+  - 3º Bloqueo: 2 horas.
+  - 4º Bloqueo: 4 horas.
+  - 5º Bloqueo: 8 horas.
+- **Persistencia:** El estado de bloqueo (`locked_until`, `failed_login_attempts`) se guarda en el documento del usuario en MongoDB.
 
 ## 6. Guía de Uso para Desarrolladores
 

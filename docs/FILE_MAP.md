@@ -17,6 +17,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/room_manager_view.py** | Vista de Gestión de Salas (Configuración/Estado). | `src/app.py` | Activo |
 | **src/ui/room_metrics_dashboard.py** | Dashboard de Métricas de Salas. | `src/app.py` | Activo |
 | **src/ui/audit_panel/main_panel_v2.py** | Versión 2 de panel principal. | `src/app.py` | Activo |
+| **src/assets/icons/EMOJI_MAP.py** | Mapa de emojis a iconos Material. | `src/utils/icon_utils.py` | Activo |
 | **src/components/analytics/concordance_analysis.py** | Análisis de concordancia IA vs Humano. | `src/ui/audit_panel/analysis_panel.py` | Activo |
 | **src/ui/config/asignacion_turnos.py** | UI para asignación de turnos. | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/datos_generales.py** | UI para datos generales del centro. | `src/ui/config_panel.py` | Activo |
@@ -49,6 +50,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/common/rejection_form.py** | Formulario de rechazo de paciente. | Varios | Activo |
 | **src/components/common/room_card.py** | Tarjeta de visualización de sala. | Varios | Activo |
 | **src/components/common/user_selector.py** | Selector de usuario. | Varios | Activo |
+| **src/components/common/video_recorder.py** | Grabador de video nativo. | `src/components/triage/input_form.py` | Activo |
 | **src/components/config/prompt_editor.py** | Editor de prompts de sistema. | `src/ui/config_panel.py` | Activo |
 | **src/db/connection.py** | Gestión de conexión a MongoDB. | Repositorios | Activo |
 | **src/db/models.py** | Modelos Pydantic de datos. | Varios | Activo |
@@ -156,6 +158,8 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/analytics/modules/prompt_analysis.py** | Módulo independiente de Análisis de Prompts. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
 | **src/components/analytics/modules/feedback_analysis.py** | Módulo independiente de Análisis de Feedback. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
 | **src/components/analytics/modules/concordance_analysis.py** | Módulo independiente de Concordancia. | `src/ui/audit_panel/analysis_panel_modular.py` | Activo |
+| **src/components/audit/filters.py** | Filtros reutilizables para auditoría. | `src/ui/audit_panel` | Activo |
+| **src/components/audit/prompt_log.py** | Vista de log de prompts. | `src/ui/audit_panel` | Activo |
 | **src/components/audit/generic_log_view.py** | Vista genérica de logs con detalles. | `src/ui/audit_panel/raw_data_panel_v2.py` | Activo |
 | **deprecated_files/generate_synthetic_data.py** | Script de generación de datos sintéticos. | CLI | Deprecado |
 | **deprecated_files/apply_debug_footers.py** | Script de debug. | CLI | Deprecado |

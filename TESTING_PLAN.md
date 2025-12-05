@@ -28,7 +28,7 @@ src/scripts/                # Scripts de verificación manual y utilidades (Lega
 
 ## 🗓️ Fases de Implementación
 
-### Fase 1: Configuración y Unit Testing (Prioridad Alta)
+### Fase 1: Configuración y Unit Testing (✅ Completada)
 Configurar el entorno y cubrir la lógica más crítica y propensa a errores.
 
 1.  **Setup:**
@@ -41,12 +41,24 @@ Configurar el entorno y cubrir la lógica más crítica y propensa a errores.
     *   `staff_assignment_service.py`: Lógica de resolución de conflictos de turnos.
     *   `permissions_service.py`: Validación de roles y accesos.
 
-### Fase 2: Integration Testing (Prioridad Media)
+### Fase 2: Integration Testing (✅ Completada)
 Verificar que los repositorios y servicios hablan correctamente con la base de datos (simulada o test DB).
 
 1.  **Repositorios:**
     *   Tests CRUD para `users.py`, `people.py`, `triage_records.py`.
     *   Validación de modelos Pydantic.
+
+### Fase 3: PWA & Offline Testing (✅ Completada)
+Verificar la resiliencia del sistema ante fallos de red.
+
+1.  **Service Worker:**
+    *   Caché de assets estáticos (CSS, JS, Iconos).
+    *   Fallback a `offline.html` en desconexión.
+
+2.  **Sincronización:**
+    *   Almacenamiento en `IndexedDB` al crear registros offline.
+    *   Evento `window.online` dispara alerta de sincronización.
+    *   Carga correcta de datos desde JSON local.
 
 ## 🚀 Ejecución
 Comando estándar:

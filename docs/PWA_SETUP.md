@@ -30,7 +30,17 @@ La aplicación ahora es una **Progressive Web App** instalable en dispositivos m
 ✅ **Shortcuts**
 - Acceso rápido a Admisión
 - Acceso rápido a Triaje
+- Acceso rápido a Triaje
 - Acceso rápido a Boxes
+
+✅ **Sincronización Automática**
+- Detección de recuperación de red (`window.online`)
+- Alerta visual "Conexión restaurada"
+- Subida de datos desde IndexedDB
+
+✅ **Simulación Offline**
+- Toggle "Simular Modo Offline" en panel lateral
+- Permite probar flujos de contingencia sin desconexión física
 
 ---
 
@@ -201,9 +211,9 @@ Editar `static/sw.js` función `fetch`:
 
 ## 🎯 Próximos Pasos (Opcional)
 
+- [x] Sincronización en background de datos (Implementado con Auto-Sync)
+- [x] Modo offline completo con base de datos local (Implementado con IndexedDB)
 - [ ] Implementar push notifications reales
-- [ ] Sincronización en background de datos
-- [ ] Modo offline completo con base de datos local
 - [ ] Actualización automática de la app
 
 ---

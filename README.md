@@ -1,10 +1,12 @@
 # Asistente de Triaje IA - Piloto Traumatología
 
-![Status](https://img.shields.io/badge/Status-Piloto-blue)
+![Status](https://img.shields.io/badge/Status-Producción-green)
+![Version](https://img.shields.io/badge/Version-4.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.11+-green)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.31+-red)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)
 ![AI](https://img.shields.io/badge/AI-Google%20Gemini-orange)
+![PWA](https://img.shields.io/badge/PWA-Offline%20Ready-purple)
 
 ## 📋 Descripción
 
@@ -36,14 +38,21 @@ Este proyecto es un **Asistente de Triaje Inteligente** diseñado para optimizar
     *   *Modo Formación:* Simulación con casos clínicos para entrenamiento.
     *   *Modo Contingencia:* Operativa offline ante fallos de red.
 
+### 📱 PWA & Offline-First
+*   **Instalable:** Funciona como app nativa en iOS, Android y Desktop.
+*   **Sincronización Automática:** Detecta recuperación de red y sube datos locales (`IndexedDB`).
+*   **Video Nativo:** Grabación de evidencias sin dependencias externas.
+
 ## 📚 Documentación
 
 La documentación del proyecto está organizada en las siguientes secciones:
 
 *   **[📖 Documentación Funcional](docs/FUNCTIONAL.md):** Descripción detallada de roles, flujos de trabajo, módulos de IA y anexos clínicos.
 *   **[🛠️ Documentación Técnica](docs/TECHNICAL.md):** Arquitectura del software, stack tecnológico, estructura de carpetas y detalles de implementación.
-*   **[🚀 Guía de Despliegue](DEPLOYMENT.md):** Instrucciones para desplegar la aplicación en producción.
+*   **[📱 Guía PWA](docs/PWA_SETUP.md):** Configuración y uso de la Progressive Web App.
+*   **[🚀 Guía de Despliegue](docs/DEPLOYMENT.md):** Instrucciones para desplegar la aplicación en producción.
 *   **[🗺️ Roadmap](ROADMAP.md):** Plan de desarrollo y estado de las tareas.
+*   **[✅ Proyecto Completado](docs/PROJECT_COMPLETION.md):** Resumen de finalización y entrega.
 
 ## 🚀 Inicio Rápido
 

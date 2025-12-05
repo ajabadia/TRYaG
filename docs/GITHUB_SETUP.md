@@ -33,7 +33,7 @@ git add .
 
 ### C. Crear el primer commit
 ```bash
-git commit -m "Initial commit: Sistema de Triaje IA v1.0"
+git commit -m "Initial commit: Sistema de Triaje IA v4.0 (Producción)"
 ```
 
 ### D. Conectar con GitHub

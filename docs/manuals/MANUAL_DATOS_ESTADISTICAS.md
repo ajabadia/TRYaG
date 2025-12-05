@@ -63,7 +63,7 @@ Esta sección ofrece visualizaciones avanzadas organizadas por categorías:
 ### 🏥 Actividad Clínica
 *   **🏥 Análisis de Triaje:** Distribución por niveles (1-5) y especialidades. Tabla interactiva de casos.
 *   **🧪 Validación Científica:** Matriz de confusión IA vs Humano, métricas de Sobre/Sub-triaje.
-*   **📂 Análisis de Archivos:** Estadísticas de uso de adjuntos (imágenes, PDFs).
+*   **📂 Análisis de Archivos:** Estadísticas de uso de adjuntos (imágenes, PDFs) con gráficos interactivos de distribución.
 *   **🎙️ Análisis de Transcripciones:** Métricas sobre el uso del dictado por voz.
 *   **🔗 Análisis Relacional:** Relación entre tipos de adjuntos y decisiones clínicas.
 

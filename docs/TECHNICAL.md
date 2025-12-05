@@ -135,6 +135,13 @@ El sistema implementa dos estrategias de resiliencia:
 4.  **Sincronización (`offline_sync.py`):**
     *   **Exportación (JS):** Lee `IndexedDB` y genera un blob JSON para descarga.
     *   **Importación (Python):** Procesa el JSON subido, valida la estructura y guarda los registros en MongoDB.
+    *   **Auto-Detección:** Se utiliza el evento `window.addEventListener('online', ...)` en `offline_db.js` para detectar la recuperación de red y notificar al usuario.
+
+### Etiquetas de Depuración (Debug Footers)
+El sistema incluye etiquetas discretas en el pie de cada componente UI para facilitar la localización del código fuente.
+*   **Implementación:** Se usa la clase CSS `.debug-footer` definida en `styles.css`.
+*   **Visibilidad:** Por defecto están ocultas (`display: none`).
+*   **Activación:** Cuando `st.session_state.developer_mode` es `True`, `app.py` inyecta un estilo global que anula la ocultación (`display: block`), haciéndolas visibles en toda la aplicación sin necesidad de lógica condicional en cada archivo.
 
 ## 🚀 Despliegue
 

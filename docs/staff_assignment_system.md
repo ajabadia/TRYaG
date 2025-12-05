@@ -205,6 +205,15 @@ Muestra:
 - Detalle de cada conflicto
 - Línea de tiempo por hora
 
+### Gestión Avanzada de Turnos
+**Archivo:** `src/ui/shift_manager_advanced.py`
+
+El sistema incluye un panel avanzado con:
+1.  **Calendario Mensual:** Vista visual de la ocupación por día.
+2.  **Creación Rápida:** Formulario simplificado para asignar turnos.
+3.  **Estadísticas:** Métricas de cobertura (Turnos por Sala, Turnos por Usuario).
+4.  **Exportación:** Descarga de la planificación en Excel y CSV.
+
 ---
 
 ## 🔧 Mantenimiento

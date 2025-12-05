@@ -1,7 +1,7 @@
 # Configuración de Notificaciones - Guía Completa
 
-**Fecha:** 2025-11-25  
-**Versión:** 1.0  
+**Fecha:** 2025-12-05  
+**Versión:** 1.1  
 **Estado:** ✅ Implementado
 
 ---
@@ -384,6 +384,15 @@ notify_room_error_resolved(
     patient_name="Juan Pérez",
     sala_antigua="SALA_X",
     sala_nueva="SALA_Y"
+)
+
+# Notificar nuevo turno
+notify_shift_created(
+    user_name="Dr. García",
+    sala_code="BOX-01",
+    fecha_desde=datetime(2025, 12, 1),
+    fecha_hasta=datetime(2025, 12, 1),
+    horario="08:00 - 15:00"
 )
 ```
 
