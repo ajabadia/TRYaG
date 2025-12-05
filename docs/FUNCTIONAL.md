@@ -1,3 +1,52 @@
+# Documentación Funcional - Asistente de Triaje IA
+
+## 1. Introducción y Alcance
+Este documento describe las funcionalidades operativas del sistema "Asistente de Triaje IA", diseñado para optimizar el flujo de pacientes en servicios de urgencias mediante inteligencia artificial.
+
+### 1.1 Objetivo del Sistema
+Proporcionar una herramienta de soporte a la decisión clínica que permita:
+1.  **Agilizar el Triaje:** Reducir tiempos de espera mediante pre-análisis y sugerencias automáticas.
+2.  **Estandarizar la Clasificación:** Aplicar criterios homogéneos basados en el Sistema Español de Triaje (SET) y Manchester.
+3.  **Detectar Riesgos Silenciosos:** Identificar patrones sutiles en signos vitales y datos clínicos que sugieran gravedad.
+
+### 1.2 Módulos Principales
+*   **Admisión:** Registro y gestión de flujo de entrada.
+*   **Triaje Inteligente:** Entrevista clínica guiada y análisis por IA.
+*   **Gestión de Salas:** Orquestación visual de pacientes y recursos.
+*   **Auditoría:** Panel de control para validar la calidad de las decisiones.
+
+### 1.3 Flujos de Trabajo Principales (Resumen)
+
+#### 1. Recepción y Admisión
+*   **Objetivo:** Identificar al paciente y registrar su llegada.
+*   **Proceso:**
+    1.  El paciente llega al centro.
+    2.  El personal de **Admisión** busca al paciente por DNI/Nombre o crea uno nuevo.
+    3.  Se asigna el paciente a la **Sala de Espera de Triaje**.
+
+#### 2. Triaje Inteligente (Enfermería)
+*   **Objetivo:** Clasificar la urgencia y especialidad del paciente con apoyo de IA.
+*   **Proceso:**
+    1.  El enfermero/a selecciona un paciente de la lista de espera.
+    2.  **Entrada de Datos:** Motivo, Antecedentes, Signos Vitales (Manual o IoT), Audio (Transcripción).
+    3.  **Análisis IA:** El sistema procesa los datos y sugiere:
+        *   Nivel de Urgencia (1-5).
+        *   Especialidad (Trauma, General, etc.).
+        *   Resumen clínico.
+    4.  **Validación:** El profesional revisa y confirma/modifica la propuesta.
+    5.  **Derivación:** El paciente se mueve a "Espera de Consulta".
+
+#### 3. Atención Médica (Box)
+*   **Objetivo:** Atender al paciente clasificado.
+*   **Proceso:**
+    1.  El médico llama al siguiente paciente.
+    2.  Visualiza el informe completo de triaje.
+    3.  Registra la atención y finaliza el proceso (Alta/Ingreso).
+
+#### 4. Gestión de Salas (Orquestador)
+*   **Objetivo:** Visión global y control del flujo.
+*   **Funcionalidades:** Mapa de Salas en tiempo real, Drag & Drop para reasignación, y Alertas de bloqueo.
+
 ## 2. Roles de Usuario y Permisos
 
 El acceso a las funcionalidades del sistema está segmentado por roles, definidos en la configuración del centro.
@@ -483,6 +532,20 @@ El sistema implementa un bus de notificaciones inteligente que enruta los mensaj
 Los administradores pueden configurar los servidores SMTP y las URLs de los Webhooks desde el panel de `Configuración > General > Notificaciones`, así como realizar pruebas de conexión en tiempo real.
 
 ---
+
+### 6.4 API REST e Interoperabilidad (Fase 12)
+
+El sistema expone una **API RESTful** en el puerto `8000` para facilitar la integración con sistemas externos (HIS, Apps Móviles, CRMs).
+
+*   **Documentación Interactiva:** Accesible en `/docs` (Swagger UI).
+*   **Endpoints Principales (`/v1/core`):**
+    *   `POST /analyze`: Permite enviar datos clínicos crudos (síntomas, vitales) y recibir una evaluación de triaje completa sin pasar por la interfaz web.
+    *   `POST /predict/risk`: Cálculo puro del score de riesgo (PTR) para monitorización remota.
+*   **Endpoints IA (`/v1/ai`):**
+    *   `POST /rag/search`: Acceso directo a la base de conocimiento institucional.
+    *   `POST /transcribe`: Servicio de transcripción de audio clínica as-a-service.
+
+Esta API permite que la inteligencia del sistema (el "cerebro") sea consumida por cualquier otra interfaz, desacoplando la lógica de negocio de la presentación visual.
 
 ## 6. Modos Avanzados de Operación
 

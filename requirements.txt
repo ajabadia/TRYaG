@@ -26,3 +26,7 @@ langchain-text-splitters
 playwright
 pytest-playwright
 locust
+fastapi
+uvicorn
+python-multipart
+httpx

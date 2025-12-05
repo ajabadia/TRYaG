@@ -16,6 +16,21 @@ services:
     networks:
       - tryage-network
 
+  api:
+    build: .
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/tryage_db
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    depends_on:
+      - mongo
+    volumes:
+      - ./src:/app/src
+    networks:
+      - tryage-network
+
   nginx:
     image: nginx:latest
     ports:

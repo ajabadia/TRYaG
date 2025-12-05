@@ -202,6 +202,26 @@ Simulan múltiples usuarios concurrentes para verificar el rendimiento.
 locust -f tests/load/locustfile.py --host http://localhost:8501
 ```
 
+## 8. Arquitectura API REST (FastAPI)
+
+En la Fase 12 se introdujo un microservicio paralelo para exponer la lógica de negocio mediante API REST.
+
+*   **Framework:** FastAPI + Uvicorn.
+*   **Puerto:** 8000 (Internal Docker Network & Host mapped).
+*   **Estructura:**
+    *   `src/api/main.py`: Punto de entrada y configuración CORS.
+    *   `src/api/routers/`: División lógica de endpoints (`triage.py`, `ai.py`).
+*   **Schema:** Uso de Pydantic para validación estricta de Request/Response.
+*   **Seguridad:** Preparado para API Key Header (Placeholder).
+
+### Endpoints (v1)
+
+| Método | Ruta | Descripción |
+| :--- | :--- | :--- |
+| `POST` | `/v1/core/analyze` | Análisis de triaje completo (Wrapper de TriageService). |
+| `POST` | `/v1/core/predict/risk` | Cálculo de PTR (Wrapper de PredictiveService). |
+| `POST` | `/v1/ai/rag/search` | Búsqueda semántica en ChromaDB. |
+
 ## 9. CI/CD Pipeline
 El proyecto utiliza **GitHub Actions** para la integración continua.
 

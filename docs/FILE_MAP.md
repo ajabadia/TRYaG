@@ -5,6 +5,11 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | Ruta del Archivo | Descripción | Invocado Por | Estado |
 | :--- | :--- | :--- | :--- |
 | **src/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/api/__init__.py** | Paquete API. | - | Activo |
+| **src/api/main.py** | Entrypoint FastAPI. | Docker (Uvicorn) | Activo |
+| **src/api/routers/__init__.py** | Paquete Routers. | - | Activo |
+| **src/api/routers/ai.py** | Endpoints de IA (RAG/Transcribe). | `src/api/main.py` | Activo |
+| **src/api/routers/triage.py** | Endpoints Core (Triaje/PTR). | `src/api/main.py` | Activo |
 | **src/app.py** | Punto de entrada principal. Configura Streamlit y el enrutamiento. | `streamlit run` | Activo |
 | **src/assets/icons/EMOJI_MAP.py** | Mapa de emojis a iconos Material. | `src/utils/icon_utils.py` | Activo |
 | **src/components/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
