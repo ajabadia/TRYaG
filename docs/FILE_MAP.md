@@ -24,19 +24,6 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/config/equipment_config.py** | UI para configuración de equipamiento. | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/notification_config_ui.py** | UI para configuración de notificaciones. | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/people_manager.py** | UI para gestión de personas (Staff). | `src/ui/config_panel.py` | Activo |
-| **src/ui/config/roles_manager.py** | UI para gestión de roles. | `src/ui/config_panel.py` | Activo |
-| **src/ui/config/salas_manager.py** | UI para gestión de salas (CRUD). | `src/ui/config_panel.py` | Activo |
-| **src/ui/config/staff_conflicts_viewer.py** | Visualizador de conflictos de personal. | `src/ui/config_panel.py` | Activo |
-| **src/ui/config/usuarios_manager.py** | UI para gestión de usuarios del sistema. | `src/ui/config_panel.py` | Activo |
-| **src/ui/config/vital_signs_config.py** | UI para configuración de rangos de signos vitales. | `src/ui/config/general_tab.py` | Activo |
-| **src/ui/config/center_groups_manager.py** | UI para gestión de grupos de centros. | `src/ui/config/centro_tab.py` | Activo |
-| **src/components/triage/input_form.py** | Formulario de entrada de datos (Triaje). | `src/components/triage/step_triage_process.py` | Activo |
-| **src/components/triage/step_triage_process.py** | Paso de proceso de triaje. | `src/ui/main_view.py` | Activo |
-| **src/components/triage/media_cards.py** | Tarjetas de visualización de medios. | `src/components/triage/input_form.py` | Activo |
-| **src/components/triage/results_display.py** | Visualización de resultados de IA. | `src/components/triage/step_triage_process.py` | Activo |
-| **src/components/triage/step_disposition.py** | Paso de disposición final. | `src/ui/main_view.py` | Activo |
-| **src/components/triage/step_patient_selection.py** | Paso de selección de paciente. | `src/ui/main_view.py` | Activo |
-| **src/components/triage/step_sala_selection.py** | Paso de selección de sala. | `src/ui/main_view.py` | Activo |
 | **src/components/triage/validation_form.py** | Formulario de validación de datos. | `src/components/triage/step_triage_process.py` | Activo |
 | **src/components/common/webcam_manager.py** | Componente reutilizable de webcam. | Varios | Activo |
 | **src/components/common/audio_recorder.py** | Componente reutilizable de audio. | Varios | Activo |
@@ -124,6 +111,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/triage/triage_logic.py** | Lógica core de triaje (NEWS2, Worst Case). | `src/components/triage/input_form.py` | Activo |
 | **src/components/triage/recommendations_card.py** | Tarjeta de recomendaciones de autocuidado. | `src/components/triage/risk_analysis_panel.py` | Activo |
 | **src/components/common/body_map.py** | Mapa corporal interactivo. | `src/components/triage/guided_interview.py` | Activo |
+| **src/ui/components/common/push_manager.py** | Gestor de suscripciones Push (PWA). | `src/ui/config/notification_config_ui.py` | Activo |
 | **src/ui/components/common/user_menu.py** | Menú de usuario global (Header). | `src/ui/main_view.py` | Activo |
 | **deprecated_files/check_models.py** | Script de comprobación de modelos. | CLI | Deprecado |
 | **deprecated_files/debug_predictive_error.py** | Debug de errores predictivos. | CLI | Deprecado |
@@ -186,3 +174,6 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **deprecated_files/check_assets.py** | Script de chequeo de assets. | CLI | Deprecado |
 | **deprecated_files/check_config.py** | Script de chequeo de configuración. | CLI | Deprecado |
 | **deprecated_files/prompt_editor_deprecated.py** | Editor de prompts antiguo. | N/A | Deprecado |
+| **src/services/rag_service.py** | Servicio RAG (ChromaDB, Ingestión, Búsqueda). | `src/services/triage_service.py`, `src/ui/config/knowledge_base_ui.py` | Activo |
+| **src/ui/config/ai_config_ui.py** | UI Configuración IA (Prompts + RAG). | `src/ui/config_panel.py` | Activo |
+| **src/ui/config/knowledge_base_ui.py** | UI Gestión Base de Conocimiento. | `src/ui/config/ai_config_ui.py` | Activo |

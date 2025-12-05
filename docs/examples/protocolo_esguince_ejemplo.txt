@@ -1,0 +1,20 @@
+PROTOCOLO INTERNO: MANEJO DE ESGUINCE DE TOBILLO (HOSPITAL DE PRUEBA)
+
+1. CRITERIOS DE OTTAWA (REGLA DE ORO)
+Se debe solicitar radiografía de tobillo SOLO si hay dolor en zona maleolar Y uno de los siguientes:
+- Incapacidad para soportar peso (dar 4 pasos) inmediatamente tras la lesión Y en urgencias.
+- Dolor a la palpación en los 6 cm distales del borde posterior o punta del maléolo lateral.
+- Dolor a la palpación en los 6 cm distales del borde posterior o punta del maléolo medial.
+
+2. CLASIFICACIÓN DE GRAVEDAD
+- Grado I: Distensión ligamentosa. Dolor leve, sin inestabilidad. Tratamiento: RICE (Reposo, Hielo, Compresión, Elevación). Alta con analgésicos.
+- Grado II: Desgarro parcial. Dolor moderado, equimosis, leve inestabilidad. Tratamiento: Vendaje funcional o férula 2 semanas.
+- Grado III: Rotura completa. Dolor intenso, gran edema, inestabilidad franca. Tratamiento: Inmovilización rígida y valoración por Traumatología.
+
+3. TRIAJE
+- Si hay deformidad evidente o compromiso neurovascular: NIVEL 2 (NARANJA).
+- Si hay dolor intenso (>7) o imposibilidad de marcha: NIVEL 3 (AMARILLO).
+- Resto de casos: NIVEL 4 (VERDE).
+
+4. NOTA IMPORTANTE
+En este centro, TODOS los esguinces grado II y III deben recibir profilaxis antitrombótica (HBPM) si se inmovilizan por más de 3 días.

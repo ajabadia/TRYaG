@@ -89,7 +89,27 @@ Además, el sistema integra capacidades de IA Generativa para:
 * **Reconocimiento Automático del Habla (ASR):** Transcribe en tiempo real la interacción verbal.
 * **Visión Computacional:** Analiza imágenes de lesiones para evaluar gravedad visual.
 
-### 4.2 Lógica de Puntuación de Riesgo (PTR) - Dinámica
+### 4.2 Memoria Institucional (RAG)
+
+El sistema incorpora una capacidad de **"Memoria Institucional"** basada en tecnología RAG (Retrieval Augmented Generation). Esto permite que la IA no solo dependa de su entrenamiento general, sino que consulte activamente la documentación interna del centro antes de emitir una sugerencia.
+
+#### ¿Cómo funciona?
+1.  **Ingestión:** Los administradores suben documentos (protocolos, guías clínicas, normativas) en formato PDF o texto desde el panel de configuración.
+2.  **Indexación:** El sistema "lee" estos documentos, los fragmenta y los almacena en una base de datos vectorial especializada (ChromaDB) que entiende el significado semántico del texto.
+3.  **Consulta:** Cuando llega un paciente, la IA busca en esta base de datos fragmentos relevantes para los síntomas del paciente.
+4.  **Respuesta Fundamentada:** La sugerencia de triaje se genera combinando el conocimiento médico general con la información específica recuperada de los protocolos locales.
+
+#### Beneficios
+*   **Estandarización:** Asegura que las decisiones de triaje se alineen con los protocolos específicos del hospital.
+2.  **Reranking (Reordenamiento):**
+    *   *¿Qué es?* Añadir un paso intermedio donde un modelo de IA especializado (Cross-Encoder) lee los 50 mejores resultados de la búsqueda inicial y los reordena minuciosamente según su relevancia real para la pregunta.
+    *   *¿Para qué sirve?* Mejora drásticamente la precisión ("Recall"). Mientras que la búsqueda rápida te da documentos "parecidos", el reranker te dice cuál es "la respuesta exacta", descartando ruido antes de enviarlo al LLM.
+
+3.  **GraphRAG (Grafos de Conocimiento):**
+    *   *¿Qué es?* En lugar de guardar el texto como párrafos sueltos, se extraen entidades (Medicamentos, Síntomas, Enfermedades) y sus relaciones, construyendo un "mapa mental" o Grafo de Conocimiento.
+    *   *¿Para qué sirve?* Permite responder preguntas complejas que requieren "saltos" de lógica (Multi-hop reasoning). Ej: "Si el paciente toma X, ¿puede tomar Y según el protocolo Z?". La búsqueda vectorial plana no ve la relación directa, pero el grafo sí conecta X -> Interacción -> Y.
+
+### 4.3 Lógica de Puntuación de Riesgo (PTR) - Dinámica
 
 El sistema implementa un modelo de **Puntuación Total de Riesgo (PTR)** totalmente configurable y almacenado en base de datos. Esto permite a los administradores clínicos ajustar los pesos, umbrales y multiplicadores sin necesidad de intervención técnica.
 
@@ -124,13 +144,14 @@ La suma total de puntos determina el nivel de riesgo sugerido y el código de co
 * **3 - 7 puntos:** Nivel III/IV (Amarillo/Verde) - Urgencia Menor.
 * **< 3 puntos:** Nivel IV/V (Verde/Azul) - No Urgente.
 
-### 4.3 Alertas Predictivas
+### 4.3 Alertas Predictivas y Pre-Triaje Aumentado
 
-Mediante el análisis de patrones en los datos históricos y clínicos, el sistema genera alertas proactivas:
+Mediante el análisis de patrones en los datos históricos y clínicos, el sistema genera alertas proactivas. Además, incorpora **RAG (Recuperación Aumentada)** para sugerir protocolos relevantes incluso sin usar IA generativa.
 
 * **Detección de Sepsis:** Combinación de fiebre, taquicardia y alteración del estado mental.
 * **Riesgo de Caídas:** Basado en edad, medicación y antecedentes.
 * **Violencia/Abuso:** Detección de inconsistencias entre el relato y las lesiones visibles.
+* **Protocolos Sugeridos (RAG):** Al verificar riesgos, el sistema busca automáticamente en la base de conocimiento documentos que coincidan con los síntomas del paciente (ej. "Protocolo Ictus") y los muestra como alerta.
 
 ### 4.4 Versionado de Respuestas IA
 
@@ -184,18 +205,6 @@ El sistema dispone de una arquitectura modular para la captura exhaustiva de dat
 * **Cobertura Sanitaria:** Selección de aseguradora/mutua (con visualización de logos) o paciente privado.
 
 **2. Entrada Multimodal (`input_form`)**
-
-* **Texto Libre:** Campo principal para el "Motivo de Consulta".
-* **Captura Multimedia:**
-  * 🎤 **Audio:** Grabación de voz para dictado de anamnesis (transcripción automática).
-  * 📷 **Foto:** Captura directa desde webcam (ej. lesiones cutáneas).
-  * 🎥 **Video:** Grabación de video corto (ej. marcha, movilidad).
-  * 📁 **Archivos:** Subida de PDFs o imágenes externas.
-  * 📍 **Ubicación:** Captura de coordenadas GPS para contexto extrahospitalario.
-* **Importación HCE:** Simulación de conexión para traer informes previos.
-
-**3. Entrevista Guiada Inteligente (`guided_interview`)**
-Asistente tipo "acordeón" para estructurar síntomas comunes:
 
 * **Traumatismo:** Mecanismo, localización, sangrado activo.
 * **Dolor:** Mapa corporal interactivo, nivel (EVA), tipo, duración.
@@ -501,10 +510,13 @@ Diseñado para el entrenamiento de nuevo personal sin afectar a los datos reales
 Garantiza la continuidad operativa ante fallos de conexión a internet o caída de los servicios de IA.
 
 ### 6.2 Modos de Operación Alternativos
-* **Modo Manual (Sin IA):**
-    * **Objetivo:** Permitir el triaje rápido cuando la IA no es necesaria o falla, pero **hay conexión al servidor**.
-    * **Funcionamiento:** Se desactiva el análisis de Gemini. El triaje se guarda directamente en la Base de Datos central.
-    * **Activación:** Toggle "Modo Manual" en la barra lateral.
+* **Modo Manual (Sin IA) - Triaje Aumentado:**
+    * **Objetivo:** Permitir el triaje rápido sin depender de la IA Generativa (Gemini), pero manteniendo el acceso a la base de conocimiento.
+    * **Funcionamiento:** 
+        1. Se calcula la prioridad basada en **Signos Vitales** (Algoritmo Peor Caso).
+        2. Se aplican reglas de **Simulación** (palabras clave).
+        3. **NUEVO (RAG):** El sistema busca automáticamente en los protocolos indexados y muestra los fragmentos relevantes junto al resultado, sin consumir tokens de IA generativa.
+    * **Activación:** Botón "Analizar sin IA" en el formulario de triaje.
 
 * **Modo Offline Total (PWA):**
     * **Objetivo:** Permitir el triaje cuando **NO hay conexión a internet/servidor**.
@@ -565,6 +577,7 @@ Registro central de cada acto de triaje.
 * `ia_result`: Respuesta completa de la IA (Nivel, Razones, Especialidad).
 * `ai_responses`: Array histórico de regeneraciones (Auditoría).
 * `final_priority`: Nivel validado por el humano.
+* `location`: Coordenadas GPS (`lat`, `lon`) si se capturaron.
 
 ### 8.3 `patient_flow` (Estado Operativo)
 

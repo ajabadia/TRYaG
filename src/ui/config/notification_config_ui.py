@@ -301,14 +301,23 @@ def render_notification_config_panel():
     st.header("🔔 Configuración de Notificaciones")
     st.markdown("Configura cómo el sistema enviará notificaciones automáticas.")
     
-    # Tabs para separar SMTP y Webhook
-    tab_smtp, tab_webhook = st.tabs(["📧 Email (SMTP)", "🔗 Webhooks"])
+    # Tabs para separar SMTP, Webhook y Push
+    tab_smtp, tab_webhook, tab_push = st.tabs(["📧 Email (SMTP)", "🔗 Webhooks", "📱 Push (PWA)"])
     
     with tab_smtp:
         render_smtp_config()
     
     with tab_webhook:
         render_webhook_config()
+
+    with tab_push:
+        from ui.components.common.push_manager import render_push_manager
+        # Obtener usuario actual para gestionar su suscripción
+        current_user = st.session_state.get("current_user")
+        if current_user:
+            render_push_manager(str(current_user["_id"]))
+        else:
+            st.warning("Debes iniciar sesión para configurar notificaciones push.")
     
     # Información adicional
     st.markdown("---")

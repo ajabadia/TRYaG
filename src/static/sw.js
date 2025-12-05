@@ -1,14 +1,15 @@
 const CACHE_NAME = 'tryag-v2';
-const OFFLINE_URL = '/static/offline.html';
+const OFFLINE_URL = 'app/static/offline.html';
 
 const ASSETS_TO_CACHE = [
     OFFLINE_URL,
-    '/static/css/offline.css',
-    '/static/js/offline_db.js',
-    '/static/manifest.json',
-    '/static/icons/icon-192x192.png',
-    '/static/icons/icon-512x512.png',
-    '/static/icons/logo.png'
+    'app/static/css/offline.css',
+    'app/static/js/offline_db.js',
+    'app/static/manifest.json',
+    'app/static/icons/icon-192x192.png',
+    'app/static/icons/icon-512x512.png',
+    'app/static/icons/logo.png',
+    'app/static/js/push_notifications.js'
 ];
 
 // Install Event: Cache static assets
@@ -43,7 +44,7 @@ self.addEventListener('fetch', (event) => {
     if (!event.request.url.startsWith(self.location.origin)) return;
 
     // Strategy: Stale-While-Revalidate for static assets (icons, css, js)
-    if (event.request.url.includes('/static/')) {
+    if (event.request.url.includes('/app/static/')) {
         event.respondWith(
             caches.open(CACHE_NAME).then((cache) => {
                 return cache.match(event.request).then((cachedResponse) => {
@@ -74,5 +75,36 @@ self.addEventListener('fetch', (event) => {
                     }
                 });
             })
+    );
+});
+
+// Evento Push (Notificaciones)
+self.addEventListener('push', function (event) {
+    if (event.data) {
+        const data = event.data.json();
+        console.log('Push received:', data);
+
+        const options = {
+            body: data.body,
+            icon: data.icon || 'app/static/icons/icon-192x192.png',
+            badge: data.badge || 'app/static/icons/badge.png',
+            data: {
+                url: data.url || '/'
+            }
+        };
+
+        event.waitUntil(
+            self.registration.showNotification(data.title, options)
+        );
+    }
+});
+
+// Click en notificación
+self.addEventListener('notificationclick', function (event) {
+    console.log('Notification click received.');
+    event.notification.close();
+
+    event.waitUntil(
+        clients.openWindow(event.notification.data.url)
     );
 });

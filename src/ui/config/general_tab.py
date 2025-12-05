@@ -9,9 +9,6 @@ def render_general_tab():
     # Sub-tabs de General
     gen_tabs = ["📱 Aplicación", "📷 Equipamiento", "💓 Signos Vitales", "📋 Opciones Clínicas", "🏥 Aseguradoras"]
     
-    if has_permission("configuracion", "prompts"):
-        gen_tabs.append("📝 Prompts IA")
-
     if has_permission("configuracion", "general"):
         gen_tabs.append("🔔 Notificaciones")
 
@@ -32,7 +29,7 @@ def render_general_tab():
     subtab_vitals = get_tab("💓 Signos Vitales")
     subtab_clinical = get_tab("📋 Opciones Clínicas")
     subtab_insurers = get_tab("🏥 Aseguradoras")
-    subtab_prompts = get_tab("📝 Prompts IA")
+    subtab_insurers = get_tab("🏥 Aseguradoras")
     subtab_notif = get_tab("🔔 Notificaciones")
     subtab_ptr = get_tab("🚑 Triaje (PTR)")
     
@@ -51,11 +48,6 @@ def render_general_tab():
     with subtab_insurers:
         from ui.config.insurers_manager import render_insurers_manager
         render_insurers_manager()
-        
-    if subtab_prompts:
-        with subtab_prompts:
-            from components.config.prompt_manager import render_prompt_manager
-            render_prompt_manager()
 
     if subtab_notif:
         with subtab_notif:

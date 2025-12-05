@@ -10,6 +10,7 @@ import streamlit as st
 from ui.config.config_loader import load_general_config, load_centro_config
 from ui.config.general_tab import render_general_tab
 from ui.config.centro_tab import render_centro_tab
+from ui.config.ai_config_ui import render_ai_config_ui
 from services.permissions_service import has_permission
 
 def mostrar_panel_configuracion():
@@ -34,6 +35,10 @@ def mostrar_panel_configuracion():
     if has_permission("configuracion", "centro"):
         tabs_map["Centro"] = "🏢 Centro"
 
+    # Nueva pestaña de IA (Prompts + RAG)
+    if has_permission("configuracion", "prompts"):
+        tabs_map["IA"] = "🧠 Inteligencia Artificial"
+
     selected_tabs = st.tabs(list(tabs_map.values()))
     
     # Asignar variables a las tabs creadas
@@ -49,5 +54,10 @@ def mostrar_panel_configuracion():
     if tab_centro:
         with tab_centro:
             render_centro_tab(st.session_state.centro_config)
+
+    if "IA" in tabs_map:
+        tab_ia = selected_tabs[list(tabs_map.keys()).index("IA")]
+        with tab_ia:
+            render_ai_config_ui()
 
     st.markdown('<div class="debug-footer">src/ui/config_panel.py</div>', unsafe_allow_html=True)

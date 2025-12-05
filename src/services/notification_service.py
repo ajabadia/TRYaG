@@ -17,6 +17,7 @@ class NotificationChannel(Enum):
     IN_APP = "in_app"           # Notificaciones dentro de la aplicación
     EMAIL = "email"              # Correo electrónico
     WEBHOOK = "webhook"          # Webhook HTTP
+    PUSH = "push"                # Web Push (VAPID)
     LOG = "log"                  # Registro en base de datos solamente
 
 
@@ -92,7 +93,8 @@ def create_notification(
         "sent_status": {
             "in_app": True,  # Siempre se registra en BD
             "email": None,
-            "webhook": None
+            "webhook": None,
+            "push": None
         }
     }
     
@@ -135,6 +137,13 @@ def _send_via_channel(
             collection.update_one(
                 {"_id": notification_id},
                 {"$set": {"sent_status.webhook": success}}
+            )
+
+        elif channel == NotificationChannel.PUSH:
+            success = _send_push(notification)
+            collection.update_one(
+                {"_id": notification_id},
+                {"$set": {"sent_status.push": success}}
             )
         
         # IN_APP y LOG no requieren envío externo
@@ -405,6 +414,81 @@ def _send_webhook(notification: Dict[str, Any]) -> bool:
     except Exception as e:
         print(f"Error enviando webhook: {e}")
         return False
+
+
+def _send_push(notification: Dict[str, Any]) -> bool:
+    """
+    Envía notificación Web Push (VAPID).
+    
+    Args:
+        notification: Datos de la notificación
+    
+    Returns:
+        bool: True si al menos un envío fue exitoso
+    """
+    from pywebpush import webpush, WebPushException
+    from db.repositories.people import get_people_repository
+    
+    # Obtener claves VAPID de secrets o env
+    # TODO: Mover a config repository
+    private_key = st.secrets.get("vapid", {}).get("private_key") or os.getenv("VAPID_PRIVATE_KEY")
+    public_key = st.secrets.get("vapid", {}).get("public_key") or os.getenv("VAPID_PUBLIC_KEY")
+    subject = st.secrets.get("vapid", {}).get("subject") or os.getenv("VAPID_SUBJECT", "mailto:admin@tryag.com")
+    
+    if not private_key:
+        print("❌ VAPID keys not configured in _send_push")
+        return False
+
+    repo = get_people_repository()
+    success_count = 0
+    
+    print(f"🚀 Iniciando envío push a {len(notification.get('recipients', []))} destinatarios")
+    
+    for user_id in notification.get('recipients', []):
+        # Buscar usuario y sus suscripciones
+        user = repo.get_by_id(user_id)
+        if not user:
+            print(f"⚠️ Usuario {user_id} no encontrado")
+            continue
+            
+        subs = user.get('push_subscriptions', [])
+        if not subs:
+            print(f"⚠️ Usuario {user_id} no tiene suscripciones push")
+            continue
+            
+        print(f"Found {len(subs)} subscriptions for user {user_id}")
+            
+        payload = {
+            "title": notification['title'],
+            "body": notification['message'],
+            "icon": "/static/icons/icon-192x192.png",
+            "badge": "/static/icons/badge.png",
+            "url": notification.get('action_url', '/')
+        }
+        
+        # Iterar sobre suscripciones del usuario (puede tener varios dispositivos)
+        # Copia para iterar y poder borrar si fallan (410 Gone)
+        for i, sub in enumerate(subs[:]):
+            try:
+                print(f"Sending to sub {i+1}/{len(subs)}...")
+                webpush(
+                    subscription_info=sub,
+                    data=json.dumps(payload),
+                    vapid_private_key=private_key,
+                    vapid_claims={"sub": subject}
+                )
+                print(f"✅ Push sent successfully to sub {i+1}")
+                success_count += 1
+            except WebPushException as ex:
+                print(f"❌ WebPush Error: {ex}")
+                # Si el endpoint ya no es válido, eliminar suscripción
+                if ex.response and ex.response.status_code == 410:
+                    print(f"🗑️ Removing stale subscription for user {user_id}")
+                    repo.remove_push_subscription(user_id, sub)
+            except Exception as e:
+                print(f"❌ Error enviando push a {user_id}: {e}")
+
+    return success_count > 0
 
 
 # ---------------------------------------------------------------------------

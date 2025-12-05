@@ -218,13 +218,44 @@ Editar `static/sw.js` función `fetch`:
 
 - [x] Sincronización en background de datos (Implementado con Auto-Sync)
 - [x] Modo offline completo con base de datos local (Implementado con IndexedDB)
-- [ ] Implementar push notifications reales
 - [ ] Actualización automática de la app
 
 ---
 
-## 📚 Referencias
+## 🔔 Notificaciones Push (VAPID)
 
+Para habilitar las notificaciones push nativas, se requieren claves VAPID.
+
+### Claves Generadas (Entorno Piloto)
+
+> [!IMPORTANT]
+> Estas claves deben configurarse en las variables de entorno o `st.secrets`.
+
+*   **VAPID_PRIVATE_KEY:** `----83r3FwayUAJCog-Th_40mO`
+*   **VAPID_PUBLIC_KEY:** `BM-83r3FwayUAJCog-Th_40mO...` (Truncado por seguridad, ver output de generación)
+*   **VAPID_SUBJECT:** `mailto:admin@tryag.com`
+
+### Generación de Nuevas Claves
+
+Si necesitas rotar las claves, ejecuta el script incluido:
+
+```bash
+python scripts/generate_vapid.py
+```
+
+### Configuración en `st.secrets`
+
+```toml
+[vapid]
+private_key = "..."
+public_key = "..."
+subject = "mailto:admin@tryag.com"
+```
+
+---
+
+## 📚 Referencias
 - [PWA Builder](https://www.pwabuilder.com/)
 - [MDN - Progressive Web Apps](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 - [Google - PWA Checklist](https://web.dev/pwa-checklist/)
+- [Web Push Protocol](https://tools.ietf.org/html/rfc8030)

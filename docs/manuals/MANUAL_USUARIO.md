@@ -19,6 +19,11 @@ Al acceder a la aplicación, se mostrará la pantalla de selección de usuario.
 
 > **Nota:** Si necesita cambiar de usuario durante la sesión, abra el menú lateral (izquierda) y pulse "Cambiar Usuario / Salir".
 
+### 1.2 Buscador de Protocolos
+En la barra lateral izquierda, encontrará el botón **"🔍 Protocolos"**.
+*   **Uso:** Púlselo en cualquier momento para buscar guías clínicas o normativas sin salir de su pantalla actual.
+*   **Descargas:** Puede ver el texto relevante o descargar el PDF original.
+
 ---
 
 ## 2. Módulo de Admisión
@@ -72,6 +77,11 @@ Rellene la información clínica utilizando las herramientas disponibles:
 Una vez completados los datos mínimos:
 1.  Pulse el botón **"Analizar con IA"**.
 2.  El sistema procesará toda la información (texto, vitales, imágenes) y generará una propuesta.
+3.  **Memoria Institucional:** Si el sistema detecta que el caso coincide con algún protocolo interno (ej. "Protocolo de Ictus"), la IA lo indicará explícitamente y basará su recomendación en dicha normativa.
+
+### 3.4 Análisis de Riesgos (Pre-Triaje)
+Antes de analizar con IA, puede usar el panel "Análisis de Riesgos" para una verificación rápida.
+*   **Verificar sin IA:** Ahora incluye **Búsqueda de Protocolos**. El sistema buscará automáticamente en la base documental y le avisará si hay protocolos relevantes para los síntomas del paciente (ej. "⚠️ Protocolo Sugerido: Sepsis").
 
 ### 3.4 Validación y Destino (Paso 3)
 Revise la propuesta de la IA:
@@ -123,3 +133,12 @@ Al terminar la consulta:
 **Uso:** Monitor de TV en sala de espera.
 
 Acceda a la pestaña **"🪑 Sala de Espera"**. Esta vista está diseñada para mostrarse en pantallas públicas y permite a los pacientes saber su estado mediante códigos anonimizados (ej. `PAC-8392`).
+
+---
+
+## 6. Notificaciones
+El sistema puede enviarle alertas importantes (ej. "Sala Inexistente", "Paciente Crítico") incluso si no está mirando la pantalla.
+
+*   **Campana (In-App):** Icono en la esquina superior derecha.
+*   **Push (Navegador):** Si las activa, recibirá avisos emergentes en su escritorio o móvil.
+*   **Email:** Para alertas de alta prioridad (si está configurado).

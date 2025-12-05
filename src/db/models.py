@@ -418,6 +418,7 @@ class Person(BaseModel):
     internal_id: Optional[str] = Field(default=None, description="ID de empleado")
     
     # Metadata
+    push_subscriptions: List[Dict[str, Any]] = Field(default_factory=list, description="Suscripciones VAPID para Web Push")
     activo: bool = Field(default=True, description="Si el registro está activo")
     failed_login_attempts: int = Field(default=0, description="Intentos fallidos consecutivos")
     lockout_level: int = Field(default=0, description="Nivel de bloqueo exponencial (0, 1, 2...)")

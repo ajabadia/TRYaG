@@ -177,12 +177,9 @@ def mostrar_app_principal():
                 f'<p class="header-message">{mensaje}</p>', unsafe_allow_html=True
             )
 
-    # Sidebar with user selector and tools
-    with st.sidebar:
-        render_user_selector()
-        from ui.components.common.offline_sync import render_offline_sync
-        render_offline_sync()
-        
+    # Sidebar
+    render_user_selector()
+
     # Main tabs
     available_tabs_labels = get_available_tabs()
     

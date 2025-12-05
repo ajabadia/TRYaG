@@ -86,12 +86,11 @@ def render_user_selector():
     if new_training != is_training:
         st.session_state.training_mode = new_training
         st.rerun()
-        
-    st.sidebar.divider()
+    # Buscador de Protocolos (Modal)
+    from components.knowledge_base.protocol_search import show_protocol_search_modal
+    if st.sidebar.button("🔍 Protocolos", use_container_width=True, help="Buscar en la base de conocimiento"):
+        show_protocol_search_modal()
 
-    # 2. Herramientas (Lo último)
-    st.sidebar.markdown("🛠️ **Herramientas**")
-    
     # Feedback
     from components.common.feedback_button import render_feedback_button
     # Renderizar feedback en sidebar

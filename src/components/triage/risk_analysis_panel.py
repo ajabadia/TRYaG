@@ -48,11 +48,31 @@ def render_risk_analysis_panel(patient_data, enable_predictive=True):
                     risk_level = "Low"
                     if priority >= 3: risk_level = "High"
                     elif priority == 2: risk_level = "Medium"
+                    
+                    # --- INTEGRACIÓN RAG (Protocolos de Riesgo) ---
+                    rag_alerts = []
+                    try:
+                        from services.rag_service import get_rag_service
+                        rag = get_rag_service()
+                        # Buscar protocolos relacionados con el motivo
+                        query_text = patient_data.get('texto_medico', '') + " " + patient_data.get('antecedentes', '')
+                        rag_docs = rag.search_documents(query_text, n_results=2)
                         
+                        if rag_docs:
+                            for doc in rag_docs:
+                                source = doc['metadata'].get('source', 'Desconocido')
+                                # Solo mostramos el nombre del protocolo como alerta
+                                rag_alerts.append(f"📚 Protocolo Sugerido: {source}")
+                    except Exception as e:
+                        print(f"RAG Error in Risk Panel: {e}")
+                        
+                    # Combinar alertas
+                    all_alerts = alerts + rag_alerts
+
                     st.session_state.predictive_results["ALGO"] = {
                         "status": "SUCCESS",
                         "risk_level": risk_level,
-                        "alerts": alerts
+                        "alerts": all_alerts
                     }
                     st.rerun()
 

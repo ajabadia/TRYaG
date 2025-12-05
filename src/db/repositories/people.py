@@ -68,6 +68,22 @@ class PeopleRepository:
         )
         return result.modified_count > 0
 
+    def add_push_subscription(self, person_id: str, subscription: Dict[str, Any]) -> bool:
+        """Añade una suscripción push a la persona."""
+        result = self.collection.update_one(
+            {"_id": ObjectId(person_id)},
+            {"$addToSet": {"push_subscriptions": subscription}}
+        )
+        return result.modified_count > 0
+
+    def remove_push_subscription(self, person_id: str, subscription: Dict[str, Any]) -> bool:
+        """Elimina una suscripción push de la persona."""
+        result = self.collection.update_one(
+            {"_id": ObjectId(person_id)},
+            {"$pull": {"push_subscriptions": subscription}}
+        )
+        return result.modified_count > 0
+
 _people_repo = None
 
 def get_people_repository() -> PeopleRepository:

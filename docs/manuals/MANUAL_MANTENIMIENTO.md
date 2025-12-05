@@ -71,22 +71,23 @@ Si un usuario bloquea su cuenta por intentos fallidos:
 
 ---
 
-## 4. Gestión de la IA (Prompts)
+## 4. Gestión de Inteligencia Artificial
 
-El comportamiento de la Inteligencia Artificial se puede ajustar sin tocar código.
+El comportamiento de la IA se puede ajustar sin tocar código. Acceda a **"⚙️ Configuración" > "🧠 Inteligencia Artificial"**.
 
-Acceda a **"⚙️ Configuración" > "🧠 Configuración IA"**.
+### 4.1 Base de Conocimiento (RAG)
+Aquí puede subir documentos (PDF, TXT) que la IA usará como referencia.
+1.  **Subir:** Arrastre el archivo al área de carga y pulse "Procesar e Indexar".
+2.  **Listar:** Verá la lista de documentos activos.
+3.  **Borrar:** Use el icono de papelera para eliminar documentos obsoletos.
 
-### 4.1 Editor de Prompts
-1.  Seleccione el tipo de prompt a editar (ej. `triage_main` para el análisis principal).
-2.  Verá la versión **Activa** (solo lectura).
-3.  Para hacer cambios, seleccione una versión **Borrador (Draft)** o clone la activa.
-4.  Edite las instrucciones en el área de texto. Puede modificar:
-    *   Rol del sistema ("Actúa como...").
-    *   Reglas de decisión.
-    *   Formato de salida JSON.
-5.  **Probar:** Use el botón "Probar Prompt" para ver cómo responde con un caso de ejemplo antes de activarlo.
-6.  **Activar:** Si está satisfecho, marque la versión como "Active" para que empiece a usarse en producción.
+### 4.2 Editor de Prompts
+1.  Seleccione la pestaña **"Prompts"**.
+2.  Seleccione el tipo de prompt a editar (ej. `triage_main`).
+3.  Verá la versión **Activa** (solo lectura).
+4.  Para hacer cambios, seleccione una versión **Borrador (Draft)** o clone la activa.
+5.  **Probar:** Use el botón "Probar Prompt" antes de activar.
+6.  **Activar:** Marque la versión como "Active" para producción.
 
 ---
 
@@ -115,3 +116,17 @@ Use esta opción para rotaciones, guardias o cambios puntuales.
 *   **Ver Conflictos:** La pestaña "⚠️ Conflictos" le avisará si ha programado a una persona en dos sitios a la vez.
 *   **Recomendaciones IA:** El sistema puede sugerir la cobertura necesaria basándose en la predicción de demanda (ver Manual de Estadísticas > Predicciones ML).
 *   **Exportar:** Puede descargar la planificación en Excel desde la pestaña "📤 Exportar".
+
+---
+
+## 7. Configuración de Notificaciones
+
+Acceda a **"⚙️ Configuración" > "🔔 Notificaciones"**.
+
+### 7.1 Canales
+*   **Push Notifications:** Active el interruptor para habilitar notificaciones en el navegador. Requiere permiso del usuario.
+*   **Email (SMTP):** Configure el servidor de correo saliente (Host, Puerto, Usuario, Password).
+*   **Webhooks:** Configure URLs de Slack/Teams para recibir alertas en canales de chat.
+
+### 7.2 Pruebas
+Use el botón "Enviar Notificación de Prueba" para verificar que los canales funcionan correctamente.

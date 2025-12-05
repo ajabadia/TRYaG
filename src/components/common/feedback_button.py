@@ -43,7 +43,7 @@ def render_feedback_button(module_name="General", location="header"):
     Renderiza un botón discreto para abrir el formulario de feedback.
     """
     # Usamos un botón normal con texto
-    if st.button("📢 Feedback", key=f"feedback_btn_{module_name}", help="Reportar error o sugerencia"):
+    if st.button("📢 Feedback", key=f"feedback_btn_{module_name}", help="Reportar error o sugerencia", use_container_width=True):
         feedback_form(module_name)
 
     st.markdown('<div class="debug-footer">src/components/common/feedback_button.py</div>', unsafe_allow_html=True)

@@ -19,3 +19,4 @@ scikit-learn
 reportlab
 streamlit-webrtc
 streamlit-js-eval
+pywebpush

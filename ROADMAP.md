@@ -160,22 +160,6 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 
 - [x] **Modularización "Análisis Gráfico":**
     - [x] Convertir "Análisis Gráfico" en un orquestador simple.
-    - [x] **Sub-módulos Independientes:**
-        - [x] Resumen General.
-        - [x] Evolución Temporal.
-        - [x] Análisis de Triaje.
-        - [x] Análisis de Archivos.
-        - [x] Análisis de Transcripciones.
-        - [x] Análisis Relacional.
-        - [x] Análisis de Prompts.
-        - [x] Análisis de Feedback.
-    - [x] **Integración:** Cada sub-módulo debe implementar su propio Selector de Fechas y Barra de Acciones.
-    - [x] Añadir etiquetas de footer a todos los nuevos módulos.
-    - [x] Registrar nuevos módulos en `FILE_MAP.md`.
-    - [x] **Estrategia de Migración:** Crear menú "Auditoría v2" para desarrollo paralelo sin romper la versión actual. (Fusionado: "Auditoría" ahora usa la implementación v2).
-
-### 7.9 Correcciones y Estabilización
-**Objetivo:** Resolver errores críticos de arranque y duplicidad de interfaz.
 
 - [x] **Corrección de Pestañas Duplicadas:**
     - Unificar "Auditoría" y "Auditoría v2".
@@ -339,7 +323,7 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - [ ] **Tests de Carga:** Script con Locust para simular concurrencia y validar estabilidad.
 
 - [ ] **10.3 Experiencia Móvil (PWA Avanzada):**
-    - [ ] **Notificaciones Push:** Integrar Firebase Cloud Messaging (FCM) para alertas de "Paciente en espera crítica".
+    - [/] **Notificaciones Push:** Integrar Firebase Cloud Messaging (FCM) para alertas de "Paciente en espera crítica" (Implementado, pendiente debugging final).
     - [x] **Geolocalización:** Capturar coordenadas GPS en triajes extrahospitalarios (si aplica).
 
 - [ ] **10.4 IA Avanzada (RAG):**

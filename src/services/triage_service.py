@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from services.gemini_client import get_gemini_service
+from services.rag_service import get_rag_service
 from core.prompt_manager import PromptManager
 from core.config import get_model_triage
 from db.repositories.triage import get_triage_repository
@@ -188,6 +189,23 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
     if contexto_clinico:
         motivo_completo += "\n\n[CONTEXTO CLÍNICO CRÍTICO]:\n" + "\n".join(contexto_clinico)
     
+    # ---------------------------------------------------------
+    # RAG: Recuperación de Contexto (Memoria Institucional)
+    # ---------------------------------------------------------
+    try:
+        rag = get_rag_service()
+        # Buscamos contexto usando el motivo y signos vitales como query
+        query_rag = f"{motivo} {vs_str}"
+        context_docs = rag.search_context(query_rag, n_results=3)
+        
+        if context_docs:
+            rag_context_str = "\n".join([f"- {doc}" for doc in context_docs])
+            motivo_completo += f"\n\n[MEMORIA INSTITUCIONAL / PROTOCOLOS INTERNOS]:\n{rag_context_str}\n\nINSTRUCCIÓN RAG: Usa la información anterior para fundamentar tu respuesta. Si el protocolo interno contradice tu conocimiento general, PRIORIZA EL PROTOCOLO INTERNO."
+            print(f"RAG Context injected ({len(context_docs)} chunks)")
+    except Exception as e:
+        print(f"RAG Error: {e}")
+    # ---------------------------------------------------------
+
     # Inyectar género en la edad para contexto
     edad_str = str(edad)
     if gender:

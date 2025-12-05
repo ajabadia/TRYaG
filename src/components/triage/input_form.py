@@ -379,6 +379,23 @@ def render_input_form():
                         st.session_state.datos_paciente['dolor']
                     )
                     
+                    # --- INTEGRACIÓN RAG (Retrieval Only) ---
+                    # Aunque sea "Sin IA Generativa", usamos el buscador vectorial para sugerir protocolos
+                    try:
+                        from services.rag_service import get_rag_service
+                        rag = get_rag_service()
+                        # Buscar 2 fragmentos relevantes
+                        rag_docs = rag.search_documents(st.session_state.datos_paciente['texto_medico'], n_results=2)
+                        
+                        if rag_docs:
+                            resultado_simulado['razonamiento'].append("--- 📚 PROTOCOLOS SUGERIDOS (RAG) ---")
+                            for doc in rag_docs:
+                                source = doc['metadata'].get('source', 'Desconocido')
+                                content_preview = doc['content'][:150].replace("\n", " ") + "..."
+                                resultado_simulado['razonamiento'].append(f"📄 [{source}]: {content_preview}")
+                    except Exception as e:
+                        print(f"RAG Error in Manual Mode: {e}")
+                    
                     # Procesar igual que la IA real
                     procesar_respuesta_ia(resultado_simulado, algo_result=triage_result)
                     st.session_state.analysis_complete = True

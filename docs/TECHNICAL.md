@@ -6,21 +6,6 @@
 *   **Framework Web:** Streamlit
 *   **Base de Datos:** MongoDB Atlas (NoSQL)
 *   **IA Generativa:** Google Gemini (vía `google-generativeai`)
-*   **PWA:** Service Workers, Web Manifest (Offline Support)
-*   **Librerías Clave:**
-    *   `pymongo`: Driver de MongoDB.
-    *   `streamlit-cookies-manager`: Gestión de sesiones persistentes.
-    *   `pandas`, `plotly`: Análisis y visualización de datos.
-    *   `pydantic`: Validación de modelos de datos.
-    *   `reportlab`: Generación de PDFs.
-
-## 🏗️ Arquitectura del Proyecto
-
-El proyecto sigue una arquitectura modular basada en componentes y servicios, separando la lógica de negocio de la interfaz de usuario.
-
-### Estructura de Directorios (`src/`)
-
-*   **`app.py`**: Punto de entrada principal. Configura la página, inicializa el estado de sesión y enruta a las vistas principales.
 *   **`core/`**: Lógica de negocio pura (Manejadores de datos, lógica de prompts).
 *   **`services/`**: Integración con servicios externos (Gemini, MongoDB) y lógica de aplicación (Permisos, Flujos).
     *   `report_service.py`: Generación de informes PDF.
@@ -63,6 +48,21 @@ La interacción con la IA se centraliza en `src/services/gemini_client.py`.
 *   **Configuración:** Se carga la API Key desde `st.secrets` o variables de entorno.
 *   **Modelos:** Se soportan múltiples modelos (Flash, Pro) configurables desde el panel de administración.
 *   **Prompts:** Los prompts del sistema se almacenan en base de datos (`prompts` collection) y son editables en tiempo real sin redeploy.
+
+### Memoria Institucional (RAG)
+
+El sistema implementa **RAG (Retrieval Augmented Generation)** para fundamentar las respuestas de la IA en documentación local.
+*   **Motor Vectorial:** Se utiliza **ChromaDB** en modo persistente local (`data/chroma_db`) para almacenar los embeddings de los documentos.
+*   **Ingestión:**
+    *   Los documentos (PDF, TXT) se procesan en `rag_service.py`.
+    *   Se utiliza `RecursiveCharacterTextSplitter` para dividir el texto en fragmentos (chunks) de ~1000 caracteres con solapamiento.
+    *   Se generan embeddings (vectores) usando el modelo por defecto de Chroma (`all-MiniLM-L6-v2`) que corre localmente en CPU.
+*   **Recuperación (Retrieval):**
+    *   Antes de llamar a Gemini, `triage_service.py` consulta ChromaDB con el motivo de consulta.
+    *   Se recuperan los 3 fragmentos más relevantes y se inyectan en el prompt bajo la sección `[MEMORIA INSTITUCIONAL]`.
+*   **Pre-Triaje Aumentado (Risk Analysis):**
+    *   En el panel de análisis de riesgos (`risk_analysis_panel.py`), se utiliza RAG en modo "solo recuperación" para el botón "Verificar riesgos sin IA".
+    *   Se buscan protocolos coincidentes con los síntomas y se muestran como alertas, sin invocar al LLM.
 
 ### Persistencia y Estado
 
@@ -188,100 +188,3 @@ El proyecto incluye una suite de pruebas automatizadas usando `pytest`.
 1.  Instalar dependencias de prueba:
     ```bash
 ```
-# Documentación Técnica - Asistente de Triaje IA
-
-## 🛠️ Stack Tecnológico
-
-*   **Lenguaje:** Python 3.11+
-*   **Framework Web:** Streamlit
-*   **Base de Datos:** MongoDB Atlas (NoSQL)
-*   **IA Generativa:** Google Gemini (vía `google-generativeai`)
-*   **PWA:** Service Workers, Web Manifest (Offline Support)
-*   **Librerías Clave:**
-    *   `pymongo`: Driver de MongoDB.
-    *   `streamlit-cookies-manager`: Gestión de sesiones persistentes.
-    *   `pandas`, `plotly`: Análisis y visualización de datos.
-    *   `pydantic`: Validación de modelos de datos.
-    *   `reportlab`: Generación de PDFs.
-
-## 🏗️ Arquitectura del Proyecto
-
-El proyecto sigue una arquitectura modular basada en componentes y servicios, separando la lógica de negocio de la interfaz de usuario.
-
-### Estructura de Directorios (`src/`)
-
-*   **`app.py`**: Punto de entrada principal. Configura la página, inicializa el estado de sesión y enruta a las vistas principales.
-*   **`core/`**: Lógica de negocio pura (Manejadores de datos, lógica de prompts).
-*   **`services/`**: Integración con servicios externos (Gemini, MongoDB) y lógica de aplicación (Permisos, Flujos).
-    *   `report_service.py`: Generación de informes PDF.
-    *   `multi_center_service.py`: Agregación de datos multi-centro.
-    *   `notification_service.py`: Bus de notificaciones (SMTP, Webhooks).
-    *   `training_service.py`: Lógica del modo formación (Casos y Evaluación).
-*   **`db/`**: Capa de acceso a datos (DAL).
-    *   `connection.py`: Gestión de conexión a Mongo (Singleton).
-    *   `repositories/`: Implementación del patrón Repository para cada entidad (Pacientes, Centros, Configuración).
-*   **`ui/`**: Componentes de interfaz de usuario (Vistas, Paneles).
-*   **`components/`**: Widgets reutilizables (Selectores, Tarjetas, Visores).
-    *   `common/pwa_installer.py`: Inyección de scripts PWA.
-    *   `common/body_map.py`: Mapa corporal interactivo con Plotly.
-    *   `analytics/concordance_analysis.py`: Módulo de validación científica (Pandas).
-*   **`utils/`**: Funciones de utilidad (Iconos, PDFs, Imágenes).
-*   **`assets/`**: Recursos estáticos del proyecto.
-    *   `icons/`: Iconos SVG del sistema.
-    *   `logos/`: Logotipos de la aplicación y centros.
-*   **`scripts/`**: Scripts de mantenimiento y utilidades (Health Checks, Seeds).
-*   **`templates/`**: Plantillas HTML y de texto.
-    *   `email_templates.py`: Templates Jinja2-like para emails transaccionales.
-*   **`static/`**: Recursos estáticos servidos directamente (Manifest, Service Worker).
-
-### Patrones de Diseño
-
-1.  **Repository Pattern:**
-    *   El acceso a datos se abstrae en clases Repository (`src/db/repositories/`).
-    *   Esto desacopla la lógica de negocio de la implementación específica de la base de datos.
-    *   Ejemplo: `GeneralConfigRepository` maneja la configuración, ocultando si viene de JSON o Mongo.
-
-2.  **Singleton:**
-    *   Utilizado para la conexión a base de datos (`get_database()`) y configuración global, asegurando una única instancia.
-
-3.  **Service Layer:**
-    *   Los servicios (`src/services/`) orquestan operaciones complejas que involucran múltiples repositorios o llamadas a APIs externas.
-
-### Integración con Google Gemini
-
-La interacción con la IA se centraliza en `src/services/gemini_client.py`.
-*   **Configuración:** Se carga la API Key desde `st.secrets` o variables de entorno.
-*   **Modelos:** Se soportan múltiples modelos (Flash, Pro) configurables desde el panel de administración.
-*   **Prompts:** Los prompts del sistema se almacenan en base de datos (`prompts` collection) y son editables en tiempo real sin redeploy.
-
-### Persistencia y Estado
-
-*   **Session State (`st.session_state`):** Maneja el estado efímero de la interfaz (navegación, datos de formularios temporales).
-*   **Cookies:** Se usan para persistir la aceptación del disclaimer (`streamlit-cookies-manager`).
-*   **MongoDB:** Almacenamiento persistente de toda la información crítica (Pacientes, Historial, Configuración).
-*   **Borradores (`triage_draft`):** Colección específica para el auto-guardado de sesiones de triaje en curso.
-
-### Sistema de Notificaciones
-
-El sistema utiliza una arquitectura de bus de eventos desacoplada para gestionar las notificaciones:
-
-1.  **Core Service (`notification_service.py`):**
-    *   Recibe solicitudes de notificación con prioridad y categoría.
-    *   Resuelve los destinatarios (IDs de usuario -> Emails).
-    *   Determina los canales de envío basándose en la prioridad (Lógica de negocio).
-
-2.  **Canales:**
-    *   **In-App:** Escritura directa en la colección `notifications` de MongoDB.
-    *   **SMTP:** Envío síncrono de emails usando `smtplib` y templates HTML.
-    *   **Webhooks:** Envío HTTP POST a endpoints externos (Slack/Teams) con payloads adaptativos.
-
-3.  **Gestión de Errores:**
-    *   El fallo en un canal secundario (ej. Email) no bloquea el flujo principal ni impide el registro en In-App.
-    *   Estado de envío granular (`sent_status`) para auditoría de fallos.
-
-### Modo Formación (Training Mode)
-
-El sistema implementa un entorno de simulación aislado para entrenamiento:
-
-1.  **Datos de Entrenamiento (`training_data.py`):**
-    
