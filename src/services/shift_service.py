@@ -40,7 +40,7 @@ class ShiftService:
                 self.prompt_manager.create_version(
                     prompt_type=prompt_type,
                     content=base_prompt,
-                    model="gemini-1.5-flash-001",
+                    model="gemini-2.5-flash",
                     author="system",
                     notes="Prompt inicial para relevo de turno"
                 )
@@ -56,22 +56,64 @@ class ShiftService:
         except Exception as e:
             print(f"Error ensuring shift prompt: {e}")
 
-    def generate_handoff_report(self, hours: int = 8) -> str:
+    def _generate_fallback_report(self, hours, total, level_counts, specialty_counts, critical_cases):
+        """Genera un informe básico determinista sin usar IA."""
+        lines = []
+        lines.append(f"# 📋 Informe de Relevo (Generado Automáticamente)")
+        lines.append(f"**Periodo:** Últimas {hours} horas")
+        lines.append(f"**Generado:** {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+        lines.append("")
+        lines.append("## Resumen Estadístico")
+        lines.append(f"- **Total Pacientes:** {total}")
+        lines.append("- **Por Niveles:**")
+        for k, v in level_counts.items():
+            lines.append(f"  - Nivel {k}: {v}")
+        lines.append("- **Por Especialidad:**")
+        for k, v in specialty_counts.items():
+            lines.append(f"  - {k}: {v}")
+        lines.append("")
+        
+        if critical_cases:
+            lines.append("## ⚠️ Casos Críticos/Destacados")
+            for c in critical_cases:
+                lines.append(f"- **{c['motivo']}** (Nivel {c['nivel']})")
+                lines.append(f"  - Paciente: {c['sexo']} {c['edad']} años")
+        else:
+            lines.append("## Casos Destacados")
+            lines.append("No se registraron casos críticos en este periodo.")
+            
+        lines.append("")
+        lines.append("---")
+        lines.append("*Este informe fue generado sin IA debido a una interrupción del servicio.*")
+        return "\n".join(lines)
+
+    def generate_handoff_report(self, hours: int = 8, start_date: datetime = None, end_date: datetime = None) -> str:
         """
-        Genera un informe de relevo basado en los triajes de las últimas X horas.
+        Genera un informe de relevo basado en los triajes de las últimas X horas o rango personalizado.
         """
         # 1. Contingency Check
         if is_contingency_active():
-            return "## ⚠️ Modo Contingencia Activo\n\nEl servicio de IA para generación de informes no está disponible. Por favor, realice el relevo manualmente usando los datos del Monitor Global."
+            # Intentar generar reporte básico en contingencia
+            period_str = f"Últimas {hours} horas" if not start_date else f"{start_date.strftime('%H:%M')} - {end_date.strftime('%H:%M')}"
+            return self._generate_fallback_report(period_str, 0, {}, {}, []) 
 
-        end_date = datetime.utcnow()
-        start_date = end_date - timedelta(hours=hours)
+        # Configurar fechas
+        if start_date and end_date:
+            pass # Usar las pasadas
+        else:
+            end_date = datetime.now()
+            start_date = end_date - timedelta(hours=hours)
+
+        # Formato para el prompt
+        period_str = f"Desde {start_date.strftime('%d/%m %H:%M')} hasta {end_date.strftime('%d/%m %H:%M')}"
+        if not (start_date and end_date): # Si fue calculado por horas
+             period_str += f" (Últimas {hours} horas)"
 
         # 2. Obtener registros
         records = self.triage_repo.get_by_date_range(start_date, end_date)
 
         if not records:
-            return "## Informe de Relevo\n\nNo se han registrado pacientes en el periodo seleccionado."
+            return f"## Informe de Relevo\n\nNo se han registrado pacientes en el periodo: {period_str}."
 
         # 3. Pre-procesar estadísticas
         total_patients = len(records)
@@ -101,11 +143,15 @@ class ShiftService:
 
         # 4. Obtener Prompt desde PromptManager
         prompt_data = self.prompt_manager.get_prompt("shift_handoff")
+        
+        # Si no hay prompt configurado o falla algo, usar fallback
         if not prompt_data:
-            return "⚠️ Error: No se encontró la definición del prompt 'shift_handoff'."
+             return self._generate_fallback_report(period_str, total_patients, level_counts, specialty_counts, critical_cases)
             
         base_prompt = prompt_data.get("content", "")
-        model_name = prompt_data.get("model") or "gemini-1.5-flash-001"
+        # Usar el modelo configurado o el nuevo deseado por defecto
+        model_name = prompt_data.get("model") or "gemini-2.5-flash"
+
         version_id = prompt_data.get("version_id", "unknown")
 
         critical_summary = ""
@@ -113,7 +159,7 @@ class ShiftService:
             critical_summary += f"- Paciente {c['sexo']} {c['edad']}a: {c['motivo']} ({c['nivel']})\n"
 
         fill_params = {
-            "{hours}": str(hours),
+            "{hours}": period_str, # Reemplazamos {hours} por el string descriptivo del periodo
             "{total_patients}": str(total_patients),
             "{level_counts}": str(level_counts),
             "{specialty_counts}": str(specialty_counts),
@@ -142,9 +188,16 @@ class ShiftService:
             )
             
             if response_data.get("status") == "ERROR":
-                return f"⚠️ Error generando informe: {response_data.get('msg')}"
+                # Si falla la IA, devolvemos el reporte básico
+                st.toast("Fallo en IA, generando reporte básico...", icon="⚠️")
+                return self._generate_fallback_report(hours, total_patients, level_counts, specialty_counts, critical_cases)
                 
             return response_data.get("text", "No se generó texto.")
+
+        except Exception as e:
+            # Fallback en caso de Excepción
+            st.toast(f"Error IA ({str(e)}), generando reporte básico.", icon="⚠️")
+            return self._generate_fallback_report(hours, total_patients, level_counts, specialty_counts, critical_cases)
 
         except Exception as e:
             return f"Error inesperado generando informe: {e}"

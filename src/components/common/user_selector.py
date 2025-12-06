@@ -93,7 +93,15 @@ def render_user_selector():
 
     # Informe de Relevo (Fase 14)
     from components.common.shift_handoff_ui import show_handoff_dialog
+    
+    # Clave de estado para persistencia del modal
+    if "show_handoff_modal" not in st.session_state:
+        st.session_state["show_handoff_modal"] = False
+
     if st.sidebar.button("📝 Generar Relevo", use_container_width=True, help="Generar informe de cambio de turno con IA"):
+        st.session_state["show_handoff_modal"] = True
+    
+    if st.session_state["show_handoff_modal"]:
         show_handoff_dialog()
 
     # Feedback

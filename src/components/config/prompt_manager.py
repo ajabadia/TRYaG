@@ -46,6 +46,11 @@ def render_prompt_manager():
             "title": "Dictado Clínico (Voz)",
             "desc": "Prompt específico para el dictado por voz. Debe extraer signos vitales y transcribir verbatim sin comentarios extra.",
             "icon": "mic_external_on"
+        },
+        "shift_handoff": {
+            "title": "Informe de Relevo (Handoff)",
+            "desc": "Generación del informe de cambio de turno. Variables disponibles: {hours}, {total_patients}, {level_counts}, {critical_summary}.",
+            "icon": "assignment"
         }
     }
     
@@ -88,8 +93,16 @@ def _render_prompt_editor_logic(prompt_type):
                 default_content = DEFAULT_PREDICTIVE_PROMPT
             elif prompt_type == "triage_gemini":
                 default_content = "Actúa como experto en triaje..."
+            elif prompt_type == "shift_handoff":
+                # Forzar creación inicial vía servicio
+                from services.shift_service import get_shift_service
+                get_shift_service()._ensure_prompt_exists()
+                # Reintentar carga
+                st.rerun()
             
-            pm.create_version(prompt_type, default_content or "Escribe aquí tu prompt...", author="system", notes="Versión inicial")
+            if prompt_type != "shift_handoff":
+                pm.create_version(prompt_type, default_content or "Escribe aquí tu prompt...", author="system", notes="Versión inicial")
+            
             st.rerun()
         return
 
@@ -279,6 +292,16 @@ def _render_prompt_editor_logic(prompt_type):
                         from services.transcription_service import transcribir_audio
                         # En test enviamos texto simulado como si fuera transcripción cruda
                         response, _ = transcribir_audio(text_input=test_input, prompt_content=new_content, prompt_type="clinical_dictation")
+                    elif prompt_type == "shift_handoff":
+                         from services.gemini_client import get_gemini_service
+                         service = get_gemini_service()
+                         # Simular datos dummy para prueba
+                         sim_prompt = new_content.replace("{hours}", "8").replace("{total_patients}", "10").replace("{level_counts}", "{'I': 1, 'II': 2}").replace("{specialty_counts}", "{'General': 10}").replace("{critical_summary}", "- Paciente Grave (Simulado)")
+                         response, _ = service.generate_content(
+                            caller_id="test_prompt", user_id="admin", call_type="test",
+                            prompt_type="shift_handoff", prompt_version_id="preview",
+                            model_name=new_model, prompt_content=sim_prompt
+                         )
                     
                     st.session_state[f"{test_key_base}_result"] = response
                     st.rerun()

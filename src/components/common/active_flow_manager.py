@@ -108,7 +108,16 @@ def render_active_flow_manager(
             if st.button("Cerrar", key=f"{key_prefix}_close_ticket"):
                 st.session_state[f"{key_prefix}_show_ticket"] = False
                 st.rerun()
-        print_ticket_dialog_afm()
+
+        try:
+            print_ticket_dialog_afm()
+        except:
+            # Si hay conflicto de diálogos, ignorar silenciosamente o intentar mostrar advertencia
+            # En Streamlit 1.34+ no se permiten multiples dialogs.
+            # Si falla, simplemente no lo abre en este ciclo.
+            st.warning("⚠️ No se puede abrir la ventana de impresión porque hay otro diálogo activo.")
+            if st.button("Reintentar impresión", key=f"{key_prefix}_retry_print"):
+                st.rerun()
         
     # --- LÓGICA DE ACCIONES ---
     
