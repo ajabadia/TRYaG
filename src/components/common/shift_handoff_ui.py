@@ -8,12 +8,20 @@ def show_handoff_dialog():
         @st.dialog("📝 Informe de Relevo (Handoff)", width="large")
         def _render():
             
-            # Botón para iniciar generación (para no hacerlo auto al abrir si es costoso, o auto?)
-            # Auto es mejor UX para "Generar Relevo".
-            
-            # Usar session state para caché simple dentro del dialogo si se cierra/abre?
-            # No, queremos fresco.
-            
+            # --- FRAGMENTO DE UI PARA EVITAR RECARGA COMPLETA ---
+            # Si Streamlit soporta fragmentos, lo usamos para que "Regenerar" 
+            # solo recargue el contenido del diálogo y no cierre el modal.
+            if hasattr(st, "fragment"):
+                @st.fragment
+                def _render_content():
+                    _dialog_logic()
+                _render_content()
+            else:
+                _dialog_logic()
+
+        def _dialog_logic():
+            st.caption("Analizando actividad de las últimas 8 horas...")
+
             # -- CONFIGURACIÓN DE RANGO --
             with st.expander("🛠️ Configuración Avanzada / Rango Personalizado", expanded=False):
                 col_d1, col_d2 = st.columns(2)

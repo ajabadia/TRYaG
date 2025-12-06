@@ -13,6 +13,23 @@ def render_waiting_room_dashboard():
     """
     st.header("🪑 Sala de Espera")
     
+    # Fragment logic for auto-refresh
+    if hasattr(st, "fragment"):
+        # Auto-refresh every 30 seconds
+        @st.fragment(run_every=30)
+        def _render_dashboard_content():
+            _render_waiting_logic()
+    else:
+        def _render_dashboard_content():
+            _render_waiting_logic()
+            if st.button("🔄 Actualizar"):
+                st.rerun()
+
+    _render_dashboard_content()
+    
+    st.markdown('<div class="debug-footer">src/ui/waiting_room_dashboard.py</div>', unsafe_allow_html=True)
+
+def _render_waiting_logic():
     # 1. Obtener pacientes en espera
     vista_global = obtener_vista_global_salas()
     
@@ -86,5 +103,3 @@ def render_waiting_room_dashboard():
         render_waiting_list_component(pacientes_espera, context="dashboard")
     else:
         st.info("La sala de espera está vacía. ¡Buen trabajo!")
-
-    st.markdown('<div class="debug-footer">src/ui/waiting_room_dashboard.py</div>', unsafe_allow_html=True)

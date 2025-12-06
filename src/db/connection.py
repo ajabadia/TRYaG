@@ -15,12 +15,13 @@ from pymongo.database import Database
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
 import certifi
+import streamlit as st
 
 # Cargar variables de entorno
 load_dotenv()
 
 # Variables globales para connection pooling
-_client: Optional[MongoClient] = None
+# _client manejado por st.cache_resource
 _database: Optional[Database] = None
 
 
@@ -54,10 +55,11 @@ def retry_on_connection_error(max_retries: int = 3, delay: float = 1.0):
     return decorator
 
 
+@st.cache_resource(show_spinner="Conectando a Base de Datos...")
 @retry_on_connection_error(max_retries=3, delay=1.0)
 def get_client() -> MongoClient:
     """
-    Obtiene el cliente de MongoDB (singleton pattern).
+    Obtiene el cliente de MongoDB (cached resource).
     
     Returns:
         MongoClient: Cliente de MongoDB configurado
@@ -66,10 +68,7 @@ def get_client() -> MongoClient:
         ValueError: Si no se encuentra MONGODB_URI en las variables de entorno
         ConnectionFailure: Si no se puede conectar a MongoDB
     """
-    global _client
-    
-    if _client is not None:
-        return _client
+    # No manual global check needed with st.cache_resource
     
     # Obtener URI desde secrets (Streamlit Cloud) o variables de entorno
     mongodb_uri = None

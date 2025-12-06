@@ -4,6 +4,7 @@ from db.repositories.general_config import get_general_config_repository
 from db.repositories.centros import get_centros_repository
 from db.repositories.salas import get_salas_by_centro
 
+@st.cache_data(ttl=300, show_spinner=False)
 def load_general_config():
     """Carga la configuración general desde MongoDB."""
     repo = get_general_config_repository()
@@ -11,9 +12,12 @@ def load_general_config():
 
 def save_general_config(config):
     """Guarda la configuración general en MongoDB."""
+    # Invalidar cache al guardar
+    load_general_config.clear()
     repo = get_general_config_repository()
     return repo.save_config(config)
 
+@st.cache_data(ttl=300, show_spinner=False)
 def load_centro_config():
     """Carga la configuración del centro desde MongoDB.
     
@@ -62,6 +66,9 @@ def save_centro_config(config):
     - Las salas se gestionan independientemente vía SalasRepository.
     """
     try:
+        # Invalidar cache
+        load_centro_config.clear()
+        
         centros_repo = get_centros_repository()
         
         # Crear copia para no modificar el original en session_state

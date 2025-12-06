@@ -3,6 +3,9 @@
 Utilidades compartidas para la interfaz de usuario.
 Centraliza lógica de estilos, colores y formateo visual.
 """
+import streamlit as st
+import os
+import base64
 
 # Colores por tipo de sala
 ROOM_TYPE_COLORS = {
@@ -28,15 +31,15 @@ def get_room_color(room_type: str) -> str:
         
     return ROOM_TYPE_COLORS.get(room_type.lower(), ROOM_TYPE_COLORS["default"])
 
+@st.cache_data(show_spinner=False)
 def load_css(file_path: str):
     """
     Carga un archivo CSS y lo inyecta en la aplicación Streamlit.
+    (Cacheada para evitar lecturas repetidas de disco)
     
     Args:
         file_path (str): Ruta relativa al archivo CSS desde la raíz del proyecto.
     """
-    import streamlit as st
-    import os
     
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
@@ -44,6 +47,7 @@ def load_css(file_path: str):
     else:
         st.warning(f"Archivo CSS no encontrado: {file_path}")
 
+@st.cache_data(show_spinner=False)
 def get_image_base64(path: str) -> str | None:
     """
     Lee una imagen y la convierte a base64 para incrustar en HTML.
@@ -54,8 +58,6 @@ def get_image_base64(path: str) -> str | None:
     Returns:
         str | None: String base64 codificado o None si falla.
     """
-    import base64
-    import os
     
     try:
         if os.path.exists(path):
@@ -78,8 +80,6 @@ def render_custom_download_button(data, filename, label="⬇️ Descargar", mime
         mime (str): Tipo MIME.
         key (str): Clave única (no usada en HTML pero mantenida por compatibilidad de firma).
     """
-    import base64
-    import streamlit as st
     
     try:
         b64 = base64.b64encode(data).decode()

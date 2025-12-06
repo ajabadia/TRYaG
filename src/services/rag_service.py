@@ -188,5 +188,7 @@ class RAGService:
         return None
 
 # Singleton helper
+# Singleton helper
+@st.cache_resource
 def get_rag_service():
     return RAGService()
