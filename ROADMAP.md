@@ -25,46 +25,8 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 - [x] **Configuración de Equipo:**
     - Crear nueva sección "Configuración equipo" en `Configuración`.
     - Selectores para dispositivo de entrada de audio (micrófono).
-    - Selectores para dispositivo de entrada de video (cámara).
-    - Selector de calidad de video (Baja/Media/Alta).
-- [x] **Reorganización de Configuración:**
-    - Mover "Notificaciones" a sub-pestaña en `Configuración > General`.
-    - Mover "Prompts" a sub-pestaña en `Configuración > General`.
-
-### 7.2 Gestión de Usuarios y Personas
-**Objetivo:** Mejorar la gestión de identidades y permisos.
-
-- [x] **Modal de Usuarios:**
-    - Ajustar ancho al 75% del contenedor (`width="large"`).
-    - Verificar responsividad.
-    - Campo "Nombre completo" en modo solo lectura (derivado de `people`).
-    - Eliminar duplicidad de datos de identificación (usar relación con `people`).
-    - **Nueva Funcionalidad:** Crear funciones dinámicas desde el formulario.
-- [x] **Modal de Salas:**
-    - Ajustar ancho al 75% del contenedor (`width="large"`).
-    - Campo "Subtipo" convertido a selector: ["atención", "espera"].
-- [x] **Gestión de Personas (People):**
     - Crear módulo independiente para crear/editar personas (modal reutilizable).
     - Usar este módulo desde Admisión y Gestión de Usuarios.
-- [x] **Árbol de Permisos:**
-    - Implementar selector jerárquico de permisos (árbol de directorios).
-    - Lógica de selección/deselección en cascada (padre <-> hijos).
-    - Aplicar permisos a cada punto del menú de la aplicación.
-    - Actualizar estructura visual en "Gestión de Roles" para reflejar cambios de menú.
-
-### 7.3 Mejoras Flujo de Admisión
-**Objetivo:** Optimizar la búsqueda y validación de pacientes.
-
-- [x] **Búsqueda de Pacientes:**
-    - [x] Corregir warning "No se encontró paciente" cuando sí existe (revisar consulta a `people`).
-    - [x] Añadir tipos de ID: "Número de la SS" (migrar dato actual), "Otro".
-- [x] **UX Paso 1 (Selección de Sala):**
-    - [x] Mover mensaje "📍 Sala seleccionada" y botón "Continuar" justo debajo del título.
-    - [x] Evitar scroll innecesario para navegar.
-- [x] **UX Paso 2 (Datos):**
-    - [x] **Refactorización de Identificación:** Eliminar campo específico "Número Seguridad Social". Tratarlo como un tipo más en `identificaciones`.
-    - [x] **Búsqueda Parcial:** Permitir búsqueda por DNI u otro tipo con datos incompletos (min 3 chars) o sin letras.
-    - [x] **Resultados de Búsqueda:**
         - [x] Mostrar lista de candidatos (incluso si es solo 1).
         - [x] Reemplazar componente actual "Información del Paciente" por esta lista/tarjeta de selección.
         - [x] Campos no editables en la vista de lista.
@@ -122,18 +84,6 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 - **Componentes Reutilizables:** Asegurar que el modal de personas y el input multimedia sean componentes importables.
 
 - **Video Recording:** La grabación de video directa desde el navegador requiere implementación custom (MediaRecorder API) ya que Streamlit nativo solo soporta foto. Tarea futura.
-
----
-**Estado Actual:** En Progreso (Fase 7 completada, Fase 8 en planificación). Implementadas mejoras de IA y UX (Entrevista Guiada).
-
-### 7.6 Nuevas Tareas (Pendientes de Ejecución)
-**Objetivo:** Mejoras de usabilidad, estandarización y herramientas de feedback.
-
-        - [x] **Pendiente:** Revisar funcionalidad de ocultación CSS (actualmente no oculta correctamente en todos los casos) y verificar por qué no aplica `color: white` por defecto.
-
-- [x] **Mejoras Módulo Webcam:**
-    - [x] Permitir tomar múltiples fotos en una misma sesión.
-    - [x] Añadir selector para cambiar de dispositivo de webcam (si es técnicamente viable en Streamlit/Browser).
 
 ### 7.8 Modularización Panel Auditoría (Completado)
 **Objetivo:** Convertir el Panel de Auditoría en un sistema modular, desacoplado y reutilizable.
@@ -304,76 +254,55 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
     - [x] **Tests de Carga:** Script con Locust para simular concurrencia y validar estabilidad.
 
 - [/] **10.3 Experiencia Móvil (PWA Avanzada):**
-    - [ ] **Notificaciones Push:** Integrar Firebase Cloud Messaging (FCM) para alertas de "Paciente en espera crítica" (Implementado, pendiente debugging final).
-    - [x] **Geolocalización:** Capturar coordenadas GPS en triajes extrahospitalarios (si aplica).
-    - [ ] **Flujo de Datos:**
-        - El texto transcrito se debe volcar en tiempo real a un área de texto visible.
-        - Al finalizar, guardar el texto crudo como archivo `.txt` adjunto al episodio (`evidence_files`).
-    - [ ] **Documentación Requerida:**
-        - `FUNCTIONAL.md`: Explicar cómo activar el modo escucha y su privacidad.
-        - `TECHNICAL.md`: Detallar la API de voz utilizada y limitaciones de navegador.
+    - [x] **Notificaciones Push:** Integrar Firebase Cloud Messaging (FCM) para alertas de "Paciente en espera crítica" (Implementado, pendiente debugging final).
+    - [x] **Geolocalización:** Capturar coordenadas GPS en triajes extrahospitalarios.
+    - [ ] **Flujo de Datos:** El texto transcrito se debe volcar en tiempo real.
 
-- [ ] **11.2 Interfaz Contextual (Liquid UI):**
-    - [ ] **Implementación Técnica:**
-        - Refactorizar `input_form.py` para usar `st.empty()` y contenedores dinámicos.
-        - Crear lógica de reglas en `src/services/ui_rules_engine.py` (ej: `if motivo == 'Trauma' -> show_body_map`).
-    - [ ] **Input Híbrido:**
-        - Crear componente `SpeechInput` que combine `st.text_input` con un botón de micro.
-    - [ ] **Documentación Requerida:**
-        - `FUNCTIONAL.md`: Listar las reglas de adaptación de la interfaz.
-        - `TECHNICAL.md`: Explicar el motor de reglas de UI.
+- [x] **11.2 Interfaz Contextual (Liquid UI):**
+    - [x] **Implementación Técnica:** Refactorizar `input_form.py` para usar `st.empty()`.
+    - [x] **Input Híbrido:** Componente `SpeechInput` integrado.
+    - [x] **Documentación Actualizada.**
 
-- [ ] **11.3 Copiloto RAG Proactivo:**
-    - [ ] **Implementación Técnica:**
-        - Implementar `st.toast` o `st.sidebar.info` para alertas no intrusivas.
-        - Crear `ProactiveService` que analice el `session_state` en cada re-run.
-        - Conectar con `RAGService` para búsquedas silenciosas en segundo plano.
-    - [ ] **Documentación Requerida:**
-        - `FUNCTIONAL.md`: Describir qué tipo de alertas puede esperar el usuario.
-        - `TECHNICAL.md`: Explicar el impacto en rendimiento de las búsquedas en background.
+- [x] **11.3 Copiloto RAG Proactivo:**
+    - [x] **Implementación Técnica:** Alertas `st.toast` y `ProactiveService`.
+    - [x] **Integración RAG:** Búsqueda en segundo plano implementada.
 
-- [ ] **11.4 Triaje Conversacional Dual:**
-    - [ ] **Implementación Técnica:**
-        - Crear nueva vista `ChatTriageView`.
-        - Implementar parser de lenguaje natural (usando Gemini) para extraer JSON del chat.
-        - Sincronizar el JSON extraído con `st.session_state.datos_paciente`.
-    - [ ] **Soporte Multidioma (Babel Mode):**
-        - Prompt Instruction: "Detecta el idioma del usuario y responde en ese mismo idioma."
-        - Output Constraint: "El JSON extraído (`sintomas`, `resumen`) debe estar SIEMPRE en ESPAÑOL."
-    - [ ] **Documentación Requerida:**
-        - `MANUAL_USUARIO.md`: Guía de "Cómo realizar un triaje por chat".
+- [x] **11.4 Triaje Conversacional Dual:**
+    - [x] **Implementación Técnica:** Crear vista `ChatTriageView` (Integrada como componente `conversational_chat.py`).
+    - [x] **Parser:** Extraer JSON del chat con Gemini (`ConversationalService`).
+    - [x] **Voz:** Integración de dictado por voz nativo (`st.audio_input` + `TranscriptionService`).
 
 ## 🔌 FASE 12: API REST & Microservicios (Interoperabilidad)
-**Objetivo:** Desacoplar la lógica de negocio de la UI (Streamlit) para permitir que terceros (HIS, Apps Móviles, CRMs) consuman nuestros servicios.
-**Nota Importante:** Documentar cada endpoint en `docs/TECHNICAL.md` y actualizar `docs/FILE_MAP.md` con la nueva estructura `src/api/`.
+**Objetivo:** Desacoplar la lógica de negocio de la UI (Streamlit).
 
-- [ ] **12.1 Infraestructura API (FastAPI):**
-    - [ ] **Setup:**
-        - Instalar `fastapi`, `uvicorn`.
-        - Crear estructura `src/api/` (`main.py`, `routers/`, `schemas/`).
-        - Configurar ejecución paralela (Streamlit + FastAPI) en `docker-compose.yml`.
-    - [ ] **Seguridad:**
-        - Implementar `APIKeyHeader` para autenticación básica de clientes.
+- [x] **12.1 Infraestructura API (FastAPI):**
+    - [x] Setup `src/api` y `docker-compose`.
+    - [x] Seguridad Básica (API Key).
 
-- [ ] **12.2 Endpoints Core (Triage as a Service):**
-    - [ ] `POST /triage/analyze`:
-        - Input: `PatientDataSchema` (Síntomas, Constantes).
-        - Logic: Invocar `TriageService.analyze()`.
-        - Output: `TriageResultSchema` (Nivel, Color, Razonamiento).
-    - [ ] `POST /predict/risk`:
-        - Input: `VitalSignsSchema`.
-        - Logic: Invocar `PredictiveService.calculate_ptr()`.
-        - Output: `RiskScoreSchema`.
+- [x] **12.2 Endpoints Core:**
+    - [x] `POST /triage/analyze` (Real).
+    - [x] `POST /predict/risk` (Real).
 
-- [ ] **12.3 Endpoints IA (Intelligence as a Service):**
-    - [ ] `POST /rag/query`:
-        - Input: `QuerySchema` (Texto).
-        - Logic: Invocar `RAGService.search()`.
-        - Output: `ContextSchema` (Fragmentos, Fuentes).
+- [x] **12.3 Endpoints IA:**
+    - [x] `POST /rag/query`.
+    - [x] `POST /transcribe` (Funcional, wrapper de servicio existente).
 
-- [ ] **12.4 Integración HIS (Webhooks):**
-    - [ ] **Implementación:**
+- [x] **12.4 Integración HIS (Webhooks):**
+    - [x] **Implementación:**
         - Crear sistema de suscripción a eventos (simple observer pattern).
         - Enviar POST request a URL configurada cuando `TriageRecord` se guarda.
-    - [ ] **Documentación:**
+    - [x] **Documentación:**
         - `TECHNICAL.md`: Especificar el formato del payload JSON de los webhooks.
+
+## 🏁 FASE 13: Final Polish & Unification
+**Objetivo:** Ajustes finales para unificación de UX y consistencia de datos.
+
+- [x] **13.1 UI Consistency:**
+    - [x] Unificar iconos, márgenes y colores (Material Design).
+    - [x] Ocultar "Debug Tags" visualmente.
+- [x] **13.2 Voice Input Persistence:**
+    - [x] Guardar audios de dictado nativo en disco local (`temp/`).
+    - [x] Persistir transcripciones en BD (`transcriptions` collection).
+    - [x] Tratar dictados como "Archivos Adjuntos" (visibles en Media Cards).
+- [ ] **13.3 Final User Verification:**
+    - [ ] Validar flujo completo con usuario final.

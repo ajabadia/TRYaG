@@ -12,6 +12,7 @@ import mimetypes
 # FIX: Streamlit Custom Components Loading Issues
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
+mimetypes.add_type('text/html', '.html')
 # Force reload
 from streamlit_cookies_manager import CookieManager
 from ui.config_panel import mostrar_panel_configuracion
@@ -89,6 +90,19 @@ def init_background_services():
 # ---------------------------------------------------------------------------
 def mostrar_app_principal():
     """Render the main Streamlit interface."""
+
+    # Implementación Fase 14.2: Public Board Bypass
+    # Permite acceso público a la pantalla de sala de espera sin login
+    try:
+        q_view = st.query_params.get("view")
+        if q_view == "public_board":
+            # Verificar DB (necesario para datos)
+            if check_database_connection():
+                 from views.public_board import render_public_board
+                 render_public_board()
+                 st.stop()
+    except Exception as e:
+        print(f"Error checking query params: {e}")
     
     # Check Authentication
     if "current_user" not in st.session_state or not st.session_state.current_user:
@@ -106,6 +120,13 @@ def mostrar_app_principal():
 
     # Initialize background services (after DB check)
     init_background_services()
+
+    # Mount Custom Tornado Routes (The Wrapper Fix)
+    try:
+        from utils.tornado_server import mount_video_upload_route
+        mount_video_upload_route()
+    except Exception as e:
+        print(f"Error mounting tornado route: {e}")
 
     from ui.config.config_loader import load_general_config
     if 'general_config' not in st.session_state:

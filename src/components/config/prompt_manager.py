@@ -41,6 +41,11 @@ def render_prompt_manager():
             "title": "Chat Conversacional",
             "desc": "Prompt del sistema para el asistente conversacional (Doctor Bot). Define la personalidad y estrategia de preguntas.",
             "icon": "chat"
+        },
+        "clinical_dictation": {
+            "title": "Dictado Clínico (Voz)",
+            "desc": "Prompt específico para el dictado por voz. Debe extraer signos vitales y transcribir verbatim sin comentarios extra.",
+            "icon": "mic_external_on"
         }
     }
     
@@ -270,6 +275,10 @@ def _render_prompt_editor_logic(prompt_type):
                             prompt_type="triage_chat", prompt_version_id="preview", 
                             model_name=new_model, prompt_content=prompt_final
                          )
+                    elif prompt_type == "clinical_dictation":
+                        from services.transcription_service import transcribir_audio
+                        # En test enviamos texto simulado como si fuera transcripción cruda
+                        response, _ = transcribir_audio(text_input=test_input, prompt_content=new_content, prompt_type="clinical_dictation")
                     
                     st.session_state[f"{test_key_base}_result"] = response
                     st.rerun()

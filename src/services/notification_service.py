@@ -610,6 +610,45 @@ def get_unread_count(user_id: str = "admin") -> int:
 # Notificaciones Específicas del Dominio (Helpers)
 # ---------------------------------------------------------------------------
 
+def send_clinical_data(triage_record: Dict[str, Any]) -> str:
+    """
+    Envía datos clínicos a un sistema externo (HIS) mediante Webhook FHIR.
+    Phase 12.4 Integration.
+    
+    Args:
+        triage_record: Diccionario con datos del triaje
+        
+    Returns:
+        str: ID de la notificación/log creada
+    """
+    from services.fhir_service import FHIRService
+    
+    # 1. Convertir a FHIR Bundle
+    fhir_bundle = FHIRService.create_triage_bundle(triage_record)
+    
+    # 2. Preparar el payload
+    payload = fhir_bundle # El bundle ya es un dict
+    
+    # 3. Datos para el log interno
+    patient = triage_record.get('datos_paciente', {})
+    title = f"🏥 Envío HIS - {patient.get('nombre', 'Desconocido')}"
+    message = "Envío de datos clínicos FHIR a sistema de terceros."
+    
+    # 4. Crear notificación tipo WEBHOOK
+    # Usamos una categoría nueva o repurposeamos GENERAL con metadata específica
+    return create_notification(
+        title=title,
+        message=message,
+        category=NotificationCategory.system_alert, # O una nueva Clinical_Integration
+        priority=NotificationPriority.LOW,
+        channels=[NotificationChannel.WEBHOOK],
+        metadata={
+            "type": "clinical_integration",
+            "fhir_bundle": fhir_bundle,
+            "patient_id": triage_record.get('patient_id')
+        }
+    )
+
 def notify_room_error_detected(
     patient_code: str,
     patient_name: str,

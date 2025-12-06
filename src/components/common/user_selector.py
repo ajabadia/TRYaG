@@ -91,6 +91,11 @@ def render_user_selector():
     if st.sidebar.button("🔍 Protocolos", use_container_width=True, help="Buscar en la base de conocimiento"):
         show_protocol_search_modal()
 
+    # Informe de Relevo (Fase 14)
+    from components.common.shift_handoff_ui import show_handoff_dialog
+    if st.sidebar.button("📝 Generar Relevo", use_container_width=True, help="Generar informe de cambio de turno con IA"):
+        show_handoff_dialog()
+
     # Feedback
     from components.common.feedback_button import render_feedback_button
     # Renderizar feedback en sidebar

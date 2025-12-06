@@ -136,11 +136,25 @@ El sistema implementa dos estrategias de resiliencia:
     - `Observation`: Signos vitales codificados con LOINC.
 
 ## 📚 Bibliografía y Referencias
-El desarrollo de este sistema se basa en estándares internacionales y guías clínicas reconocidas:
+    *   `Patient` (Datos demográficos).
+    *   `Encounter` (Datos del episodio, prioridad, motivo).
+    *   `Observation` (Signos vitales codificados en LOINC).
+3.  **Transporte:** `NotificationService` detecta el canal `WEBHOOK` y envía un `POST` asíncrono a la URL configurada.
+4.  **Payload:**
+    ```json
+    {
+        "event": "clinical_data_update",
+        "timestamp": "2023-10-27T10:00:00Z",
+        "data": {
+            "resourceType": "Bundle",
+            "type": "transaction",
+            "entry": [...]
+        }
+    }
+    ```
 
-*   **HL7 FHIR:** Health Level Seven International. (2019). *HL7 FHIR Release 4*. Recuperado de http://hl7.org/fhir/R4/
-*   **CIE-10:** Organización Mundial de la Salud. (2019). *Clasificación Internacional de Enfermedades, 10.ª revisión*. Recuperado de https://icd.who.int/browse10/2019/en
-*   **LOINC:** Regenstrief Institute. (2024). *Logical Observation Identifiers Names and Codes*. Recuperado de https://loinc.org/
+### Configuración
+*   Definir la URL del HIS en `config.notifications.webhook_url`.
 
 Para levantar el entorno completo:
 ```bash

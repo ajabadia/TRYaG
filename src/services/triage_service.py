@@ -6,12 +6,23 @@ Servicio para la lógica de triaje con Gemini.
 import json
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-from services.gemini_client import get_gemini_service
-from services.rag_service import get_rag_service
-from core.prompt_manager import PromptManager
-from core.config import get_model_triage
-from db.repositories.triage import get_triage_repository
-from db.models import TriageRecord, AIReason, AIResponse
+
+try:
+    # Attempt relative imports (Package context)
+    from .gemini_client import get_gemini_service
+    from .rag_service import get_rag_service
+    from ..core.prompt_manager import PromptManager
+    from ..core.config import get_model_triage
+    from ..db.repositories.triage import get_triage_repository
+    from ..db.models import TriageRecord, AIReason, AIResponse
+except ImportError:
+    # Fallback for Streamlit (Script context where src is root)
+    from services.gemini_client import get_gemini_service
+    from services.rag_service import get_rag_service
+    from core.prompt_manager import PromptManager
+    from core.config import get_model_triage
+    from db.repositories.triage import get_triage_repository
+    from db.models import TriageRecord, AIReason, AIResponse
 
 def _parse_ai_reasons(razones_raw: Any) -> List[AIReason]:
     """
@@ -222,7 +233,25 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
         prompt_parts.append(imagen)
 
     # 4. Llamar al Servicio Centralizado
+    
+    # Check Contingency
+    from services.contingency_service import is_contingency_active
+    if is_contingency_active():
+        return {
+            "status": "ERROR",
+            "msg": "Modo Contingencia Activo: Servicio de IA no disponible.",
+            "nivel_sugerido": 0
+        }, "Offline Mode"
+
     service = get_gemini_service()
+    
+    # Configuración de Seguridad
+    safety_settings = [
+        {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+    ]
     
     response_data, raw_prompt = service.generate_content(
         caller_id="triage_service",
@@ -239,6 +268,7 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
             "max_output_tokens": 8192,
             "response_mime_type": "application/json",
         },
+        safety_settings=safety_settings,
         metadata={
             "patient_age": edad,
             "has_image": bool(imagen)
@@ -283,3 +313,53 @@ def llamar_modelo_gemini(motivo, edad, dolor, vital_signs=None, imagen=None, pro
     response_data["_ai_response_object"] = new_ai_response.model_dump(mode='json')
 
     return response_data, final_prompt
+
+class TriageService:
+    """
+    Wrapper class for Triage Logic to be used by API and other services.
+    Enables dependency injection and standardized interface.
+    """
+    def __init__(self):
+        pass
+
+    def analyze_case(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Analiza un caso clínico usando la lógica central de Gemini.
+        Mapea el input de la API a los argumentos de llamar_modelo_gemini.
+        """
+        # Extraer datos del request mapping
+        motivo = request_data.get("motivo_consulta", "")
+        edad = request_data.get("edad", 0)
+        dolor = request_data.get("dolor", 0)
+        antecedentes = request_data.get("antecedentes", "")
+        
+        # Signos vitales
+        vital_signs = request_data.get("signos_vitales", {})
+        if hasattr(vital_signs, 'dict'):
+             vital_signs = vital_signs.dict() # Handle Pydantic model input if passed directly
+        if not isinstance(vital_signs, dict):
+            vital_signs = {}
+            
+        # Llamar a la función core
+        # Nota: llamar_modelo_gemini devuelve (response_data, final_prompt)
+        response_data, _ = llamar_modelo_gemini(
+            motivo=motivo,
+            edad=edad,
+            dolor=dolor,
+            vital_signs=vital_signs,
+            antecedentes=antecedentes,
+            user_id="api_user"
+        )
+        
+        # Validar error
+        if response_data.get("status") == "ERROR":
+            raise ValueError(response_data.get("msg", "Unknown error in AI Service"))
+            
+        # Devolver estructura limpia
+        return {
+            "nivel_sugerido": response_data.get("nivel_sugerido", 5),
+            "razonamiento": response_data.get("razonamiento", "Sin razonamiento"),
+            "color_hex": response_data.get("color_hex", "#gray"),
+            "protocolo_aplicado": response_data.get("protocolo", "Gemini-Standard"),
+            "razones": response_data.get("razones", [])
+        }

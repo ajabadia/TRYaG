@@ -21,13 +21,8 @@ def render_conversational_chat():
         st.session_state.chat_history.append({"role": "assistant", "content": greeting})
 
     # --- CONTROL DE VOZ ---
-    from components.common.speech_to_text import speech_to_text
-    
-    # Colocar el micro al pie, justo antes del chat_input? 
-    # Streamlit no deja poner cosas "debajo" del chat_input.
-    # Lo pondremos arriba del historial o flotando.
-    # Mejor opción UX: Cerca del título para que sea visible.
-    
+    # (Componente legado eliminado por solicitud del usuario. Se usa st.audio_input nativo)
+
     # Variable para procesar
     input_text = None
     
@@ -37,27 +32,60 @@ def render_conversational_chat():
             st.write(msg["content"])
 
     # ---------------------------------------------------------
-    # LAYOUT DE ENTRADA (HÍBRIDO)
+    # LAYOUT DE ENTRADA
     # ---------------------------------------------------------
-    
-    # 1. Componente de Voz (Invisible si no se usa, o discreto)
-    # Lo ponemos en un contenedor para darle estilo
-    c_mic, c_space = st.columns([1, 15])
-    with c_mic:
-        voice_result = speech_to_text(key="chat_mic")
-    with c_space:
-        if voice_result and voice_result.get('isListening'):
-            st.caption("🔴 Escuchando...")
-    
-    # Lógica de detección de voz
-    if voice_result and voice_result.get('text') and voice_result.get('isFinal'):
-        new_voice_text = voice_result.get('text')
-        # Evitar procesar lo mismo dos veces
-        if new_voice_text != st.session_state.get('last_chat_voice', ''):
-            input_text = new_voice_text
-            st.session_state.last_chat_voice = new_voice_text
 
     # 2. Componente de Texto
+    
+    # --- NUEVO: Entrada de Voz Nativa (Streamlit >= 1.40) ---
+    # Intentamos usar el input nativo de audio si existe, o un uploader si no.
+    # Esto corre en paralelo al componente legacy 'speech_to_text' para no romper nada.
+    
+    native_audio_buffer = None
+    from services.contingency_service import is_contingency_active
+    
+    if is_contingency_active():
+        st.caption("🚫 Voz desactivada (Modo Contingencia)")
+    else:
+        try:
+            # Check if st.audio_input exists (Streamlit 1.40+)
+            if hasattr(st, "audio_input"):
+                native_audio_buffer = st.audio_input("🎙️ Grabar respuesta (Nativo)")
+            else:
+                 # Fallback visual
+                 with st.expander("🎙️ Subir nota de voz (Alternativa)", expanded=False):
+                    native_audio_buffer = st.file_uploader("Subir audio", type=["wav", "mp3", "ogg"], key="chat_audio_upload")
+        except Exception as e:
+            print(f"Audio Input Error: {e}")
+
+    if native_audio_buffer:
+        # Procesar audio nativo
+        from services.transcription_service import transcribir_audio
+        
+        # Usamos un hash del buffer para no reprocesar lo mismo en cada rerun
+        import hashlib
+        audio_bytes = native_audio_buffer.getvalue()
+        audio_hash = hashlib.md5(audio_bytes).hexdigest()
+        
+        if st.session_state.get("last_processed_audio_hash") != audio_hash:
+            with st.spinner("🎧 Transcribiendo audio..."):
+                resp_data, trans_text = transcribir_audio(native_audio_buffer)
+                
+                if resp_data.get("status") == "OK" or trans_text:
+                    # Usamos el texto de la IA (translated_ia_text) o el raw
+                    final_transcription = resp_data.get("translated_ia_text", trans_text)
+                    if not final_transcription and "text" in resp_data:
+                         final_transcription = resp_data["text"]
+                    
+                    if final_transcription:
+                        input_text = final_transcription
+                        st.session_state.last_processed_audio_hash = audio_hash
+                        st.toast("✅ Audio transcrito correctamente", icon="🎤")
+                    else:
+                        st.error("No se pudo extraer texto del audio.")
+                else:
+                    st.error(f"Error en transcripción: {resp_data.get('msg', 'Desconocido')}")
+
     chat_input_val = st.chat_input("Escribe o usa el micrófono 🎤...")
     if chat_input_val:
         input_text = chat_input_val

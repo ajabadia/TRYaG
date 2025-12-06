@@ -205,3 +205,15 @@ class FHIRService:
             "entry": entries
         }
         return bundle
+
+    @staticmethod
+    def create_triage_bundle(triage_record: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Helper para crear un bundle directamente desde un objeto triage_record completo.
+        """
+        # Extraer sub-diccionarios
+        patient_data = triage_record.get("datos_paciente", {})
+        vital_signs = triage_record.get("signos_vitales", {})
+        
+        # Llamar al método base
+        return FHIRService.create_bundle(patient_data, triage_record, vital_signs)

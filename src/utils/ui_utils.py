@@ -64,3 +64,52 @@ def get_image_base64(path: str) -> str | None:
     except Exception:
         pass
     return None
+
+def render_custom_download_button(data, filename, label="⬇️ Descargar", mime="application/pdf", key=None):
+    """
+    Renderiza un botón de descarga HTML personalizado usando base64.
+    Esto fuerza al navegador a respetar el atributo 'download', evitando problemas de
+    renombrado a UUID que ocurren con st.download_button en ciertos entornos.
+    
+    Args:
+        data (bytes): Contenido del fichero en bytes.
+        filename (str): Nombre del fichero (ej: 'informe.pdf').
+        label (str): Texto del botón.
+        mime (str): Tipo MIME.
+        key (str): Clave única (no usada en HTML pero mantenida por compatibilidad de firma).
+    """
+    import base64
+    import streamlit as st
+    
+    try:
+        b64 = base64.b64encode(data).decode()
+        href = f'<a href="data:{mime};base64,{b64}" download="{filename}" style="text-decoration:none;">'
+        href += f'''
+        <div style="
+            display: inline-flex;
+            -webkit-box-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            justify-content: center;
+            font-weight: 400;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            min-height: 38.4px;
+            margin: 0px;
+            line-height: 1.6;
+            color: inherit;
+            width: 100%;
+            user-select: none;
+            background-color: rgb(255, 255, 255);
+            border: 1px solid rgba(49, 51, 63, 0.2);
+            cursor: pointer;
+            text-align: center;
+            ">
+            {label}
+        </div>
+        </a>
+        '''
+        st.markdown(href, unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"Error generando descarga: {e}")
+

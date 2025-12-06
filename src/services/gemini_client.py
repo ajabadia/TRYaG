@@ -5,8 +5,12 @@ import os
 from datetime import datetime
 from typing import Optional, Dict, Any, Union, Tuple
 import streamlit as st
-from db.models import AIAuditLog
-from db.repositories.ai_audit import get_ai_audit_repository
+try:
+    from ..db.models import AIAuditLog
+    from ..db.repositories.ai_audit import get_ai_audit_repository
+except ImportError:
+    from db.models import AIAuditLog
+    from db.repositories.ai_audit import get_ai_audit_repository
 
 class GeminiService:
     """
@@ -164,12 +168,22 @@ class GeminiService:
                     if len(lines) >= 2:
                         cleaned_text = "\n".join(lines[1:-1])
                 
-                try:
-                    response_data = json.loads(cleaned_text)
+                # Determinar si esperamos JSON
+                expected_json = False
+                if generation_config and generation_config.get("response_mime_type") == "application/json":
+                    expected_json = True
+
+                if expected_json:
+                    try:
+                        response_data = json.loads(cleaned_text)
+                        status = "success"
+                    except json.JSONDecodeError:
+                        error_msg = "Invalid JSON response"
+                        response_data = {"status": "ERROR", "msg": error_msg, "raw": cleaned_text}
+                else:
+                    # Si no esperamos JSON, devolvemos texto plano
+                    response_data = {"text": cleaned_text}
                     status = "success"
-                except json.JSONDecodeError:
-                    error_msg = "Invalid JSON response"
-                    response_data = {"status": "ERROR", "msg": error_msg, "raw": cleaned_text}
                     
         except Exception as e:
             error_msg = str(e)

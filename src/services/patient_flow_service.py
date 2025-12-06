@@ -337,6 +337,16 @@ def save_triage_data(patient_code: str, triage_data: Dict[str, Any]) -> bool:
         }
         
         collection.insert_one(record)
+        
+        # --- PHASE 12.4: HIS INTEGRATION (WEBHOOK) ---
+        # Enviar datos clínicos a sistema externo (Fire-and-forget logic ideally)
+        try:
+            from services.notification_service import send_clinical_data
+            send_clinical_data(triage_data) # triage_data tiene la misma estructura que record (o similar)
+        except Exception as webhook_e:
+            print(f"Non-blocking error sending HIS webhook: {webhook_e}")
+            # No fallamos el guardado principal solo porque falle el webhook
+            
         return True
     except Exception as e:
         print(f"Error saving triage record: {e}")

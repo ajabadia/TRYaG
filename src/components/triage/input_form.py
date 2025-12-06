@@ -285,50 +285,11 @@ def render_input_form():
 
         widget_key = f"texto_medico_input_{reset_count}"
         
-        # --- Voice Input Integration (Phase 11.1) ---
-        # Renderizamos el componente de voz justo encima o al lado del area de texto
-        # El componente devuelve un dict {'text': '...', 'isFinal': True} cuando hay resultado
+        # --- Voice Input Integration (Phase 13.1) ---
+        from components.triage.native_voice_input import render_native_voice_input
+        # Pasamos widget_key para que el componente pueda actualizar el textarea directamente
+        render_native_voice_input(reset_count, target_widget_key=widget_key)
         
-        # Ajustamos columnas para dar espacio al botón (ratio 2:8)
-        c_mic, c_label = st.columns([2, 8])
-        with c_mic:
-             # Height fijo para asegurar visibilidad del iframe
-             voice_result = speech_to_text(key=f"voice_mic_{reset_count}")
-        with c_label:
-             st.caption("Dictado por Voz Activo (Web Speech API)")
-             if voice_result and voice_result.get('isListening'):
-                 st.caption("🔴 Escuchando...")
-
-        # Lógica para añadir texto de voz al actual
-        if voice_result and voice_result.get('text'):
-             new_text = voice_result.get('text')
-             # Evitar duplicados si el componente re-renderiza el mismo texto final
-             # Usamos last_voice_text en session state para comparar
-             last_voice_key = f"last_voice_{reset_count}"
-             if last_voice_key not in st.session_state:
-                 st.session_state[last_voice_key] = ""
-             
-             if new_text != st.session_state[last_voice_key]:
-                 current_text = st.session_state.datos_paciente.get('texto_medico', '')
-                 # Añadir espacio si no está vacío
-                 if current_text and not current_text.endswith(" "):
-                     current_text += " "
-                 
-                 final_text = current_text + new_text
-                 st.session_state.datos_paciente['texto_medico'] = final_text
-                 st.session_state[last_voice_key] = new_text
-                 
-                 # --- PROACTIVE RAG TRIGGER (Phase 11.3) ---
-                 from services.proactive_service import ProactiveService
-                 sugerencias = ProactiveService.check_context_and_suggest(final_text)
-                 for s in sugerencias:
-                     st.toast(s, icon="🧠")
-                 # ------------------------------------------
-
-                 st.rerun()
-
-        # Debug Footer for Component (Etiqueta al pie)
-        st.markdown('<div class="debug-footer">src/components/common/speech_to_text</div>', unsafe_allow_html=True)
         
         widget_key = f"texto_medico_input_{reset_count}"
         
@@ -607,7 +568,10 @@ def render_input_form():
                             ],
                             "final_priority": triage_result.get('final_priority', 5),
                             "final_color": triage_result.get('color', 'gray'),
-                            "nivel": triage_result.get('label', 'Nivel V')
+                            "nivel": {
+                                "text": triage_result.get('label', 'Nivel V'),
+                                "color": triage_result.get('color', 'gray')
+                            }
                         }
                         
                         st.session_state.resultado = manual_result

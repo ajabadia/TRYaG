@@ -2,6 +2,7 @@ import streamlit as st
 from services.predictive_service import generar_alertas_predictivas
 from components.triage.vital_signs import get_all_configs
 from components.triage.triage_logic import calculate_worst_case
+from services.contingency_service import is_contingency_active
 
 def render_risk_analysis_panel(patient_data, enable_predictive=True):
     """
@@ -79,10 +80,10 @@ def render_risk_analysis_panel(patient_data, enable_predictive=True):
             # 2. Con IA
             if st.button("Verificar riesgos con IA", 
                          type="primary", 
-                         help="Analizar signos vitales con IA", 
+                         help="Analizar signos vitales con IA" if not is_contingency_active() else "IA desactivada (Contingencia)", 
                          key="btn_predictive_check_ai", 
                          use_container_width=True,
-                         disabled=has_ai):
+                         disabled=has_ai or is_contingency_active()):
                 
                 with st.spinner("Analizando riesgos (IA)..."):
                     # Preparar datos IA
@@ -125,10 +126,10 @@ def render_risk_analysis_panel(patient_data, enable_predictive=True):
 
             # 3. Ambos
             if st.button("🔍 Analizar AMBOS", 
-                         help="Ejecutar ambos análisis y comparar", 
+                         help="Ejecutar ambos análisis y comparar" if not is_contingency_active() else "IA desactivada (Contingencia)", 
                          key="btn_predictive_check_both", 
                          use_container_width=True,
-                         disabled=(has_algo and has_ai)):
+                         disabled=(has_algo and has_ai) or is_contingency_active()):
                 
                 with st.spinner("Ejecutando análisis completo..."):
                     # 1. ALGO (Solo si falta)

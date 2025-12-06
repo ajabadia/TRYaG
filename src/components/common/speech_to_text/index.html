@@ -10,7 +10,7 @@
     <!-- Material Icon for Mic -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    <div id="root" style="display: flex; align-items: center; gap: 10px;">
+    <div id="root" style="display: flex; align-items: center; gap: 10px; padding: 5px;">
         <button id="mic-btn" onclick="toggleListening()" style="
             border: none;
             background-color: #f0f2f6;
@@ -111,11 +111,11 @@
                         });
                     } else {
                         interimTranscript += event.results[i][0].transcript;
-                        // Send INTERIM result to Streamlit (optional, for live feedback)
-                        // setComponentValue({
-                        //    text: finalTranscript + interimTranscript,
-                        //    isFinal: false
-                        // });
+                        // Send INTERIM result to Streamlit for Liquid UI real-time feedback
+                        setComponentValue({
+                            text: finalTranscript + interimTranscript,
+                            isFinal: false
+                        });
                     }
                 }
             };

@@ -64,6 +64,12 @@ El comportamiento de la IA se puede ajustar sin tocar código. Acceda a **"⚙�
 ### 4.1 Base de Conocimiento (RAG)
 Aquí puede subir documentos (PDF, TXT) que la IA usará como referencia.
 
+### 4.2 Servicios de Transcripción y Auditoría
+El sistema utiliza un servicio centralizado de IA (`GeminiService`) que garantiza:
+*   **Logs de Auditoría:** Cada interacción (chat, transcripción, análisis) se guarda en la colección `ai_audit_logs` con metadatos completos (usuario, prompt usado, coste, latencia).
+*   **Modo Contingencia:** Si la conexión a Internet falla, los servicios de IA (transcripción, chat) se desactivan automáticamente para evitar errores, permitiendo el uso manual del sistema.
+*   **Modelos Configurables:** Puede cambiar el modelo de IA usado para transcripción (ej. `gemini-2.5-flash`) desde la configuración avanzada o JSON si es necesario.
+
 ---
 
 ## 6. Gestión de Turnos y Personal
@@ -99,3 +105,22 @@ Acceda a **"⚙️ Configuración" > "🔔 Notificaciones"**.
 
 ### 7.2 Pruebas
 Use el botón "Enviar Notificación de Prueba" para verificar que los canales funcionan correctamente.
+
+---
+
+## 8. Interoperabilidad y API REST
+
+El sistema "Asistente de Triaje" expone una API completa para su consumo por terceros (Apificación).
+
+### 8.1 Acceso a la Documentación
+La API cuenta con documentación interactiva basada en **Swagger UI**.
+Acceda a: `http://[SERVIDOR]:8000/docs`
+
+### 8.2 Endpoints Principales
+*   **Triaje Core (`/v1/core/analyze`):** Envío de datos clínicos y recepción de clasificación IA.
+*   **Predicción de Riesgo (`/v1/core/predict/risk`):** Cálculo de PTR score sin pasar por triaje completo.
+*   **Base de Conocimiento (`/v1/ai/rag/search`):** Búsqueda semántica en protocolos.
+
+### 8.3 Autenticación
+Para integrar sistemas externos, será necesario configurar una **API Key** en el `docker-compose.yml` o variables de entorno (`API_KEY`).
+Los clientes deben enviar esta clave en el header `X-API-Key`.

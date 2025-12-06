@@ -256,54 +256,63 @@ def render_patient_card(
                 import base64
                 
                 pdf_data = st.session_state[pdf_state_key]
-                file_name = st.session_state.get(pdf_name_key, "report.pdf")
-                b64_pdf = base64.b64encode(pdf_data).decode('utf-8')
+                file_name = st.session_state.get(pdf_name_key)
+                if not file_name:
+                    file_name = f"Informe_Triaje_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
                 
-                # Estilo similar a un botón primario de Streamlit
-                button_style = """
-                    display: inline-flex;
-                    -webkit-box-align: center;
-                    align-items: center;
-                    -webkit-box-pack: center;
-                    justify-content: center;
-                    font-weight: 400;
-                    padding: 0.25rem 0.75rem;
-                    border-radius: 0.5rem;
-                    min-height: 38.4px;
-                    margin: 0px;
-                    line-height: 1.6;
-                    color: white;
-                    width: 100%;
-                    user-select: none;
-                    background-color: #ff4b4b;
-                    border: 1px solid #ff4b4b;
-                    text-decoration: none;
-                """
+                # Guardar en disco temporal para servir vía Tornado (Fix Chrome)
+                import os
+                temp_dir = 'temp'
+                os.makedirs(temp_dir, exist_ok=True)
+                temp_path = os.path.join(temp_dir, file_name)
                 
-                href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="{file_name}" style="{button_style}" target="_blank">⬇️ Descargar</a>'
-                
-                c_down, c_clear = st.columns([3, 1])
-                with c_down:
-                    st.markdown(href, unsafe_allow_html=True)
-                with c_clear:
-                    if st.button("❌", key=f"btn_clr_pdf_{pid}_{key_prefix}", help="Cerrar descarga"):
-                        del st.session_state[pdf_state_key]
-                        del st.session_state[pdf_name_key]
-                        st.rerun()
-            else:
-                # Botón para generar
-                if st.button("📄 PDF", key=f"btn_gen_pdf_{pid}_{key_prefix}", help="Generar informe PDF", use_container_width=True):
+                try:
+                    with open(temp_path, "wb") as f:
+                        f.write(pdf_data)
+                        
+                    download_url = f"/download_file_v7?filename={file_name}"
+                    
+                    c_down, c_clear = st.columns([3, 1])
+                    with c_down:
+                        st.markdown(f'''
+                            <a href="{download_url}" target="_blank" style="text-decoration:none;">
+                                <div style="
+                                    display: inline-flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    padding: 0.25rem 0.75rem;
+                                    border-radius: 0.5rem;
+                                    min-height: 38.4px;
+                                    margin: 0px;
+                                    line-height: 1.6;
+                                    color: white;
+                                    width: 100%;
+                                    background-color: #ff4b4b;
+                                    border: 1px solid rgba(49, 51, 63, 0.2);
+                                    cursor: pointer;
+                                    font-weight: 400;
+                                    text-align: center;
+                                ">
+                                    ⬇️ Descargar PDF (Server)
+                                </div>
+                            </a>
+                        ''', unsafe_allow_html=True)
+                        
+                except Exception as e:
+                    st.error(f"Error saving temp PDF: {e}")
                     with st.spinner("Generando..."):
                         try:
-                            # Construir registro wrapper
-                            record_wrapper = {
-                                "patient_data": patient,
-                                "vital_signs": patient.get('vital_signs', {}),
-                                "triage_result": patient.get('triage_result', {}),
+                            # Construir registro wrapper (Flattener para report_service)
+                            # El servicio espera que 'nombre', 'hda', etc estén en la raíz o en patient_snapshot
+                            # Al ser is_draft=True, busca en la raíz.
+                            record_wrapper = patient.copy()
+                            record_wrapper.update({
+                                "patient_snapshot": patient, # Fallback doble
                                 "timestamp": datetime.now(),
                                 "audit_id": pid,
-                                "evaluator_id": "Sistema"
-                            }
+                                "evaluator_id": "Sistema",
+                                "status": "BORRADOR"
+                            })
                             
                             # Generar
                             from services.report_service import get_report_filename

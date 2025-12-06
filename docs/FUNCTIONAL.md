@@ -550,21 +550,6 @@ Diseñado para el entrenamiento de nuevo personal sin afectar a los datos reales
 Garantiza la continuidad operativa ante fallos de conexión a internet o caída de los servicios de IA.
 
 ### 6.2 Modos de Operación Alternativos
-* **Modo Manual (Sin IA) - Triaje Aumentado:**
-    * **Objetivo:** Permitir el triaje rápido sin depender de la IA Generativa (Gemini), pero manteniendo el acceso a la base de conocimiento.
-    * **Funcionamiento:** 
-        1. Se calcula la prioridad basada en **Signos Vitales** (Algoritmo Peor Caso).
-        2. Se aplican reglas de **Simulación** (palabras clave).
-        3. **NUEVO (RAG):** El sistema busca automáticamente en los protocolos indexados y muestra los fragmentos relevantes junto al resultado, sin consumir tokens de IA generativa.
-    * **Activación:** Botón "Analizar sin IA" en el formulario de triaje.
-
-### 6.3 Interacción por Voz (Hands-Free)
-*   **Dictado Activo:** El sistema permite el dictado directo sobre el campo "Motivo de Consulta" utilizando el micrófono del dispositivo.
-*   **Tecnología:** Web Speech API del navegador para transcripción en tiempo real y baja latencia.
-*   **Funcionamiento:**
-    1.  Pulsar el icono de micrófono (se vuelve rojo).
-    2.  Dictar la anamesis ("Paciente varón de 45 años, caída...").
-    3.  El texto se escribe automáticamente. Pulsar de nuevo para detener.
 
 ### 6.4 Modos Offline Total (PWA):
     * **Objetivo:** Permitir el triaje cuando **NO hay conexión a internet/servidor**.

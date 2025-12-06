@@ -7,36 +7,41 @@
 *   **Objetivo:** Desarrollar una herramienta de apoyo a la decisión clínica (CDSS) que optimice el flujo de triaje, reduzca tiempos de espera y estandarice la aplicación de protocolos.
 
 ### 2. Marco Teórico y Tecnológico
-*   **Arquitectura Híbrida:** Combinación de IA Generativa (Google Gemini) para el razonamiento clínico y Algoritmos Deterministas (Random Forest) para la predicción operativa.
-*   **RAG (Retrieval Augmented Generation):** Implementación de "Memoria Institucional" mediante ChromaDB para fundamentar las decisiones en protocolos locales, mitigando alucinaciones.
+*   **Arquitectura Híbrida:** Combinación de IA Generativa (Google Gemini 1.5 Flash) para el razonamiento clínico y Algoritmos Deterministas (Random Forest/NEWS2) para la predicción operativa.
+*   **Gestión de IA Robusta:**
+    *   **PromptManager:** Sistema centralizado en base de datos para versionado y A/B testing de prompts clínicos sin despliegues.
+    *   **Modo Contingencia:** Fallback automático "Graceful Degradation" que deshabilita módulos IA ante fallos de red, garantizando continuidad operativa.
+*   **RAG (Retrieval Augmented Generation):** Implementación de "Memoria Institucional" mediante ChromaDB para fundamentar las decisiones en protocolos locales.
 *   **Stack Tecnológico:**
-    *   **Backend/Frontend:** Python + Streamlit (Prototipado rápido y despliegue ágil).
-    *   **Persistencia:** MongoDB Atlas (NoSQL) para flexibilidad de esquemas clínicos.
-    *   **Resiliencia:** Arquitectura PWA (Progressive Web App) con estrategias Offline-First.
+    *   **Backend/Frontend:** Python + Streamlit + FastAPI (Microservicios).
+    *   **Persistencia:** MongoDB Atlas (NoSQL) y gestión de archivos/medios.
+    *   **Resiliencia:** PWA Offline-First y Modo Manual asíncrono.
 
 ### 3. Metodología de Desarrollo
-*   **Enfoque Ágil:** Ciclos iterativos de desarrollo con feedback continuo de profesionales sanitarios.
-*   **Diseño Centrado en el Usuario:** Interfaces intuitivas adaptadas a entornos de alta presión (Urgencias).
+*   **Enfoque Ágil:** Ciclos iterativos (Fase 14 completada) con feedback continuo.
+*   **Diseño Centrado en el Usuario:** Interfaces líquidas y adaptativas (Pediatría, Geriatría).
 *   **Calidad del Software:**
     *   Pipeline de CI/CD con GitHub Actions.
-    *   Testing exhaustivo: Unitario (Pytest), E2E (Playwright) y Carga (Locust).
+    *   Testing exhaustivo: Unitario, E2E y Carga.
+    *   **Auditoría IA:** Trazabilidad completa de prompts y respuestas para validación forense.
 
 ### 4. Resultados y Validación
 *   **Funcionalidades Clave:**
-    *   Triaje multimodal (Voz, Texto, Imagen).
-    *   Detección automática de signos vitales y cálculo de riesgo (PTR).
-    *   Gestión de flujo de pacientes y asignación de salas.
+    *   **Triaje Multimodal:** Voz (Audio Nativo), Texto y Contexto Clínico.
+    *   **Relevo de Turno (Shift Handoff):** Generación automática de informes de cambio de guardia con IA.
+    *   **Gestión de Salas:** Monitor Público para sala de espera (Anonimizado) y Orquestador de Flujos.
+    *   **Identificación:** Generación de Tickets/Pulseras con QR para trazabilidad.
 *   **Métricas del Piloto:**
-    *   Capacidad de carga validada para 50 usuarios concurrentes.
-    *   Reducción estimada del tiempo de documentación en un 40% (gracias a transcripción y autocompletado).
-    *   Adherencia a protocolos garantizada mediante RAG.
+    *   Capacidad validada para usuarios concurrentes con gestión de colas.
+    *   Reducción estimada del 40% en tiempo de documentación.
+    *   Estandarización de decisiones clínicas mediante RAG.
 
 ### 5. Conclusiones y Líneas Futuras
-*   **Conclusión:** La IA Generativa, controlada mediante RAG y reglas de negocio, es una herramienta viable y segura para el apoyo al triaje.
-*   **Futuro:**
-    *   Integración profunda con HIS (Health Information Systems) vía FHIR.
-    *   Expansión a otras especialidades más allá de Traumatología.
-    *   Implementación de modelos locales (SLMs) para privacidad total offline.
+*   **Conclusión:** La plataforma demuestra que la IA Generativa, gobernada por reglas estrictas de contingencia y auditoría, transforma la eficiencia operativa en Urgencias.
+*   **Roadmap (Próximos Pasos):**
+    *   **Fase 11 (UX Avanzada):** Interfaz conversacional pura y "Liquid UI" contextual.
+    *   **Fase 12 (API First):** Desacople total del backend mediante FastAPI para integración con Apps móviles y HIS de terceros.
+    *   **Fase 13 (IoT):** Integración directa con monitores de constantes vitales.
 
 ---
 **Autor:** [Tu Nombre]

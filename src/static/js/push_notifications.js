@@ -22,11 +22,9 @@ function urlBase64ToUint8Array(base64String) {
 
 async function subscribeUser(vapidPublicKey) {
     console.log("Starting subscribeUser...");
-    alert("Starting subscription process... Current Permission: " + Notification.permission);
 
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         console.warn('Push messaging is not supported');
-        alert("Push messaging not supported");
         return { error: "Push messaging is not supported in this browser" };
     }
 

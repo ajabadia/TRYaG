@@ -8,20 +8,23 @@ from services.gemini_client import get_gemini_service
 from core.prompt_manager import PromptManager
 from core.config import get_model_transcription
 
-def transcribir_audio(file_obj=None, prompt_content=None, text_input=None, user_id="system"):
+def transcribir_audio(file_obj=None, prompt_content=None, text_input=None, user_id="system", prompt_type="transcription"):
     """
     Transcribe y traduce un fichero de audio o texto usando Gemini.
     """
     # 1. Obtener Prompt y Configuración
     pm = PromptManager()
-    prompt_data = None
-    
+    # 0. Verificar Modo Contingencia
+    from services.contingency_service import is_contingency_active
+    if is_contingency_active():
+        return {"status": "ERROR", "msg": "Modo Contingencia activo: Transcripción IA desactivada.", "suggest_contingency": True}, ""
+
     if prompt_content:
         prompt = prompt_content
         model_name = "gemini-2.0-flash-exp" # Default for tests
         version_id = "test-override"
     else:
-        prompt_data = pm.get_prompt("transcription")
+        prompt_data = pm.get_prompt(prompt_type)
         if not prompt_data:
             return {"status": "ERROR", "msg": "No se ha encontrado un prompt activo para 'transcription'."}, ""
             
@@ -70,7 +73,7 @@ def transcribir_audio(file_obj=None, prompt_content=None, text_input=None, user_
         caller_id="transcription_service",
         user_id=user_id,
         call_type="transcription",
-        prompt_type="transcription",
+        prompt_type=prompt_type,
         prompt_version_id=version_id,
         model_name=model_name,
         prompt_content=final_prompt_content,
@@ -84,4 +87,24 @@ def transcribir_audio(file_obj=None, prompt_content=None, text_input=None, user_
         }
     )
 
-    return response_data, final_prompt_str
+    # 4. Post-Procesado de Respuesta
+    # Si el prompt era "transcription" (JSON complex), extraer el texto traducido.
+    # Si es "clinical_dictation" (Texto plano o JSON simple), devolver texto.
+    
+    final_text_result = None
+    
+    if isinstance(response_data, dict):
+        if "translated_ia_text" in response_data:
+            final_text_result = response_data["translated_ia_text"]
+        elif "transcription" in response_data:
+             final_text_result = response_data["transcription"]
+        elif "original_text" in response_data:
+             final_text_result = response_data["original_text"]
+        else:
+             # Fallback JSON dump
+             final_text_result = json.dumps(response_data, ensure_ascii=False)
+    else:
+        final_text_result = str(response_data)
+
+    # Devolver TUPLA: (Respuesta Completa API, Texto Extraído)
+    return response_data, final_text_result

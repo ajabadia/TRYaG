@@ -1,16 +1,3 @@
-# Manual de Usuario - Asistente de Triaje IA
-
-Este manual describe el funcionamiento operativo de la aplicación para los distintos perfiles de usuario: Administrativos, Enfermería y Médicos.
-
-## 1. Acceso al Sistema
-
-### 1.1 Pantalla de Login
-Al acceder a la aplicación, se mostrará la pantalla de selección de usuario.
-
-1.  **Seleccionar Usuario:** Haga clic en la tarjeta con su nombre y rol.
-2.  **Contraseña:** Introduzca su **ID de Empleado** (ej. `EMP-001`).
-3.  **Aviso Legal:** Marque la casilla "He leído y acepto..." para confirmar que entiende que esta es una herramienta de apoyo y no sustituye el juicio clínico.
-4.  **Entrar:** Pulse el botón "Entrar al Sistema".
 
 > **Seguridad:** El sistema cuenta con protección contra intentos fallidos.
 > *   Tras **5 intentos fallidos**, el usuario se bloqueará temporalmente.
@@ -55,10 +42,17 @@ El sistema ha incorporado funciones avanzadas de asistencia (Fase 11) para agili
 
 #### 3.5.1 Triaje Conversacional (Chat)
 Al iniciar el triaje, puede elegir entre **"Estándar"** (Formulario clásico) o **"Conversacional"** (Chat con IA).
-*   **Funcionamiento:** Hable con el asistente como si fuera un compañero. Responda a sus preguntas sobre los síntomas.
-*   **Autocompletado:** El sistema extraerá automáticamente la información clave.
-    *   *Ejemplo:* Si escribe "Tiene dificultad para respirar y fiebre de 39", el sistema rellenará por usted el campo de "Motivo de Consulta" y marcará la temperatura si es posible.
-> **Nota de Seguridad:** Toda la conversación queda grabada en la ficha del paciente ("Transcript") para futuras auditorías o revisiones médicas.
+*   **Funcionamiento:** Interactúe con un asistente tipo chat. Puede escribir o **usar su voz**.
+*   **Entrada de Voz Nativa:** Pulse el icono de micrófono 🎙️ en la barra de chat para dictar. El sistema transcribirá automáticamente su voz usando IA avanzada (Gemini).
+*   **Autocompletado Inteligente (Nuevo):** El sistema extraerá automáticamente la información clave (Síntomas, Vitales, Antecedentes) del texto dictado y rellenará el formulario estructurado por usted.
+    *   *Ejemplo:* "Paciente varón de 45 años, refiere dolor opresivo en pecho desde hace 30 minutos y sudoración profusa. TA 140/90, Saturación 98%". -> Rellena Motivo, Sexo, Edad, Vitales y alerta de Dolor Torácico.
+> **Nota de Seguridad:** Toda la conversación y las transcripciones quedan registradas ("Audit Log") para garantía clínica.
+
+#### 3.5.2 Entrada de Voz en Formulario Estándar
+Incluso en el modo "Estándar", dispone de un asistente de voz:
+*   Busque el área **"🎙️ Entrada de Voz"** al inicio del formulario.
+*   Grabe un resumen rápido del caso.
+*   El texto se añadirá inteligentemente a los campos correspondientes (Motivo, Historia, etc.) sin borrar lo que ya haya escrito manualmente.
 
 #### 3.5.2 Interfaz Contextual (Liquid UI)
 La pantalla se adapta a lo que usted escribe para ahorrar tiempo.
@@ -132,3 +126,16 @@ El sistema puede enviarle alertas importantes (ej. "Sala Inexistente", "Paciente
 *   **Campana (In-App):** Icono en la esquina superior derecha.
 *   **Push (Navegador):** Si las activa, recibirá avisos emergentes en su escritorio o móvil.
 *   **Email:** Para alertas de alta prioridad (si está configurado).
+
+---
+
+## 7. Integración Técnica (API)
+
+El sistema dispone de una **API REST** ("Apificación") que permite la integración con otros sistemas del hospital (HIS, App Móvil).
+Aunque esta funcionalidad es transparente para el usuario final, permite que:
+
+1.  Se puedan enviar triajes desde una App de paciente.
+2.  Los resultados se vuelquen automáticamente en la Historia Clínica.
+3.  Se puedan realizar auditorías externas.
+
+> Para más detalles técnicos, consulte el **Manual de Mantenimiento**.

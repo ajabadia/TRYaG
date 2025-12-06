@@ -46,38 +46,21 @@ async def analyze_triage(request: TriageAnalysisRequest):
     Ahora incluye simulaciones de IA si no está disponible el modelo real en este contexto.
     """
     try:
-        # Mapear input a estructura esperada por TriageService
-        vitals_dict = request.signos_vitales.dict() if request.signos_vitales else {}
+        # Prepare request dictionary
+        request_dict = request.model_dump() # Pydantic v2
         
-        # Instanciar servicio (stateless por ahora para la API)
+        # Instantiate service
         service = TriageService()
         
-        # Llamar al método de análisis (adaptar según firma real de analyze_case)
-        # Nota: TriageService.analyze_case espera un objeto TriageRecord o similar.
-        # Para esta fase inicial, usaremos una lógica simplificada o wrapper si es necesario.
-        # Asumiremos que podemos llamar a la lógica interna.
+        # Execute analysis using Real logic
+        result = service.analyze_case(request_dict)
         
-        # SIMULACIÓN para la Fase 12.1 hasta refactorizar TriageService para aceptar DTOs puros
-        # TODO: Refactorizar TriageService para separar lógica de modelos de BD
-        
-        # Lógica temporal (Mock inteligente basado en reglas para no romper)
-        priority = 5
-        reason = "Consulta estándar"
-        
-        if request.dolor > 7:
-            priority = 3
-            reason = "Dolor severo indica urgencia."
-        
-        if request.signos_vitales:
-            if request.signos_vitales.saturacion and request.signos_vitales.saturacion < 90:
-                priority = 2
-                reason = "Hipoxia detectada."
-        
+        # Map result to response schema
         return {
-            "nivel_sugerido": priority,
-            "razonamiento": reason,
-            "color_hex": "#0000FF" if priority == 5 else "#FF0000", # Simplificado
-            "protocolo_aplicado": "Standard-API-v1"
+            "nivel_sugerido": result.get("nivel_sugerido"),
+            "razonamiento": result.get("razonamiento"),
+            "color_hex": result.get("color_hex"),
+            "protocolo_aplicado": result.get("protocolo_aplicado", "Gemini-Standard")
         }
 
     except Exception as e:

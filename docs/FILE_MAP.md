@@ -68,7 +68,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/triage/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/triage/admin_data_form.py** | Formulario de datos administrativos. | `src/components/triage/input_form.py` | Activo |
 | **src/components/triage/clinical_context.py** | Formulario de contexto clínico. | `src/components/triage/input_form.py` | Activo |
-| **src/components/triage/conversational_chat.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/triage/conversational_chat.py** | Componente UI de chat con voz nativa. | `src/components/triage/input_form.py` | Activo |
 | **src/components/triage/disposition_form.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/triage/extended_history.py** | Historia clínica integral. | `src/components/triage/input_form.py` | Activo |
 | **src/components/triage/guided_interview.py** | Entrevista guiada inteligente. | `src/components/triage/input_form.py` | Activo |
@@ -90,6 +90,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/triage/history/travel_history.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/triage/input_form.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/triage/media_cards.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/triage/native_voice_input.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/triage/nursing_form.py** | Valoración de enfermería. | `src/components/triage/step_triage_process.py` | Activo |
 | **src/components/triage/patient_background_form.py** | Antecedentes del paciente. | `src/components/triage/input_form.py` | Activo |
 | **src/components/triage/ptr_logic.py** | Lógica de Puntuación Total de Riesgo (PTR). | `src/components/triage/input_form.py` | Activo |
@@ -145,34 +146,19 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/db/repositories/users.py** | Repositorio de Usuarios. | Servicios/UI | Activo |
 | **src/db/repositories/vital_signs_repo.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/scripts/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/scripts/fix_permissions.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/scripts/fix_users_ids.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/scripts/get_creds.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/scripts/restore_employee_ids.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/scripts/setup_test_user.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/scripts/update_cie10_prompt.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/ai_model_discovery.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/analytics_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/contingency_service.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/services/conversational_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/conversational_service.py** | Servicio para Chat Conversacional (Historial y Prompt Maestro). | UI | Activo |
 | **src/services/export_service.py** | Servicio de exportación de datos. | UI | Activo |
 | **src/services/feedback_service.py** | Servicio de persistencia de feedback. | UI | Activo |
-| **src/services/fhir_service.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/services/flow_manager.py** | Gestión del flujo de pacientes. | UI | Activo |
-| **src/services/gemini_client.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/services/ml_predictive_service.py** | Servicio de predicciones ML. | UI | Activo |
-| **src/services/ml_training_service.py** | Servicio de entrenamiento de modelos ML. | `src/ui/ml_predictions_panel.py` | Activo |
-| **src/services/multi_center_service.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/services/notification_helpers.py** | Helpers para notificaciones. | Servicios | Activo |
-| **src/services/notification_service.py** | Servicio de envío de notificaciones. | Varios | Activo |
-| **src/services/patient_flow_service.py** | Servicio de flujo de pacientes (Lógica). | UI | Activo |
-| **src/services/patient_service.py** | Gestión de pacientes (CRUD). | UI | Activo |
-| **src/services/permissions_service.py** | Servicio de permisos y roles. | UI | Activo |
-| **src/services/predictive_service.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/services/proactive_service.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/services/queue_manager.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/services/rag_service.py** | Servicio RAG (ChromaDB, Ingestión, Búsqueda). | `src/services/triage_service.py`, `src/ui/config/knowledge_base_ui.py` | Activo |
-| **src/services/recommendation_service.py** | Servicio de generación de recomendaciones. | `src/components/triage/risk_analysis_panel.py` | Activo |
-| **src/services/report_service.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/services/room_metrics_service.py** | Servicio de métricas de salas. | UI | Activo |
-| **src/services/room_service.py** | Servicio de gestión de salas. | UI | Activo |
-| **src/services/room_suggestion_service.py** | Servicio de sugerencia de salas. | UI | Activo |
 | **src/services/scheduled_reports.py** | Servicio de reportes programados. | Background | Activo |
 | **src/services/simulated_ia.py** | Simulación de respuesta IA. | UI | Activo |
 | **src/services/staff_assignment_service.py** | Servicio de asignación de personal. | UI | Activo |
@@ -248,7 +234,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/utils/seed_clinical_options.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/utils/session_utils.py** | Manejo de sesión de Streamlit. | UI | Activo |
 | **src/utils/setup_indexes.py** | Script de configuración de índices DB. | Setup | Activo |
-| **src/utils/tornado_server.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/utils/tornado_server.py** | Servidor Tornado personalizado para descargas/cargas. | `src/app.py`, `pdf_preview_modal.py` | Activo |
 | **src/utils/triage_utils.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/utils/ui_utils.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/utils/update_triage_prompt.py** | Pendiente de descripción. | Pendiente | Activo |

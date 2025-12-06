@@ -1,0 +1,25 @@
+--- SYS PATH ---
+C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\scripts
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\python313.zip
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\DLLs
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages\win32
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages\win32\lib
+C:\Users\ajaba\AppData\Local\Programs\Python\Python313\Lib\site-packages\Pythonwin
+C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web
+C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src
+----------------
+Importing TriageService...
+2025-12-06 10:13:29.072 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2025-12-06 10:13:29.072 WARNING streamlit.runtime.state.session_state_proxy: Session state does not function when running a script without `streamlit run`
+🔌 Intentando conectar a MongoDB con URI: mongodb+srv://triaje_app:****@triaje-traumatologia.wqogpoz.mongodb.net/triaje_db?retryWrites=true&w=majority&appName=triaje-traumatologia
+✅ TriageService imported.
+
+Importing PredictiveService...
+❌ Failed to import PredictiveService: cannot import name 'PredictiveService' from 'src.services.predictive_service' (C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\services\predictive_service.py)
+Traceback (most recent call last):
+  File "C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\scripts\debug_imports.py", line 29, in <module>
+    from src.services.predictive_service import PredictiveService
+ImportError: cannot import name 'PredictiveService' from 'src.services.predictive_service' (C:\Users\ajaba\Downloads\master\ftm\piloto ABD\nuevo\web\src\services\predictive_service.py)

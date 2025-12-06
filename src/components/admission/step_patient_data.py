@@ -293,9 +293,25 @@ def render_step_patient_data() -> bool:
             st.session_state.admission_continue_active = False # Reset
             st.rerun()
 
+        
+        # --- Lógica de Impresión de Ticket ---
+        if hasattr(st, "dialog"):
+            @st.dialog("🖨️ Ticket de Admisión")
+            def _open_print_dialog(p):
+                from components.admission.patient_ticket import render_ticket_modal
+                render_ticket_modal(p)
+        else:
+            # Fallback para versiones antiguas
+            def _open_print_dialog(p):
+                st.error("Su versión de Streamlit no soporta diálogos modales.")
+
+        def _on_print(p):
+            _open_print_dialog(p)
+
         actions = [
             {"label": "✏️ Editar", "key": "edit", "on_click": _on_edit},
-            {"label": "🔄 Cambiar", "key": "change", "on_click": _on_change}
+            {"label": "🔄 Cambiar", "key": "change", "on_click": _on_change},
+            {"label": "🖨️ Pulsera", "key": "print", "on_click": _on_print}
         ]
         
         # Si decidimos continuar, mostramos el estado del flujo en la card

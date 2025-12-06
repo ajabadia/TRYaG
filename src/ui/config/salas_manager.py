@@ -36,6 +36,11 @@ def render_sala_card(sala: dict, centro_id: str):
                         st.rerun()
                     else:
                         st.error("Error al eliminar")
+            
+            # Link a Pantalla Pública (Fase 14.2)
+            public_url = f"/?view=public_board&room_id={sala.get('_id')}"
+            st.link_button("📺 Pantalla", public_url, use_container_width=True)
+            
         st.divider()
 
 
