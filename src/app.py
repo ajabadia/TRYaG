@@ -7,6 +7,11 @@ This module configures Streamlit, initializes session state, ands assembles the 
 import sys
 import os
 import streamlit as st
+import mimetypes
+
+# FIX: Streamlit Custom Components Loading Issues
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 # Force reload
 from streamlit_cookies_manager import CookieManager
 from ui.config_panel import mostrar_panel_configuracion

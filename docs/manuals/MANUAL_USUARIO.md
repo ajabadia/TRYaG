@@ -51,39 +51,29 @@ Una vez seleccionado el paciente:
 ---
 
 ## 3. Módulo de Triaje
-**Perfil:** Enfermería
+El sistema ha incorporado funciones avanzadas de asistencia (Fase 11) para agilizar el triaje:
 
-Este es el módulo central donde se realiza la evaluación clínica asistida por IA.
+#### 3.5.1 Triaje Conversacional (Chat)
+Al iniciar el triaje, puede elegir entre **"Estándar"** (Formulario clásico) o **"Conversacional"** (Chat con IA).
+*   **Funcionamiento:** Hable con el asistente como si fuera un compañero. Responda a sus preguntas sobre los síntomas.
+*   **Autocompletado:** El sistema extraerá automáticamente la información clave.
+    *   *Ejemplo:* Si escribe "Tiene dificultad para respirar y fiebre de 39", el sistema rellenará por usted el campo de "Motivo de Consulta" y marcará la temperatura si es posible.
+> **Nota de Seguridad:** Toda la conversación queda grabada en la ficha del paciente ("Transcript") para futuras auditorías o revisiones médicas.
 
-### 3.1 Selección de Paciente
-1.  Acceda a la pestaña **"🩺 Triaje"**.
-2.  En la barra lateral izquierda verá la **Cola de Espera**.
-3.  Seleccione el siguiente paciente (ordenados por hora de llegada).
-    *   *Indicador Azul:* Paciente nuevo.
-    *   *Indicador Naranja:* Paciente con triaje en borrador (recuperable).
+#### 3.5.2 Interfaz Contextual (Liquid UI)
+La pantalla se adapta a lo que usted escribe para ahorrar tiempo.
+*   **Modo Pediatría:** Si la edad es < 14 años, los rangos normales de constantes cambian y aparecerán avisos específicos.
+*   **Modo Geriátrico:** Si la edad > 65 años, verá recordatorios sobre riesgo de caídas y delirium.
+*   **Detector de Síntomas (Ej. Disnea):** Si menciona palabras clave como *"ahogo"*, *"disnea"* o *"falta de aire"*:
+    1.  Los campos de **Saturación O2** y **Frecuencia Respiratoria** se iluminarán con un rayo (⚡) y color rosa.
+    2.  El sistema le invitará visualmente a priorizar esa toma antes de seguir.
 
-### 3.2 Entrevista Clínica (Paso 1)
-Rellene la información clínica utilizando las herramientas disponibles:
+#### 3.5.3 Copiloto Proactivo
+Mientras usted trabaja, el sistema "escucha" y busca en la base de conocimientos.
+*   **Alerta Inteligente:** Si detecta un patrón grave (ej. "Dolor torácico irradiado"), le mostrará una notificación flotante (Toast) sugiriendo un protocolo específico (ej. "Protocolo SCA Activado").
+*   **Sin Interrupciones:** Estas alertas son sutiles y no bloquean su trabajo.
 
-*   **Motivo de Consulta:** Escriba el motivo principal o use el micrófono 🎤 para dictarlo.
-*   **Signos Vitales:** Introduzca TA, FC, SatO2, Temperatura, Dolor (EVA).
-    *   *Botón "Capturar":* Simula la lectura automática de dispositivos IoT.
-*   **Entrevista Guiada:** Despliegue las secciones (Traumatismo, Respiratorio, etc.) para marcar síntomas específicos.
-*   **Multimedia:**
-    *   📷 **Foto:** Para lesiones visibles (heridas, deformidades).
-    *   🎥 **Video:** Para grabar la marcha o movilidad.
-
-### 3.3 Análisis con IA (Paso 2)
-Una vez completados los datos mínimos:
-1.  Pulse el botón **"Analizar con IA"**.
-2.  El sistema procesará toda la información (texto, vitales, imágenes) y generará una propuesta.
-3.  **Memoria Institucional:** Si el sistema detecta que el caso coincide con algún protocolo interno (ej. "Protocolo de Ictus"), la IA lo indicará explícitamente y basará su recomendación en dicha normativa.
-
-### 3.4 Análisis de Riesgos (Pre-Triaje)
-Antes de analizar con IA, puede usar el panel "Análisis de Riesgos" para una verificación rápida.
-*   **Verificar sin IA:** Ahora incluye **Búsqueda de Protocolos**. El sistema buscará automáticamente en la base documental y le avisará si hay protocolos relevantes para los síntomas del paciente (ej. "⚠️ Protocolo Sugerido: Sepsis").
-
-### 3.4 Validación y Destino (Paso 3)
+### 3.6 Validación y Destino (Paso 3)
 Revise la propuesta de la IA:
 1.  **Nivel de Triaje:** Verifique el nivel sugerido (1-5). Puede modificarlo si no está de acuerdo.
 2.  **Especialidad:** Confirme la especialidad (Traumatología, Medicina General).

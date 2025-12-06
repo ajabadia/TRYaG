@@ -5,9 +5,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | Ruta del Archivo | Descripción | Invocado Por | Estado |
 | :--- | :--- | :--- | :--- |
 | **src/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/api/__init__.py** | Paquete API. | - | Activo |
 | **src/api/main.py** | Entrypoint FastAPI. | Docker (Uvicorn) | Activo |
-| **src/api/routers/__init__.py** | Paquete Routers. | - | Activo |
 | **src/api/routers/ai.py** | Endpoints de IA (RAG/Transcribe). | `src/api/main.py` | Activo |
 | **src/api/routers/triage.py** | Endpoints Core (Triaje/PTR). | `src/api/main.py` | Activo |
 | **src/app.py** | Punto de entrada principal. Configura Streamlit y el enrutamiento. | `streamlit run` | Activo |
@@ -49,17 +47,18 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/common/active_flow_manager.py** | Gestión de flujos activos. | Varios | Activo |
 | **src/components/common/audio_recorder.py** | Componente reutilizable de audio. | Varios | Activo |
 | **src/components/common/body_map.py** | Mapa corporal interactivo. | `src/components/triage/guided_interview.py` | Activo |
-| **src/components/common/feedback_button.py** | Botón de reporte de feedback. | Varios | Activo |
-| **src/components/common/file_importer.py** | Componente reutilizable de importación. | Varios | Activo |
+| **src/components/common/feedback_button.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/file_importer.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/common/footer.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/components/common/media_viewer.py** | Visor de medios (imágenes/PDF). | Varios | Activo |
-| **src/components/common/pwa_installer.py** | Componente de instalación PWA. | `src/app.py` | Activo |
-| **src/components/common/rejection_form.py** | Formulario de rechazo de paciente. | Varios | Activo |
-| **src/components/common/room_card.py** | Tarjeta de visualización de sala. | Varios | Activo |
-| **src/components/common/stepper.py** | Componente de navegación por pasos. | Vistas principales | Activo |
-| **src/components/common/user_selector.py** | Selector de usuario. | Varios | Activo |
-| **src/components/common/video_recorder.py** | Grabador de video nativo. | `src/components/triage/input_form.py` | Activo |
-| **src/components/common/webcam_manager.py** | Componente reutilizable de webcam. | Varios | Activo |
+| **src/components/common/media_viewer.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/pwa_installer.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/rejection_form.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/room_card.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/speech_to_text/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/stepper.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/user_selector.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/video_recorder.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/webcam_manager.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/common/webcam_video.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/config/prompt_manager.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/consultation/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -69,6 +68,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/triage/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/triage/admin_data_form.py** | Formulario de datos administrativos. | `src/components/triage/input_form.py` | Activo |
 | **src/components/triage/clinical_context.py** | Formulario de contexto clínico. | `src/components/triage/input_form.py` | Activo |
+| **src/components/triage/conversational_chat.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/triage/disposition_form.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/triage/extended_history.py** | Historia clínica integral. | `src/components/triage/input_form.py` | Activo |
 | **src/components/triage/guided_interview.py** | Entrevista guiada inteligente. | `src/components/triage/input_form.py` | Activo |
@@ -150,6 +150,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/services/ai_model_discovery.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/analytics_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/contingency_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/conversational_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/export_service.py** | Servicio de exportación de datos. | UI | Activo |
 | **src/services/feedback_service.py** | Servicio de persistencia de feedback. | UI | Activo |
 | **src/services/fhir_service.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -164,6 +165,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/services/patient_service.py** | Gestión de pacientes (CRUD). | UI | Activo |
 | **src/services/permissions_service.py** | Servicio de permisos y roles. | UI | Activo |
 | **src/services/predictive_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/proactive_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/queue_manager.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/rag_service.py** | Servicio RAG (ChromaDB, Ingestión, Búsqueda). | `src/services/triage_service.py`, `src/ui/config/knowledge_base_ui.py` | Activo |
 | **src/services/recommendation_service.py** | Servicio de generación de recomendaciones. | `src/components/triage/risk_analysis_panel.py` | Activo |
@@ -178,6 +180,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/services/training_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/transcription_service.py** | Servicio de transcripción de audio. | UI | Activo |
 | **src/services/triage_service.py** | Servicio de lógica de triaje. | UI | Activo |
+| **src/services/ui_rules_engine.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/templates/email_templates.py** | Plantillas de email. | `src/services/notification_service.py` | Activo |
 | **src/ui/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/admission_management_view.py** | Vista de Gestión de Consultas. | `src/app.py` | Activo |

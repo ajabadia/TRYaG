@@ -1,6 +1,15 @@
 
 # ROADMAP 2 - Fase 7: Refactorización y Mejoras (2025-11-27)
 
+> [!IMPORTANT]
+> **PROTOCOLO DE CIERRE DE TAREAS (DEFINITION OF DONE)**
+> Ningún desarrollo se considera "Completado" hasta que se hayan ejecutado los siguientes pasos:
+> 1.  📚 **Documentación Funcional:** Actualizar `docs/FUNCTIONAL.md` con las nuevas características.
+> 2.  ⚙️ **Documentación Técnica:** Actualizar `docs/TECHNICAL.md` con cambios de arquitectura/API.
+> 3.  📖 **Manuales:** Actualizar `MANUAL_USUARIO.md` y `MANUAL_MANTENIMIENTO.md` si impacta al usuario final.
+> 4.  🗺️ **Mapa de Archivos:** Ejecutar `scripts/update_file_map.py` o actualizar `docs/FILE_MAP.md` manualmente.
+> 5.  ✅ **Cierre Roadmap:** Marcar la casilla `[x]` correspondiente en este documento.
+
 Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refactorización del sistema "Asistente de Triaje IA".
 
 ## 🎯 FASE 7: Refactorización y Mejoras UX/UI
@@ -120,20 +129,6 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 ### 7.6 Nuevas Tareas (Pendientes de Ejecución)
 **Objetivo:** Mejoras de usabilidad, estandarización y herramientas de feedback.
 
-        - [x] Visualización en Panel de Auditoría (Debug Mongo) y Datos en Bruto (con card de detalles).
-    - [x] **Mejora:** Permitir adjuntar archivos en el reporte (usando `src/components/common/file_importer.py`).
-
-- [ ] **Documentación y Estandarización de Código:**
-    - [x] **Etiquetas de Depuración:** Recorrer todos los archivos `.py` con interfaz gráfica y añadir al final un footer discreto con la ruta del archivo (ej: `src/ui/main_view.py`).
-    - [x] **Mapa de Archivos (`FILE_MAP.md`):**
-        - [x] Crear estructura inicial con archivos principales.
-        - [x] **Completado:** Completar el mapa con **TODOS** los archivos del proyecto (no solo los principales), incluyendo utilidades, configuraciones y scripts.
-        - Analizar dependencias de invocación antes de editar.
-        - Marcar como "POSIBLE DEPRECADO" si un archivo no tiene invocaciones detectadas.
-    - [x] **Modo Desarrollador (Toggle):**
-        - [x] Implementar opción en `Configuración > General` para habilitar/deshabilitar "Modo Desarrollador".
-        - [x] Controlar visibilidad de los footers de archivo mediante CSS (clase `.debug-footer` + inyección de estilos condicional) para evitar lógica condicional en cada archivo.
-        - [x] **Tarea Futura:** Revisar que todas las etiquetas/footers respeten el estado del check (algunas no lo hacen actualmente).
         - [x] **Pendiente:** Revisar funcionalidad de ocultación CSS (actualmente no oculta correctamente en todos los casos) y verificar por qué no aplica `color: white` por defecto.
 
 - [x] **Mejoras Módulo Webcam:**
@@ -143,20 +138,6 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 ### 7.8 Modularización Panel Auditoría (Completado)
 **Objetivo:** Convertir el Panel de Auditoría en un sistema modular, desacoplado y reutilizable.
 
-- [x] **Componentes Base Reutilizables:**
-    - [x] **Selector de Fechas:** Crear módulo independiente para selección de rango de fechas (Desde/Hasta).
-    - [x] **Barra de Acciones:** Crear módulo independiente para botones de acción (Refrescar, CSV, Excel, Compartir, PDF).
-
-- [x] **Modularización "Datos en Bruto":**
-    - [x] Convertir "Datos en Bruto" en un orquestador simple.
-    - [x] **Sub-módulos Independientes:**
-        - [x] Registros de Auditoría.
-        - [x] Log de Ficheros Importados.
-        - [x] Log de Transcripciones.
-        - [x] Log de Prompts.
-        - [x] Feedback & Errores.
-    - [x] **Integración:** Cada sub-módulo debe implementar su propio Selector de Fechas y Barra de Acciones.
-    - [x] **Filtros:** Cada sub-módulo mantiene sus filtros específicos.
 
 - [x] **Modularización "Análisis Gráfico":**
     - [x] Convertir "Análisis Gráfico" en un orquestador simple.
@@ -325,20 +306,6 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
 - [/] **10.3 Experiencia Móvil (PWA Avanzada):**
     - [ ] **Notificaciones Push:** Integrar Firebase Cloud Messaging (FCM) para alertas de "Paciente en espera crítica" (Implementado, pendiente debugging final).
     - [x] **Geolocalización:** Capturar coordenadas GPS en triajes extrahospitalarios (si aplica).
-
-- [x] **10.4 IA Avanzada (RAG):**
-    - [x] **Base de Conocimiento:** Ingestar PDFs de protocolos médicos locales en una base vectorial (ChromaDB/FAISS).
-    - [x] **Consultas Contextuales:** Configurar Gemini para consultar esta base antes de emitir sugerencias ("Grounding").
-
-## 🚀 FASE 11: Innovación y UX Avanzada (Próxima Sesión)
-**Objetivo:** Transformar la experiencia de usuario con interfaces híbridas, predictivas y conversacionales.
-**Nota Importante:** Cada subtarea completada debe reflejarse inmediatamente en `docs/FUNCTIONAL.md`, `docs/TECHNICAL.md` y `docs/FILE_MAP.md`.
-
-- [ ] **11.1 Experiencia Híbrida de Voz (Assisted Transcription):**
-    - [ ] **Implementación Técnica:**
-        - Integrar `Web Speech API` (o librería `speech_recognition` en Python si es local) para STT.
-        - Crear componente `AudioTranscriber` en `src/components/common`.
-        - Añadir botón "Escucha Activa" (Toggle) en `input_form.py`.
     - [ ] **Flujo de Datos:**
         - El texto transcrito se debe volcar en tiempo real a un área de texto visible.
         - Al finalizar, guardar el texto crudo como archivo `.txt` adjunto al episodio (`evidence_files`).
@@ -370,6 +337,9 @@ Este documento detalla el plan de ejecución para la Fase 7 de mejoras y refacto
         - Crear nueva vista `ChatTriageView`.
         - Implementar parser de lenguaje natural (usando Gemini) para extraer JSON del chat.
         - Sincronizar el JSON extraído con `st.session_state.datos_paciente`.
+    - [ ] **Soporte Multidioma (Babel Mode):**
+        - Prompt Instruction: "Detecta el idioma del usuario y responde en ese mismo idioma."
+        - Output Constraint: "El JSON extraído (`sintomas`, `resumen`) debe estar SIEMPRE en ESPAÑOL."
     - [ ] **Documentación Requerida:**
         - `MANUAL_USUARIO.md`: Guía de "Cómo realizar un triaje por chat".
 

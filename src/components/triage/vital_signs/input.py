@@ -13,7 +13,8 @@ def render_vital_sign_input(
     default: float, 
     step: float, 
     help_text: str,
-    config: Optional[Any] = None
+    config: Optional[Any] = None,
+    highlight: bool = False
 ):
     """Helper para renderizar un input de signo vital con feedback visual inmediato."""
     with col:
@@ -44,8 +45,13 @@ def render_vital_sign_input(
         # Si no hay valor actual, usar el default de la config (o el fallback)
         val_to_show = float(current_val) if current_val is not None else input_default
 
+        display_label = f"{label} ({unit})"
+        if highlight:
+            display_label = f"⚡ {display_label}"
+            st.markdown(f"<style>div[data-testid='stNumberInput'] label {{ color: #d63384 !important; font-weight: bold; }}</style>", unsafe_allow_html=True) # CSS Hack (Optional/Experimental)
+
         val = st.number_input(
-            f"{label} ({unit})", 
+            display_label, 
             min_value=min_val, 
             max_value=max_val, 
             value=val_to_show,

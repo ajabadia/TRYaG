@@ -36,6 +36,11 @@ def render_prompt_manager():
             "title": "Alertas Predictivas",
             "desc": "Detecta riesgos inminentes basados en signos vitales y antecedentes (Pre-Triaje).",
             "icon": "warning"
+        },
+        "triage_chat": {
+            "title": "Chat Conversacional",
+            "desc": "Prompt del sistema para el asistente conversacional (Doctor Bot). Define la personalidad y estrategia de preguntas.",
+            "icon": "chat"
         }
     }
     
@@ -255,6 +260,16 @@ def _render_prompt_editor_logic(prompt_type):
                     elif prompt_type == "triage_predictive":
                         from services.predictive_service import generar_alertas_predictivas
                         response, _ = generar_alertas_predictivas(edad=50, vital_signs={"fc": 110}, antecedentes=test_input, prompt_content=new_content)
+                    elif prompt_type == "triage_chat":
+                         from services.gemini_client import get_gemini_service
+                         service = get_gemini_service()
+                         # Simular historial mínimo + input
+                         prompt_final = new_content.replace("{history_text}", f"Paciente: {test_input}")
+                         response, _ = service.generate_content(
+                            caller_id="test_prompt", user_id="admin", call_type="test", 
+                            prompt_type="triage_chat", prompt_version_id="preview", 
+                            model_name=new_model, prompt_content=prompt_final
+                         )
                     
                     st.session_state[f"{test_key_base}_result"] = response
                     st.rerun()

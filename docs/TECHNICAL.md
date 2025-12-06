@@ -129,22 +129,6 @@ El sistema implementa dos estrategias de resiliencia:
     *   **Service Worker (`static/sw.js`):** Cachea `offline.html` y sirve esta página cuando falla la red.
     *   **Estrategia Híbrida:**
         *   *Stale-While-Revalidate* para activos estáticos (iconos, CSS, JS) para carga instantánea.
-        *   *Network First* para navegación y datos, con fallback a página offline.
-    *   **Gestión de Caché:** Versionado automático (`tryag-v2`) y limpieza de cachés antiguas.
-3.  **Installer (`pwa_installer.py`):** Componente Python que inyecta el registro del Service Worker y los tags `<link>` necesarios en el head de la aplicación.
-4.  **Sincronización (`offline_sync.py`):**
-    *   **Exportación (JS):** Lee `IndexedDB` y genera un blob JSON para descarga.
-    *   **Importación (Python):** Procesa el JSON subido, valida la estructura y guarda los registros en MongoDB.
-    *   **Auto-Detección:** Se utiliza el evento `window.addEventListener('online', ...)` en `offline_db.js` para detectar la recuperación de red y notificar al usuario.
-
-### Etiquetas de Depuración (Debug Footers)
-El sistema incluye etiquetas discretas en el pie de cada componente UI para facilitar la localización del código fuente.
-*   **Implementación:** Se usa la clase CSS `.debug-footer` definida en `styles.css`.
-*   **Visibilidad:** Por defecto están ocultas (`display: none`).
-*   **Activación:** Cuando `st.session_state.developer_mode` es `True`, `app.py` inyecta un estilo global que anula la ocultación (`display: block`), haciéndolas visibles en toda la aplicación sin necesidad de lógica condicional en cada archivo.
-
-### 4.5 Interoperabilidad (FHIR)
-El sistema implementa un servicio de exportación compatible con HL7 FHIR R4.
 - **Servicio:** `src/services/fhir_service.py`
 - **Recursos Soportados:**
     - `Patient`: Datos demográficos.
@@ -222,7 +206,21 @@ En la Fase 12 se introdujo un microservicio paralelo para exponer la lógica de 
 | `POST` | `/v1/core/predict/risk` | Cálculo de PTR (Wrapper de PredictiveService). |
 | `POST` | `/v1/ai/rag/search` | Búsqueda semántica en ChromaDB. |
 
-## 9. CI/CD Pipeline
+## 9. Componentes Frontend Custom (Phase 11)
+
+### 9.1 Speech-to-Text (`src/ui/components/common/speech_to_text`)
+Componente bidireccional de Streamlit implementado con HTML/JS puro.
+*   **API:** `webkitSpeechRecognition` (Web Speech API).
+*   **Comunicación:** `window.parent.postMessage` hacia Streamlit Component Wrapper.
+*   **Privacidad:** El procesamiento se realiza en el motor del navegador (Chrome/Edge), sin enviar audio al servidor backend de Streamlit.
+
+### 9.2 Motor de Reglas de UI (`src/services/ui_rules_engine.py`)
+Clase estática que evalúa el estado del paciente (`session_state.datos_paciente`) y devuelve un diccionario de acciones UI (`ui_actions`).
+*   **Patrón:** Decorator/Observer light. Los componentes se suscriben a las acciones devueltas por `evaluate()`.
+*   **Reglas:** Definidas en código, extensibles para soportar reglas JSON externas en el futuro.
+
+### 9.3 Servicio Proactivo (`src/services/proactive_service.py`)
+## 10. CI/CD Pipeline
 El proyecto utiliza **GitHub Actions** para la integración continua.
 
 ### Workflow: `tests.yml`

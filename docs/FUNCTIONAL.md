@@ -215,19 +215,6 @@ El sistema mantiene un historial completo de todas las interacciones con la IA p
   * *Reasignar:* Mover al paciente a otra sala (ej. de vuelta a espera).
   * *Rechazar/Cancelar:* Cerrar el flujo actual.
 
-#### 5.1.1 Recuperación de Sesiones (Borradores)
-
-El sistema implementa un mecanismo de **auto-guardado y recuperación** para evitar la pérdida de datos ante interrupciones (ej. cierre accidental del navegador, recarga de página).
-
-* **Auto-Guardado:** Durante el proceso de triaje, cada cambio en los campos clave (motivo, dolor, signos vitales, antecedentes) se guarda automáticamente en un registro con estado `draft`.
-* **Recuperación:** Al volver a seleccionar al mismo paciente desde la cola de espera, el sistema detecta si existe un borrador activo y restaura automáticamente el estado anterior, notificando al usuario.
-* **Reinicio:** Si el usuario desea descartar el trabajo previo, puede utilizar la opción **"Reiniciar"** (icono papelera) en la tarjeta del paciente, lo que eliminará el borrador y comenzará un triaje limpio.
-* **Finalización:** Al validar el triaje, el borrador pasa a estado `completed` y deja de ser recuperable como borrador.
-
-### 5.2 Módulo de Triaje Inteligente (Core)
-
-**Objetivo:** Evaluación clínica asistida por IA para determinar urgencia y especialidad.
-
 #### A. Selección de Paciente
 
 * Visualización de la **Cola de Espera** ordenada por tiempo de llegada.
@@ -571,12 +558,32 @@ Garantiza la continuidad operativa ante fallos de conexión a internet o caída 
         3. **NUEVO (RAG):** El sistema busca automáticamente en los protocolos indexados y muestra los fragmentos relevantes junto al resultado, sin consumir tokens de IA generativa.
     * **Activación:** Botón "Analizar sin IA" en el formulario de triaje.
 
-* **Modo Offline Total (PWA):**
+### 6.3 Interacción por Voz (Hands-Free)
+*   **Dictado Activo:** El sistema permite el dictado directo sobre el campo "Motivo de Consulta" utilizando el micrófono del dispositivo.
+*   **Tecnología:** Web Speech API del navegador para transcripción en tiempo real y baja latencia.
+*   **Funcionamiento:**
+    1.  Pulsar el icono de micrófono (se vuelve rojo).
+    2.  Dictar la anamesis ("Paciente varón de 45 años, caída...").
+    3.  El texto se escribe automáticamente. Pulsar de nuevo para detener.
+
+### 6.4 Modos Offline Total (PWA):
     * **Objetivo:** Permitir el triaje cuando **NO hay conexión a internet/servidor**.
     * **Funcionamiento:** Se usa una versión simplificada de la app (`offline.html`). Los datos se guardan en el navegador.
     * **Sincronización:** Al recuperar la conexión, se usa la herramienta "Sincronización Offline" para subir los datos.
 
-### 6.3 Aplicación Web Progresiva (PWA) y Sincronización
+### 6.5 Interfaz Contextual (Liquid UI)
+*   **Adaptabilidad:** La interfaz cambia dinámicamente según los datos del paciente.
+*   **Reglas Activas:**
+    *   **Pediatría (<14 años):** Activa el modo pediátrico visual y ajusta rangos de constantes.
+    *   **Riesgo Cardíaco:** Si el motivo incluye "dolor torácico" o "pecho", sugiere ECG y destaca la tensión arterial.
+    *   **Modo Geriátrico (>65 años):** Muestra alertas específicas sobre riesgo de caídas y delirium (Confusion Assessment Method).
+    *   **Modo Respiratorio (Ejemplo "Disnea"):**
+        *   **Trigger:** Al escribir/dictar palabras como "disnea", "ahogo", "falta de aire".
+        *   **Respuesta UI:** Los campos de **Saturación O2 (SpO2)** y **Frecuencia Respiratoria (FR)** se iluminan visualmente (icono ⚡ y color destacado) para priorizar su toma.
+    *   **Ictus:** Si se detectan palabras clave neurológicas (habla, fuerza), sugiere Escala Cincinnati.
+
+### 6.6 Copiloto RAG Proactivo
+*   **Vigilancia Activa:** Mientras el usuario dicta o escribe, el sistema busca silenciosamente en la base de conocimiento.
 * **Detección Automática:** Al recuperar la conexión a internet (`window.online`), el sistema detecta automáticamente si existen registros pendientes en el dispositivo y muestra una alerta visual ("Conexión restaurada").
 * **Sincronización:** A través del panel lateral, el usuario puede descargar los registros locales y subirlos al servidor para su consolidación.
 * **Simulación de Offline:** Para pruebas y formación, se incluye un interruptor "Simular Modo Offline" en el panel lateral que fuerza al navegador a comportarse como si no tuviera red, permitiendo probar el flujo de contingencia sin desconectar el cable.
@@ -1408,5 +1415,22 @@ Esta guía detalla los pasos para verificar la funcionalidad del **Modo Formaci�
     *   Revise el feedback sobre el Nivel y el Destino.
     *   Lea la justificación clínica del "Gold Standard".
 5.  Pulse **"🏁 Finalizar y Volver"** para reiniciar el ciclo.
+
+---
+
+## Anexo D: Reglas de Casos Mágicos (Liquid UI)
+
+Especificación detallada de los umbrales y palabras clave que activan las adaptaciones dinámicas de la interfaz (`ui_rules_engine.py`).
+
+| Caso Mágico | Disparador (Trigger) | Acción de UI (Feedback) |
+| :--- | :--- | :--- |
+| **1. Código Sepsis** | **Temp > 38ºC** AND (**FC > 100** OR **TAS < 90**) | 🚨 **Alerta Crítica:** "ALERTA SEPSIS"<br>✨ **Sugerencia:** Protocolo qSOFA |
+| **2. Código Ictus** | Keywords: *habla, boca, fuerza, brazo, hormigueo, comisura, parálisis* | ⚠️ **Alerta:** "POSIBLE ICTUS"<br>✨ **Sugerencia:** Escala Cincinnati |
+| **3. Síndrome Coronario** | Keywords: *pecho, opresión, torácico, mandíbula, corazón* | ℹ️ **Highlight:** Tensión Arterial y FC<br>✨ **Sugerencia:** ECG Inmediato |
+| **4. Hipoxia** | Keywords: *disnea, ahogo, aire*<br>**SpO2 < 92%** | 🚨 **Alerta Crítica:** "HIPOXIA DETECTADA"<br>ℹ️ **Highlight:** SpO2 |
+| **5. Pediatría** | **Edad < 14 años** | ℹ️ **Aviso:** "Paciente Pediátrico"<br>(Ajuste interno de rangos) |
+| **6. Geriátrico** | **Edad > 75 años** | ✨ **Sugerencia:** Test Riesgo Caídas<br>⚠️ **Alerta:** "Posible Delirium" (si hay confusión) |
+| **7. Trauma / Dolor** | Keywords: *caída, golpe, accidente, dolor, herida* | ℹ️ **Highlight:** Nivel de Dolor (EVA) |
+
 
 ---

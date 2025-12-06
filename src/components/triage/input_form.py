@@ -18,8 +18,10 @@ from core.transcription_handler import get_transcription
 from components.triage.patient_background_form import render_patient_background_form
 from components.triage.vital_signs import render_vital_signs_form
 from utils.ui_utils import load_css
+from utils.ui_utils import load_css
 from services.simulated_ia import simulacion_ia
 from services.triage_service import llamar_modelo_gemini
+from components.common.speech_to_text import speech_to_text # Corrección de import
 
 
 def procesar_respuesta_ia(resultado_ia, algo_result=None):
@@ -157,79 +159,177 @@ def render_input_form():
         with c_head_text:
             st.header("1. Datos del Paciente")
 
+        # --- SELECTOR DE MODO DE TRIAJE (Phase 11.4) ---
+        triage_mode = st.radio(
+            "Modo de Interacción:",
+            ["Estándar (Formulario)", "Conversacional (Chat IA)"],
+            horizontal=True,
+            key="triage_interaction_mode"
+        )
+        st.divider()
+
         is_step1_disabled = st.session_state.analysis_complete
         is_editing = st.session_state.is_editing_text
         
-        # --- DATOS ADMINISTRATIVOS (MODULARIZADO) ---
-        from components.triage.admin_data_form import render_admin_data_form
-        render_admin_data_form(reset_count, disabled=is_step1_disabled)
+        # --- 🔮 MAGIC CASES (LIQUID UI) ---
+        # Evaluar el estado del paciente en tiempo real para adaptar la interfaz
+        from services.ui_rules_engine import UIRulesEngine
         
-        # --- SECCIÓN 1: ENTRADA DE DATOS MULTIMODAL ---
+        # Solo ejecutar si hay datos mínimos para evitar ruido
+        if st.session_state.datos_paciente.get('texto_medico') or st.session_state.datos_paciente.get('vital_signs'):
+            ui_adaptations = UIRulesEngine.evaluate(st.session_state.datos_paciente)
+            
+            # 1. Alertas Clínicas (Top Banner)
+            for alert in ui_adaptations.get('alerts', []):
+                if alert['type'] == 'critical':
+                    st.error(alert['message'], icon="🚨")
+                elif alert['type'] == 'warning':
+                    st.warning(alert['message'], icon="⚠️")
+                else:
+                    st.info(alert['message'], icon="ℹ️")
+            
+            # 2. Sugerencias de Acción (Badges)
+            if ui_adaptations.get('suggestions'):
+                cols_sug = st.columns(len(ui_adaptations['suggestions']) + 1)
+                cols_sug[0].caption("📢 **Protocolos Sugeridos:**")
+                for i, sug in enumerate(ui_adaptations['suggestions']):
+                    cols_sug[i+1].markdown(f":sparkles: `{sug}`")
         
-        # --- SECCIÓN 1: ENTRADA DE DATOS MULTIMODAL (MODALES) ---
-        st.markdown("##### 📥 Añadir Información")
+        # ----------------------------------
         
-        col_btns = st.columns(5)
-        
-        # Definir diálogos
-        # NOTA: dismissible=False evita que se cierre al hacer click fuera (requiere Streamlit reciente)
-        @st.dialog("🎤 Grabar Audio", width="large", dismissible=False)
-        def dialog_audio():
-            render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed)
-            
-        @st.dialog("📷 Tomar Foto", width="large", dismissible=False)
-        def dialog_photo():
-            render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close)
-            
-        @st.dialog("🎥 Grabar Video", width="large", dismissible=False)
-        def dialog_video():
-            render_video_recorder(key_prefix="triage_video", on_video_ready=on_video_confirmed)
-            
-        @st.dialog("📁 Subir Archivo", width="large", dismissible=False)
-        def dialog_file():
-            render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed)
-            
-        @st.dialog("🏥 Importar Historial", width="large", dismissible=False)
-        def dialog_history():
-            st.markdown("##### 🏥 Importación de Historia Clínica")
-            st.info("Simulación de conexión con HCE (Historia Clínica Electrónica).")
-            
-            c_imp, c_cls = st.columns(2)
-            with c_imp:
-                if st.button("⬇️ Importar Últimos Informes", key="sim_import_btn", use_container_width=True):
-                    import_callback()
-                    st.rerun()
-            with c_cls:
-                if st.button("❌ Cerrar", key="hist_close_btn", use_container_width=True):
-                    st.rerun()
-            
-            st.markdown('<div class="debug-footer">src/components/triage/input_form.py</div>', unsafe_allow_html=True)
+        # --- LÓGICA DE VISUALIZACIÓN ---
+        if triage_mode == "Conversacional (Chat IA)":
+             from components.triage.conversational_chat import render_conversational_chat
+             render_conversational_chat()
+             
+             # Sincronización inversa (para que funcione el botón Analizar de abajo)
+             # El chat ya actualiza 'texto_medico', asi que no hay nada extra que hacer
+             # salvo mostrar los datos administrativos minimos.
+             st.divider()
+             # Mostramos datos admin básicos aun en modo chat
+             from components.triage.admin_data_form import render_admin_data_form
+             render_admin_data_form(reset_count, disabled=is_step1_disabled)
 
-        # Botones de acción
-        with col_btns[0]:
-            if st.button("🎤 Audio", use_container_width=True, disabled=not is_editing or is_step1_disabled):
-                dialog_audio()
-        with col_btns[1]:
-            if st.button("📷 Foto", use_container_width=True, disabled=not is_editing or is_step1_disabled):
-                dialog_photo()
-        with col_btns[2]:
-            if st.button("🎥 Video", use_container_width=True, disabled=not is_editing or is_step1_disabled):
-                dialog_video()
-        with col_btns[3]:
-            if st.button("📁 Archivo", use_container_width=True, disabled=not is_editing or is_step1_disabled):
-                dialog_file()
-        with col_btns[4]:
-            if st.button("🏥 Historial", use_container_width=True, disabled=not is_editing or is_step1_disabled):
-                dialog_history()
-
-        # Obtener contador de reset
-        reset_count = st.session_state.get('reset_counter', 0)
+        else:
+            # --- MODO ESTÁNDAR (código original) ---
+            
+            # --- DATOS ADMINISTRATIVOS (MODULARIZADO) ---
+            from components.triage.admin_data_form import render_admin_data_form
+            render_admin_data_form(reset_count, disabled=is_step1_disabled)
+            
+            # --- SECCIÓN 1: ENTRADA DE DATOS MULTIMODAL ---
+            
+            # --- SECCIÓN 1: ENTRADA DE DATOS MULTIMODAL (MODALES) ---
+            st.markdown("##### 📥 Añadir Información")
+            
+            col_btns = st.columns(5)
+            
+            # Definir diálogos
+            # NOTA: dismissible=False evita que se cierre al hacer click fuera (requiere Streamlit reciente)
+            @st.dialog("🎤 Grabar Audio", width="large", dismissible=False)
+            def dialog_audio():
+                render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed)
+                
+            @st.dialog("📷 Tomar Foto", width="large", dismissible=False)
+            def dialog_photo():
+                render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close)
+                
+            @st.dialog("🎥 Grabar Video", width="large", dismissible=False)
+            def dialog_video():
+                render_video_recorder(key_prefix="triage_video", on_video_ready=on_video_confirmed)
+                
+            @st.dialog("📁 Subir Archivo", width="large", dismissible=False)
+            def dialog_file():
+                render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed)
+                
+            @st.dialog("🏥 Importar Historial", width="large", dismissible=False)
+            def dialog_history():
+                st.markdown("##### 🏥 Importación de Historia Clínica")
+                st.info("Simulación de conexión con HCE (Historia Clínica Electrónica).")
+                
+                c_imp, c_cls = st.columns(2)
+                with c_imp:
+                    if st.button("⬇️ Importar Últimos Informes", key="sim_import_btn", use_container_width=True):
+                        import_callback()
+                        st.rerun()
+                with c_cls:
+                    if st.button("❌ Cerrar", key="hist_close_btn", use_container_width=True):
+                        st.rerun()
+                
+                st.markdown('<div class="debug-footer">src/components/triage/input_form.py</div>', unsafe_allow_html=True)
+    
+            # Botones de acción
+            with col_btns[0]:
+                if st.button("🎤 Audio", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                    dialog_audio()
+            with col_btns[1]:
+                if st.button("📷 Foto", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                    dialog_photo()
+            with col_btns[2]:
+                if st.button("🎥 Video", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                    dialog_video()
+            with col_btns[3]:
+                if st.button("📁 Archivo", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                    dialog_file()
+            with col_btns[4]:
+                if st.button("🏥 Historial", use_container_width=True, disabled=not is_editing or is_step1_disabled):
+                    dialog_history()
+    
+            # Obtener contador de reset
+            reset_count = st.session_state.get('reset_counter', 0)
 
         # --- ENTREVISTA GUIADA (MOVIDO ENCIMA DEL TEXT AREA) ---
         # --- ENTREVISTA GUIADA (MOVIDO ENCIMA DEL TEXT AREA) ---
         from components.triage.guided_interview import render_guided_interview
         render_guided_interview(disabled=is_step1_disabled, key_suffix=str(reset_count))
 
+        widget_key = f"texto_medico_input_{reset_count}"
+        
+        # --- Voice Input Integration (Phase 11.1) ---
+        # Renderizamos el componente de voz justo encima o al lado del area de texto
+        # El componente devuelve un dict {'text': '...', 'isFinal': True} cuando hay resultado
+        
+        # Ajustamos columnas para dar espacio al botón (ratio 2:8)
+        c_mic, c_label = st.columns([2, 8])
+        with c_mic:
+             # Height fijo para asegurar visibilidad del iframe
+             voice_result = speech_to_text(key=f"voice_mic_{reset_count}")
+        with c_label:
+             st.caption("Dictado por Voz Activo (Web Speech API)")
+             if voice_result and voice_result.get('isListening'):
+                 st.caption("🔴 Escuchando...")
+
+        # Lógica para añadir texto de voz al actual
+        if voice_result and voice_result.get('text'):
+             new_text = voice_result.get('text')
+             # Evitar duplicados si el componente re-renderiza el mismo texto final
+             # Usamos last_voice_text en session state para comparar
+             last_voice_key = f"last_voice_{reset_count}"
+             if last_voice_key not in st.session_state:
+                 st.session_state[last_voice_key] = ""
+             
+             if new_text != st.session_state[last_voice_key]:
+                 current_text = st.session_state.datos_paciente.get('texto_medico', '')
+                 # Añadir espacio si no está vacío
+                 if current_text and not current_text.endswith(" "):
+                     current_text += " "
+                 
+                 final_text = current_text + new_text
+                 st.session_state.datos_paciente['texto_medico'] = final_text
+                 st.session_state[last_voice_key] = new_text
+                 
+                 # --- PROACTIVE RAG TRIGGER (Phase 11.3) ---
+                 from services.proactive_service import ProactiveService
+                 sugerencias = ProactiveService.check_context_and_suggest(final_text)
+                 for s in sugerencias:
+                     st.toast(s, icon="🧠")
+                 # ------------------------------------------
+
+                 st.rerun()
+
+        # Debug Footer for Component (Etiqueta al pie)
+        st.markdown('<div class="debug-footer">src/components/common/speech_to_text</div>', unsafe_allow_html=True)
+        
         widget_key = f"texto_medico_input_{reset_count}"
         
         # Evitar warning de Streamlit: "created with a default value but also had its value set via the Session State API"
@@ -545,6 +645,10 @@ def render_input_form():
                         # Combinar antecedentes legacy con historia integral
                         antecedentes_legacy = st.session_state.datos_paciente.get('antecedentes', '')
                         historia_integral = st.session_state.datos_paciente.get('historia_integral', '')
+                        
+                        # --- GUARDAR TRANSCRIPCIÓN DEL CHAT (Phase 11.4) ---
+                        if 'chat_history' in st.session_state and st.session_state.chat_history:
+                             st.session_state.datos_paciente['chat_transcript'] = st.session_state.chat_history
                         
                         # Llamada a la IA
                         try:

@@ -23,6 +23,25 @@ def render_vital_signs_form():
     import time
     import random
     from db.repositories.salas import get_sala
+    from services.ui_rules_engine import UIRulesEngine
+
+    # --- LIQUID UI ENGINE (Phase 11.2) ---
+    ui_actions = UIRulesEngine.evaluate(st.session_state.datos_paciente)
+    
+    if ui_actions.get("show_pediatric_vitals"):
+        st.info("👶 MODO PEDIÁTRICO ACTIVADO: Rangos y visualización ajustados.")
+    
+    for warning in ui_actions.get("warnings", []):
+        st.warning(warning)
+
+    # Sugerencias visuales (Badges)
+    if ui_actions.get("suggested_actions"):
+        cols_sugg = st.columns(len(ui_actions["suggested_actions"]))
+        for i, action in enumerate(ui_actions["suggested_actions"]):
+            cols_sugg[i].info(f"💡 Sugerencia: **{action}**")
+
+    # Obtener sala actual para verificar dispositivos
+    sala_code = st.session_state.get("sala_seleccionada")
 
     # Obtener sala actual para verificar dispositivos
     sala_code = st.session_state.get("sala_seleccionada")
@@ -61,23 +80,26 @@ def render_vital_signs_form():
     with st.container(border=True):
         st.markdown('<span class="vital-signs-grid" style="display:none"></span>', unsafe_allow_html=True)
         
+        # Obtener campos a resaltar desde reglas UI
+        h_fields = ui_actions.get("highlight_fields", [])
+
         # Fila 1: Circulación (FC, PAS, PAD)
         c1, c2, c3 = st.columns(3)
-        render_vital_sign_input(c1, "fc", "💓 Frecuencia Cardíaca", "lpm", 0.0, 300.0, 80.0, 1.0, "Latidos por minuto", configs.get("fc"))
-        render_vital_sign_input(c2, "pas", "🩸 Presión Art. Sistólica", "mmHg", 0.0, 300.0, 120.0, 1.0, "Tensión Alta", configs.get("pas"))
-        render_vital_sign_input(c3, "pad", "🩸 Presión Art. Diastólica", "mmHg", 0.0, 200.0, 80.0, 1.0, "Tensión Baja", configs.get("pad"))
+        render_vital_sign_input(c1, "fc", "💓 Frecuencia Cardíaca", "lpm", 0.0, 300.0, 80.0, 1.0, "Latidos por minuto", configs.get("fc"), highlight="fc" in h_fields)
+        render_vital_sign_input(c2, "pas", "🩸 Presión Art. Sistólica", "mmHg", 0.0, 300.0, 120.0, 1.0, "Tensión Alta", configs.get("pas"), highlight="pas" in h_fields)
+        render_vital_sign_input(c3, "pad", "🩸 Presión Art. Diastólica", "mmHg", 0.0, 200.0, 80.0, 1.0, "Tensión Baja", configs.get("pad"), highlight="pad" in h_fields)
         
         # Fila 2: Respiratorio y Temperatura (SpO2, FR, Temp)
         c4, c5, c6 = st.columns(3)
-        render_vital_sign_input(c4, "spo2", "🫧 Saturación O2", "%", 0.0, 100.0, 98.0, 1.0, "Porcentaje de oxígeno", configs.get("spo2"))
-        render_vital_sign_input(c5, "fr", "🫁 Frecuencia Respiratoria", "rpm", 0.0, 100.0, 16.0, 1.0, "Respiraciones por minuto", configs.get("fr"))
-        render_vital_sign_input(c6, "temp", "🌡️ Temperatura", "°C", 20.0, 45.0, 36.5, 0.1, "Temperatura axilar/timpánica", configs.get("temp"))
+        render_vital_sign_input(c4, "spo2", "🫧 Saturación O2", "%", 0.0, 100.0, 98.0, 1.0, "Porcentaje de oxígeno", configs.get("spo2"), highlight="spo2" in h_fields)
+        render_vital_sign_input(c5, "fr", "🫁 Frecuencia Respiratoria", "rpm", 0.0, 100.0, 16.0, 1.0, "Respiraciones por minuto", configs.get("fr"), highlight="fr" in h_fields)
+        render_vital_sign_input(c6, "temp", "🌡️ Temperatura", "°C", 20.0, 45.0, 36.5, 0.1, "Temperatura axilar/timpánica", configs.get("temp"), highlight="temp" in h_fields)
 
         # Fila 3: Neurológico y Otros (GCS, Pupilas, Hidratación/O2)
         c7, c8, c9 = st.columns(3)
         
         # GCS
-        render_vital_sign_input(c7, "gcs", "🧠 Escala Glasgow", "pts", 3.0, 15.0, 15.0, 1.0, "Nivel de conciencia (3-15)", configs.get("gcs"))
+        render_vital_sign_input(c7, "gcs", "🧠 Escala Glasgow", "pts", 3.0, 15.0, 15.0, 1.0, "Nivel de conciencia (3-15)", configs.get("gcs"), highlight="gcs" in h_fields)
 
         # Pupilas
         with c8:

@@ -63,23 +63,6 @@ El comportamiento de la IA se puede ajustar sin tocar código. Acceda a **"⚙�
 
 ### 4.1 Base de Conocimiento (RAG)
 Aquí puede subir documentos (PDF, TXT) que la IA usará como referencia.
-1.  **Subir:** Arrastre el archivo al área de carga y pulse "Procesar e Indexar".
-2.  **Listar:** Verá la lista de documentos activos.
-3.  **Borrar:** Use el icono de papelera para eliminar documentos obsoletos.
-
-### 4.2 Editor de Prompts
-1.  Seleccione la pestaña **"Prompts"**.
-2.  Seleccione el tipo de prompt a editar (ej. `triage_main`).
-3.  Verá la versión **Activa** (solo lectura).
-4.  Para hacer cambios, seleccione una versión **Borrador (Draft)** o clone la activa.
-5.  **Probar:** Use el botón "Probar Prompt" antes de activar.
-6.  **Activar:** Marque la versión como "Active" para producción.
-
----
-
-## 5. Configuración Médica (Signos Vitales)
-
-Acceda a **"⚙️ Configuración" > "🩺 Triaje (PTR)"**.
 
 ---
 

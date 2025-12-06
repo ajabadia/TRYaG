@@ -101,6 +101,22 @@ def render_patient_card(
                     # Default thresholds
                     if mins > 120: alert_level = 'critical'
                     elif mins > 60: alert_level = 'warning'
+        
+        # --- Estimación Inteligente ---
+        estimated_min_total = patient.get('estimated_wait_minutes')
+        remaining_str = ""
+        if estimated_min_total is not None:
+             elapsed = int((datetime.now() - wait_start).total_seconds() / 60) if wait_start else 0
+             remaining = max(0, estimated_min_total - elapsed)
+             
+             if remaining == 0:
+                 remaining_str = " (Inminente)"
+                 badge_color_est = "green"
+             else:
+                 remaining_str = f" (Est. {remaining} min)"
+                 badge_color_est = "grey"
+             
+             wait_str += remaining_str
 
     # 2. Renderizar
     # Usar siempre container para consistencia, el estilo visual se maneja dentro

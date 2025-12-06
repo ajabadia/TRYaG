@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Streamlit Speech-to-Text</title>
+</head>
+
+<body>
+    <!-- Material Icon for Mic -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <div id="root" style="display: flex; align-items: center; gap: 10px;">
+        <button id="mic-btn" onclick="toggleListening()" style="
+            border: none;
+            background-color: #f0f2f6;
+            color: #31333F;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        ">
+            <span id="mic-icon" class="material-icons" style="font-size: 24px;">mic_none</span>
+        </button>
+        <div id="status" style="font-family: sans-serif; font-size: 0.85rem; color: #666;">
+            Click to speak
+        </div>
+    </div>
+
+    <script>
+        // ----------------------------------------------------
+        // Streamlit Component Handshake
+        // ----------------------------------------------------
+        function sendMessageToStreamlitClient(type, data) {
+            const outData = Object.assign({
+                isStreamlitMessage: true,
+                type: type,
+            }, data);
+            window.parent.postMessage(outData, "*");
+        }
+
+        function setComponentValue(value) {
+            sendMessageToStreamlitClient("streamlit:setComponentValue", { value: value });
+        }
+
+        function onStreamlitReady() {
+            // Adjust height if needed - Fixed to 60px to ensure button visibility
+            sendMessageToStreamlitClient("streamlit:setFrameHeight", { height: 60 });
+        }
+
+        // Initialize handshake
+        window.addEventListener("load", onStreamlitReady);
+
+        // ----------------------------------------------------
+        // Web Speech API Logic
+        // ----------------------------------------------------
+        const micBtn = document.getElementById('mic-btn');
+        const micIcon = document.getElementById('mic-icon');
+        const statusText = document.getElementById('status');
+
+        let recognition = null;
+        let isListening = false;
+        let finalTranscript = '';
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'es-ES'; // Default to Spanish
+
+            recognition.onstart = function () {
+                isListening = true;
+                micBtn.style.backgroundColor = '#ff4b4b'; // Streamlit Red
+                micBtn.style.color = 'white';
+                micIcon.innerText = 'mic';
+                statusText.innerText = 'Listening...';
+                finalTranscript = ''; // Reset on new session? Optional.
+            };
+
+            recognition.onerror = function (event) {
+                console.error("Speech recognition error", event.error);
+                statusText.innerText = 'Error: ' + event.error;
+                stopListeningState();
+            };
+
+            recognition.onend = function () {
+                // If we stopped manually, isListening is false. 
+                // If it stopped by silence/error, we update UI.
+                if (isListening) {
+                    // Try to restart if it cut off specifically? 
+                    // For now, let's treat end as end.
+                    stopListeningState();
+                }
+            };
+
+            recognition.onresult = function (event) {
+                let interimTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                        // Send FINAL result to Streamlit
+                        setComponentValue({
+                            text: finalTranscript,
+                            isFinal: true
+                        });
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                        // Send INTERIM result to Streamlit (optional, for live feedback)
+                        // setComponentValue({
+                        //    text: finalTranscript + interimTranscript,
+                        //    isFinal: false
+                        // });
+                    }
+                }
+            };
+        } else {
+            statusText.innerText = "Browser not supported";
+            micBtn.disabled = true;
+        }
+
+        function toggleListening() {
+            if (!recognition) return;
+
+            if (isListening) {
+                recognition.stop();
+                stopListeningState();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function stopListeningState() {
+            isListening = false;
+            micBtn.style.backgroundColor = '#f0f2f6';
+            micBtn.style.color = '#31333F';
+            micIcon.innerText = 'mic_none';
+            statusText.innerText = 'Click to speak';
+        }
+
+    </script>
+</body>
+
+</html>
