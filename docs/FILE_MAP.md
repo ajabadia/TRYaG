@@ -15,6 +15,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/admission/admission_form.py** | Formulario de admisión. | `src/ui/admission_view.py` | Activo |
 | **src/components/admission/step_confirmation.py** | Paso de confirmación de admisión. | `src/ui/admission_view.py` | Activo |
 | **src/components/admission/step_patient_data.py** | Paso de datos del paciente. | `src/ui/admission_view.py` | Activo |
+| **src/components/admission/patient_ticket.py** | Componente Tiket de Admisión (QR). | `src/components/admission/step_patient_data.py` | Activo |
 | **src/components/admission/step_sala_admision.py** | Paso de selección de sala de admisión. | `src/ui/admission_view.py` | Activo |
 | **src/components/admission/step_sala_triaje.py** | Paso de selección de sala de triaje. | `src/ui/admission_view.py` | Activo |
 | **src/components/analytics/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -159,7 +160,9 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/services/conversational_service.py** | Servicio para Chat Conversacional (Historial y Prompt Maestro). | UI | Activo |
 | **src/services/export_service.py** | Servicio de exportación de datos. | UI | Activo |
 | **src/services/feedback_service.py** | Servicio de persistencia de feedback. | UI | Activo |
+| **src/services/qr_service.py** | Servicio independiente de generación de QR. | UI | Activo |
 | **src/services/scheduled_reports.py** | Servicio de reportes programados. | Background | Activo |
+| **src/services/shift_service.py** | Servicio de IA para Relevo de Turno. | UI | Activo |
 | **src/services/simulated_ia.py** | Simulación de respuesta IA. | UI | Activo |
 | **src/services/staff_assignment_service.py** | Servicio de asignación de personal. | UI | Activo |
 | **src/services/training_data.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -183,7 +186,8 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/components/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/components/common/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/components/common/offline_sync.py** | Componente de sincronización offline. | `src/app.py` | Activo |
-| **src/ui/components/common/patient_card.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/ui/components/common/patient_card.py** | Componente visual de tarjeta de paciente. | Varios | Activo |
+| **src/components/common/shift_handoff_ui.py** | UI para generación de Relevo de Turno. | Sidebar | Activo |
 | **src/ui/components/common/pdf_preview_modal.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/components/common/push_manager.py** | Gestor de suscripciones Push (PWA). | `src/ui/config/notification_config_ui.py` | Activo |
 | **src/ui/components/common/video_recorder.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -222,6 +226,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/shift_manager_advanced.py** | Gestor avanzado de turnos (Calendario, Conflictos). | `src/ui/config_panel.py` | Activo |
 | **src/ui/splash_screen.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/waiting_room_dashboard.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/views/public_board.py** | Vista de Monitor Público de Pacientes. | `src/app.py` | Activo |
 | **src/utils/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/utils/file_handler.py** | Manejador de archivos (guardado/carga). | Varios | Activo |
 | **src/utils/file_utils.py** | Utilidades generales de archivos. | Varios | Activo |

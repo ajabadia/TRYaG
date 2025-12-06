@@ -92,6 +92,24 @@ def render_active_flow_manager(
             if st.button("❌ Cancelar", key=f"{key_prefix}_btn_cancel", use_container_width=True, help="Cancela la operación actual"):
                 on_cancel()
 
+    # --- ACCIONES EXTRA (Impresión) ---
+    c_print, _ = st.columns([1, 3])
+    with c_print:
+        if st.button("🖨️ Imprimir Ticket", key=f"{key_prefix}_btn_print_ticket", use_container_width=True):
+            st.session_state[f"{key_prefix}_show_ticket"] = True
+            st.rerun()
+
+    # Modal Impresión local en Active Flow Manager
+    if st.session_state.get(f"{key_prefix}_show_ticket", False):
+        @st.dialog("🖨️ Ticket de Admisión")
+        def print_ticket_dialog_afm():
+            from components.admission.patient_ticket import render_ticket_modal
+            render_ticket_modal(paciente)
+            if st.button("Cerrar", key=f"{key_prefix}_close_ticket"):
+                st.session_state[f"{key_prefix}_show_ticket"] = False
+                st.rerun()
+        print_ticket_dialog_afm()
+        
     # --- LÓGICA DE ACCIONES ---
     
     # 1. CONTINUAR

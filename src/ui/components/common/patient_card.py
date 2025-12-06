@@ -212,7 +212,7 @@ def render_patient_card(
                         if action.get('on_click'):
                             action['on_click'](patient)
         
-        # Acciones Estándar (Rechazar, Reasignar, Finalizar)
+        # Acciones Estándar (Rechazar, Reasignar, Finalizar, Imprimir)
         # Se muestran en una fila separada o integradas si no hay acciones personalizadas
         
         # Definir qué acciones estándar mostrar
@@ -221,6 +221,9 @@ def render_patient_card(
             std_actions.append('reject')
         if kwargs.get('allow_reassignment', False):
             std_actions.append('reassign')
+        # Nuevo: Imprimir siempre disponible por defecto si no se deshabilita explícitamente
+        if kwargs.get('allow_print_ticket', True):
+            std_actions.append('print')
         if kwargs.get('allow_finish', False):
             std_actions.append('finish')
             
@@ -239,7 +242,12 @@ def render_patient_card(
                         if st.button("🔄 Cambiar Sala", key=f"btn_reassign_{pid}_{key_prefix}", type="secondary", use_container_width=True):
                             st.session_state[f"show_reassign_modal_{pid}"] = True
                             st.rerun()
-                            
+                    
+                    elif action_type == 'print':    
+                         if st.button("🖨️ Pulsera", key=f"btn_print_{pid}_{key_prefix}", type="secondary", use_container_width=True):
+                            st.session_state[f"show_print_modal_{pid}"] = True
+                            st.rerun()
+
                     elif action_type == 'finish':
                         if st.button("✅ Finalizar", key=f"btn_finish_{pid}_{key_prefix}", type="primary", use_container_width=True):
                             st.session_state[f"show_finish_modal_{pid}"] = True
@@ -412,6 +420,27 @@ def render_patient_card(
                     else:
                         st.error("Error al finalizar atención.")
         finish_dialog()
+        
+    # 4. Modal Impresión (Nuevo Fase 14)
+    if st.session_state.get(f"show_print_modal_{pid}", False):
+        @st.dialog("🖨️ Ticket de Admisión")
+        def print_dialog_card():
+            from components.admission.patient_ticket import render_ticket_modal
+            # Pasamos callback para cerrar
+            def on_close():
+                 st.session_state[f"show_print_modal_{pid}"] = False
+                 st.rerun()
+            
+            # Renderizar el componente ticket
+            # Nota: ticket necesita que le pasemos 'patient'
+            # Si render_ticket_modal dibuja todo, genial.
+            render_ticket_modal(patient)
+            
+            # Botón explicito de cerrar si el modal no tiene X clara o para UX
+            if st.button("Cerrar", key=f"close_print_{pid}"):
+                on_close()
+
+        print_dialog_card()
 
     # Etiqueta de componente
     st.markdown('<div class="debug-footer">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)
