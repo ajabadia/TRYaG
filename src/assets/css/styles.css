@@ -64,3 +64,33 @@ div[data-testid="stButton"] > button:hover {
     width: 100%;
     clear: both;
 }
+
+/* --- OPTIMIZACIÓN DE TRANSICIONES (NO FADE OUT) --- */
+/*
+   El usuario reporta que los elementos "tardan en desaparecer" y se ponen "más claros".
+   SOLUCIÓN:
+   1. Mantener 'opacity: 1' en .stApp para evitar el grisado global al procesar.
+   2. Quitar 'opacity: 1' de elementos hijos para permitir que Streamlit oculte lo que debe ocultar.
+   3. Mantener 'transition: none' para que los cambios sean instantáneos.
+*/
+
+/* Evitar grisado global de la aplicación al cargar/procesar */
+.stApp {
+    opacity: 1 !important;
+    transition: none !important;
+}
+
+/* Evitar animaciones de transición en general para "snappiness" */
+* {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* 
+   IMPORTANTE: NO forzar opacity: 1 en * ni en block-container, 
+   o los elementos que Streamlit intenta ocultar/eliminar se quedarán visibles.
+*/
+
+div[data-testid="stStatusWidget"] {
+    display: none !important;
+}
