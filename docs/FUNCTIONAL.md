@@ -47,6 +47,72 @@ Proporcionar una herramienta de soporte a la decisión clínica que permita:
 *   **Objetivo:** Visión global y control del flujo.
 *   **Funcionalidades:** Mapa de Salas en tiempo real, Drag & Drop para reasignación, y Alertas de bloqueo.
 
+### 1.4 Architecture & Flows (Visual Overview)
+
+#### System Context (High Level)
+```mermaid
+graph TD
+    User((Personal Sanitario)) -->|Interactúa| UI[Streamlit Frontend]
+    UI -->|Peticiones| Services[Services Layer]
+    
+    subgraph Core System
+        Services -->|Gestión Pacientes| DB[(MongoDB Atlas)]
+        Services -->|Archivos| FS[File System / S3]
+    end
+    
+    subgraph AI Engine
+        Services -->|Prompting| Safety[Safe Guardrails]
+        Safety -->|Inferencia| Gemini[Google Gemini 1.5/2.5]
+        Services -->|RAG| Chroma[ChromaDB Vector Store]
+    end
+    
+    subgraph Integrations
+        Services -.->|HL7/FHIR| HIS[Hospital Info System]
+        Services -.->|Public Board| EXT[Pantallas Sala Espera]
+    end
+```
+
+#### Flujo de Admisión (Simplificado)
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant FE as Frontend
+    participant S as PatientService
+    participant DB as MongoDB
+    
+    U->>FE: Busca Paciente (DNI/CIP)
+    FE->>S: buscar_paciente()
+    S->>DB: Query
+    alt Encontrado
+        DB-->>S: Datos Paciente
+        S-->>FE: Mostrar Card
+    else No Encontrado
+        S-->>FE: Empty
+        FE-->>U: Opción "Crear Nuevo"
+    end
+    U->>FE: Confirma/Crea
+    FE->>S: crear_flujo_paciente()
+    S->>DB: Insert Log (Entrada)
+    FE->>U: Redirige a Triaje/Espera
+```
+
+#### Flujo de Segunda Opinión (Reasoning ++)
+```mermaid
+sequenceDiagram
+    participant Doc as Médico
+    participant SO as SecondOpinionService
+    participant Agg as DataAggregator
+    participant AI as Gemini 2.5 Pro
+    
+    Doc->>SO: Solicitar Segunda Opinión
+    SO->>Agg: build_full_context(patient_id)
+    Agg-->>SO: JSON {Profile, Triage, History, Media}
+    SO->>AI: Prompt(Reasoning, Context)
+    Note over AI: Pensamiento "Chain of Thought"
+    AI-->>SO: Respuesta Estructurada
+    SO->>Doc: Muestra Diagnóstico Diferencial
+```
+
 ## 2. Roles de Usuario y Permisos
 
 El acceso a las funcionalidades del sistema está segmentado por roles, definidos en la configuración del centro.
@@ -147,6 +213,14 @@ El sistema incorpora una capacidad de **"Memoria Institucional"** basada en tecn
 3.  **GraphRAG (Grafos de Conocimiento):**
     *   *¿Qué es?* En lugar de guardar el texto como párrafos sueltos, se extraen entidades (Medicamentos, Síntomas, Enfermedades) y sus relaciones, construyendo un "mapa mental" o Grafo de Conocimiento.
     *   *¿Para qué sirve?* Permite responder preguntas complejas que requieren "saltos" de lógica (Multi-hop reasoning). Ej: "Si el paciente toma X, ¿puede tomar Y según el protocolo Z?". La búsqueda vectorial plana no ve la relación directa, pero el grafo sí conecta X -> Interacción -> Y.
+
+4.  **Evolución Futura: Gemini File Search (Google RAG Nativo):**
+    *   *Concepto:* Google ha lanzado la capacidad de **File Search** directamente en la API de Gemini. Esto permite subir documentos (PDF, CSV, etc.) a la infraestructura de Google, donde son indexados y recuperados automáticamente por el modelo.
+    *   *Ventaja Disruptiva:* Elimina la necesidad de gestionar bases de datos vectoriales propias (ChromaDB/Pinecone) y lógica de chunking compleja. Google se encarga de la ingeniería de recuperación.
+    *   *Implementación Propuesta:*
+        1.  Sustituir la indexación local de ChromaDB por el endpoint de `files.upload`.
+        2.  Utilizar el contexto automático en las llamadas a `generate_content` referenciando los URIs de los archivos subidos.
+    *   *Estado:* Propuesta de innovación (Evaluación para Fase 12+).
 
 ### 4.3 Lógica de Puntuación de Riesgo (PTR) - Dinámica
 
@@ -320,19 +394,6 @@ Al pulsar "Analizar con IA", el sistema compila toda la información (texto, vit
 
 ### 5.5 Gestión de Turnos y Personal
 
-**Objetivo:** Planificación y control del personal en las distintas áreas.
-
-El sistema ofrece dos niveles de gestión de personal:
-
-#### A. Asignación Fija (Sala Base)
-Define la ubicación habitual de un profesional (ej. "Dr. House siempre está en Consulta 1").
-*   **Configuración:** Desde `Configuración > Asignación de Salas`.
-*   **Uso:** Sirve como valor por defecto cuando no hay turnos específicos definidos.
-
-#### B. Gestión Avanzada de Turnos (Calendario)
-Herramienta para la planificación temporal y rotaciones.
-*   **Vista Calendario:** Visualización mensual de la cobertura.
-*   **Creación Rápida:** Asignación de turnos temporales (ej. "Mañana de 8:00 a 15:00 en Triaje").
 *   **Detección de Conflictos:** El sistema alerta si:
     *   Un usuario tiene dos turnos solapados.
     *   Un turno temporal entra en conflicto con la asignación fija (prevalece el turno temporal).
@@ -518,21 +579,71 @@ El sistema implementa un bus de notificaciones inteligente que enruta los mensaj
 **Configuración:**
 Los administradores pueden configurar los servidores SMTP y las URLs de los Webhooks desde el panel de `Configuración > General > Notificaciones`, así como realizar pruebas de conexión en tiempo real.
 
+### 5.16 Sistema de Tickets de Admisión (Phase 14.1)
+
+**Objetivo:** Agilizar la identificación del paciente y garantizar su anonimato en la sala de espera.
+
+*   **Generación de Ticket:** Al completar la admisión, se genera un ticket PDF con:
+*   **Estados:**
+    *   *En Espera:* Listado de códigos pendientes.
+    *   *En Atención:* Códigos llamados a consulta (parpadeante).
+*   **Tecnología:** Actualización en tiempo real sin recarga completa (Fragments).
+
+### 5.17 Módulo de Segunda Opinión ("Reasoning ++") (Fase 16)
+
+**Objetivo:** Proporcionar un análisis clínico profundo y estructurado para casos complejos, actuando como un consultor experto virtual ("Senior Resident").
+
+**Tecnología Diferencial:**
+A diferencia del triaje rápido (que usa modelos Flash para velocidad), este módulo utiliza modelos de **Razonamiento Avanzado (Gemini 2.5 / 2.0 Pro)**. Estos modelos dedican tiempo de cómputo a "pensar" y explorar múltiples hipótesis antes de responder.
+
+**Funcionalidades Clave:**
+
+1.  **Construcción Dinámica de Contexto:**
+    *   El sistema no solo envía el motivo de consulta actual.
+    *   Agrega automáticamente: **Antecedentes Históricos** (base de datos), **Historial de Triajes Previos** (últimos episodios) y **Signos Vitales** actuales.
+    *   Esto permite detectar patrones recurrentes que pasarían desapercibidos en una visita aislada.
+
+2.  **Análisis Estructurado (Structured Thinking):**
+    *   La IA no devuelve texto libre, sino un objeto JSON estricto con:
+        *   **Resumen Clínico:** Síntesis del caso.
+        *   **Red Flags:** Alertas de seguridad inmediata.
+        *   **Hipótesis Diagnósticas:** Lista de posibles diagnósticos con **probabilidad estimada (%)** y justificación.
+        *   **Plan de Acción:** Pasos recomendados (pruebas, medicación, ingreso).
+
+3.  **Generación de Informes PDF (On-Demand):**
+    *   Solo cuando el profesional lo decide, se puede generar un informe PDF detallado.
+    *   Incluye secciones separadas para el Perfil del Paciente, el Contexto Analizado y la Opinión de la IA.
+    *   Útil para adjuntar a la historia clínica o para interconsultas.
+
+4.  **Visualización "Chain of Thought" (Opcional):**
+    *   Permite al médico ver "cómo pensó" la IA, desplegando el proceso de razonamiento interno (si el modelo lo soporta) para aumentar la confianza en la respuesta.
+
+**Flujo de Uso:**
+1.  **Selección:** El médico elige un paciente de la lista.
+2.  **Revisión:** El sistema muestra qué datos enviará a la IA.
+3.  **Consulta:** Al pulsar "Solicitar Segunda Opinión", se invoca al modelo Reasoning.
+4.  **Resultado:** Se presentan las hipótesis y alertas.
+5.  **Documentación:** Botón "📄 Generar Informe PDF" para descargar el análisis.
+
+---
+
+### 5.18 Informe de Relevo de Guardia (Shift Handoff) (Phase 14.3)
+
+**Objetivo:** Facilitar la transferencia de información clínica entre turnos de enfermería/médicos.
+
+*   **Generación IA:** El sistema analiza los eventos de las últimas N horas (configurable).
+*   **Resumen Automático:** Genera un reporte estructurado con:
+    *   *Ocupación:* Estado actual de la sala y tiempos de espera.
+    *   *Casos Críticos:* Resumen de pacientes graves o pendientes de traslado.
+    *   *Alertas Activas:* Incidencias no resueltas.
+*   **Interfaz Dedicada:** Modal accesible desde el menú de usuario que no interrumpe el trabajo actual.
+*   **Persistencia:** La regeneración del informe mantiene el contexto visual (caching).
+
 ---
 
 ### 6.4 API REST e Interoperabilidad (Fase 12)
 
 El sistema expone una **API RESTful** en el puerto `8000` para facilitar la integración con sistemas externos (HIS, Apps Móviles, CRMs).
-
-*   **Documentación Interactiva:** Accesible en `/docs` (Swagger UI).
-*   **Endpoints Principales (`/v1/core`):**
-    *   `POST /analyze`: Permite enviar datos clínicos crudos (síntomas, vitales) y recibir una evaluación de triaje completa sin pasar por la interfaz web.
-    *   `POST /predict/risk`: Cálculo puro del score de riesgo (PTR) para monitorización remota.
-*   **Endpoints IA (`/v1/ai`):**
-    *   `POST /rag/search`: Acceso directo a la base de conocimiento institucional.
-    *   `POST /transcribe`: Servicio de transcripción de audio clínica as-a-service.
-
-Esta API permite que la inteligencia del sistema (el "cerebro") sea consumida por cualquier otra interfaz, desacoplando la lógica de negocio de la presentación visual.
 
 ## 6. Modos Avanzados de Operación
 

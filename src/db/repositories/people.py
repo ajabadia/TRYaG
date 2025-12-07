@@ -31,6 +31,10 @@ class PeopleRepository:
             ]
         })
 
+    def get_by_patient_code(self, patient_code: str) -> Optional[Dict[str, Any]]:
+        """Busca por código de paciente interno (ej. CIP)."""
+        return self.collection.find_one({"patient_code": patient_code})
+
     def search_by_name(self, query: str, limit: int = 10, active_only: bool = True) -> List[Dict[str, Any]]:
         """Busca personas por nombre o apellido."""
         regex = {"$regex": query, "$options": "i"}

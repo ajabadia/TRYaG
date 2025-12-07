@@ -13,9 +13,9 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/admission/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/admission/admission_form.py** | Formulario de admisión. | `src/ui/admission_view.py` | Activo |
+| **src/components/admission/patient_ticket.py** | Componente Tiket de Admisión (QR). | `src/components/admission/step_patient_data.py` | Activo |
 | **src/components/admission/step_confirmation.py** | Paso de confirmación de admisión. | `src/ui/admission_view.py` | Activo |
 | **src/components/admission/step_patient_data.py** | Paso de datos del paciente. | `src/ui/admission_view.py` | Activo |
-| **src/components/admission/patient_ticket.py** | Componente Tiket de Admisión (QR). | `src/components/admission/step_patient_data.py` | Activo |
 | **src/components/admission/step_sala_admision.py** | Paso de selección de sala de admisión. | `src/ui/admission_view.py` | Activo |
 | **src/components/admission/step_sala_triaje.py** | Paso de selección de sala de triaje. | `src/ui/admission_view.py` | Activo |
 | **src/components/analytics/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -55,6 +55,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/components/common/pwa_installer.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/common/rejection_form.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/common/room_card.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/components/common/shift_handoff_ui.py** | UI para generación de Relevo de Turno. | Sidebar | Activo |
 | **src/components/common/speech_to_text/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/common/stepper.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/components/common/user_selector.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -160,8 +161,29 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/services/conversational_service.py** | Servicio para Chat Conversacional (Historial y Prompt Maestro). | UI | Activo |
 | **src/services/export_service.py** | Servicio de exportación de datos. | UI | Activo |
 | **src/services/feedback_service.py** | Servicio de persistencia de feedback. | UI | Activo |
+| **src/services/fhir_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/flow_manager.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/gemini_client.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/ml_predictive_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/ml_training_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/multi_center_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/notification_helpers.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/notification_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/patient_flow_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/patient_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/permissions_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/predictive_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/proactive_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/qr_service.py** | Servicio independiente de generación de QR. | UI | Activo |
+| **src/services/queue_manager.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/rag_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/recommendation_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/report_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/room_metrics_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/room_service.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/services/room_suggestion_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/scheduled_reports.py** | Servicio de reportes programados. | Background | Activo |
+| **src/services/second_opinion_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/shift_service.py** | Servicio de IA para Relevo de Turno. | UI | Activo |
 | **src/services/simulated_ia.py** | Simulación de respuesta IA. | UI | Activo |
 | **src/services/staff_assignment_service.py** | Servicio de asignación de personal. | UI | Activo |
@@ -187,7 +209,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/components/common/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/components/common/offline_sync.py** | Componente de sincronización offline. | `src/app.py` | Activo |
 | **src/ui/components/common/patient_card.py** | Componente visual de tarjeta de paciente. | Varios | Activo |
-| **src/components/common/shift_handoff_ui.py** | UI para generación de Relevo de Turno. | Sidebar | Activo |
+| **src/ui/components/common/patient_search.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/components/common/pdf_preview_modal.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/components/common/push_manager.py** | Gestor de suscripciones Push (PWA). | `src/ui/config/notification_config_ui.py` | Activo |
 | **src/ui/components/common/video_recorder.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -219,6 +241,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/login_view.py** | Vista de Login Simulado. | `src/app.py` | Activo |
 | **src/ui/main_view.py** | Orquestador de la vista "Asistente de Triaje". | `src/app.py` | Activo |
 | **src/ui/ml_predictions_panel.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/ui/modules/second_opinion_view.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/multi_center_dashboard.py** | Dashboard Multi-centro. | `src/app.py` | Activo |
 | **src/ui/room_manager_view.py** | Vista de Gestión de Salas (Configuración/Estado). | `src/app.py` | Activo |
 | **src/ui/room_metrics_dashboard.py** | Dashboard de Métricas de Salas. | `src/app.py` | Activo |
@@ -226,7 +249,6 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/shift_manager_advanced.py** | Gestor avanzado de turnos (Calendario, Conflictos). | `src/ui/config_panel.py` | Activo |
 | **src/ui/splash_screen.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/waiting_room_dashboard.py** | Pendiente de descripción. | Pendiente | Activo |
-| **src/views/public_board.py** | Vista de Monitor Público de Pacientes. | `src/app.py` | Activo |
 | **src/utils/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/utils/file_handler.py** | Manejador de archivos (guardado/carga). | Varios | Activo |
 | **src/utils/file_utils.py** | Utilidades generales de archivos. | Varios | Activo |
@@ -243,3 +265,4 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/utils/triage_utils.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/utils/ui_utils.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/utils/update_triage_prompt.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/views/public_board.py** | Vista de Monitor Público de Pacientes. | `src/app.py` | Activo |

@@ -8,6 +8,97 @@ from services.report_service import generate_triage_pdf
 import unicodedata
 import re
 
+# --- MODALES GLOBALES (Evitar definición en bucle) ---
+
+@st.dialog("⛔ Rechazar Paciente")
+def _dialog_reject(pid, nombre):
+    st.markdown(f"**Paciente:** {nombre}")
+    st.warning("Esta acción finalizará el flujo del paciente y liberará la sala.")
+    motivo = st.text_area("Motivo del rechazo", key=f"reason_reject_{pid}")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("Cancelar", key=f"cancel_reject_{pid}"):
+            st.session_state[f"show_reject_modal_{pid}"] = False
+            st.rerun()
+    with c2:
+        if st.button("Confirmar Rechazo", key=f"confirm_reject_{pid}", type="primary", disabled=not motivo):
+            from services.patient_flow_service import rechazar_paciente
+            if rechazar_paciente(pid, motivo):
+                st.success("Paciente rechazado correctamente.")
+                st.session_state[f"show_reject_modal_{pid}"] = False
+                st.rerun()
+            else:
+                st.error("Error al rechazar paciente.")
+
+@st.dialog("🔄 Cambiar Sala")
+def _dialog_reassign(pid, nombre):
+    st.markdown(f"**Paciente:** {nombre}")
+    from db.repositories.salas import get_all_salas
+    rooms = get_all_salas()
+    # Filtrar salas activas
+    active_rooms = [r for r in rooms if r.get('activa', True)]
+    
+    # Helper para formatear etiqueta con ocupación
+    def format_room_label(r):
+        return f"{r['nombre']} ({r['codigo']})"
+
+    room_options = {format_room_label(r): r['codigo'] for r in active_rooms}
+    
+    selected_label = st.selectbox("Seleccione Nueva Sala", list(room_options.keys()), key=f"sel_reassign_{pid}")
+    target_code = room_options[selected_label]
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("Cancelar", key=f"cancel_reassign_{pid}"):
+            st.session_state[f"show_reassign_modal_{pid}"] = False
+            st.rerun()
+    with c2:
+        if st.button("Confirmar Cambio", key=f"confirm_reassign_{pid}", type="primary"):
+            from services.patient_flow_service import reassign_patient_flow
+            if reassign_patient_flow(pid, new_sala_atencion_code=target_code): 
+                    st.success("Paciente reasignado correctamente.")
+                    st.session_state[f"show_reassign_modal_{pid}"] = False
+                    st.rerun()
+            else:
+                    st.error("Error al reasignar paciente.")
+
+@st.dialog("✅ Finalizar Atención")
+def _dialog_finish(pid, nombre):
+    st.markdown(f"**Paciente:** {nombre}")
+    st.info("Finalizar la atención clínica y liberar el box/consulta.")
+    notas = st.text_area("Notas de cierre (opcional)", key=f"notes_finish_{pid}")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("Cancelar", key=f"cancel_finish_{pid}"):
+            st.session_state[f"show_finish_modal_{pid}"] = False
+            st.rerun()
+    with c2:
+        if st.button("Confirmar Finalización", key=f"confirm_finish_{pid}", type="primary"):
+            from services.patient_flow_service import finalizar_flujo
+            if finalizar_flujo(pid, motivo="Atención Completada", notas=notas):
+                st.success("Atención finalizada.")
+                st.session_state[f"show_finish_modal_{pid}"] = False
+                st.rerun()
+            else:
+                st.error("Error al finalizar atención.")
+
+@st.dialog("🖨️ Ticket de Admisión")
+def _dialog_print(patient, pid):
+    # Pasamos callback para cerrar
+    def on_close():
+            st.session_state[f"show_print_modal_{pid}"] = False
+            st.rerun()
+    
+    from components.admission.patient_ticket import render_ticket_modal
+    render_ticket_modal(patient)
+    
+    # Botón explicito de cerrar
+    if st.button("Cerrar", key=f"close_print_{pid}"):
+        on_close()
+
+
 def render_patient_card(
     patient: dict,
     actions: list = None,
@@ -334,113 +425,23 @@ def render_patient_card(
                         except Exception as e:
                             st.error(f"Error: {e}")
 
-    # --- MODALES DE ACCIONES ESTÁNDAR ---
-    # Renderizar fuera del container principal para evitar problemas de anidamiento visual
+    # --- MODALES: INVOCACIÓN (Ya no definición) ---
     
     # 1. Modal Rechazo
     if st.session_state.get(f"show_reject_modal_{pid}", False):
-        @st.dialog(f"⛔ Rechazar Paciente: {nombre}")
-        def reject_dialog():
-            st.warning("Esta acción finalizará el flujo del paciente y liberará la sala.")
-            motivo = st.text_area("Motivo del rechazo", key=f"reason_reject_{pid}")
-            
-            c1, c2 = st.columns(2)
-            with c1:
-                if st.button("Cancelar", key=f"cancel_reject_{pid}"):
-                    st.session_state[f"show_reject_modal_{pid}"] = False
-                    st.rerun()
-            with c2:
-                if st.button("Confirmar Rechazo", key=f"confirm_reject_{pid}", type="primary", disabled=not motivo):
-                    from services.patient_flow_service import rechazar_paciente
-                    if rechazar_paciente(pid, motivo):
-                        st.success("Paciente rechazado correctamente.")
-                        st.session_state[f"show_reject_modal_{pid}"] = False
-                        st.rerun()
-                    else:
-                        st.error("Error al rechazar paciente.")
-        reject_dialog()
+        _dialog_reject(pid, nombre)
 
     # 2. Modal Reasignación
     if st.session_state.get(f"show_reassign_modal_{pid}", False):
-        @st.dialog(f"🔄 Cambiar Sala: {nombre}")
-        def reassign_dialog():
-            from db.repositories.salas import get_all_salas
-            rooms = get_all_salas()
-            # Filtrar salas activas
-            active_rooms = [r for r in rooms if r.get('activa', True)]
-            
-            # Helper para formatear etiqueta con ocupación
-            def format_room_label(r):
-                cap = r.get('capacidad_sillas', 1) # Asumir 1 si no definido (boxes)
-                # Calcular ocupación real (esto requeriría una consulta extra, por ahora mostramos estático o lo que tenga el objeto)
-                # Si el objeto sala viene de get_all_salas, puede no tener 'plazas_disponibles' calculado dinámicamente.
-                # Por simplicidad y robustez, mostramos nombre y código.
-                return f"{r['nombre']} ({r['codigo']})"
-
-            room_options = {format_room_label(r): r['codigo'] for r in active_rooms}
-            
-            selected_label = st.selectbox("Seleccione Nueva Sala", list(room_options.keys()), key=f"sel_reassign_{pid}")
-            target_code = room_options[selected_label]
-            
-            c1, c2 = st.columns(2)
-            with c1:
-                if st.button("Cancelar", key=f"cancel_reassign_{pid}"):
-                    st.session_state[f"show_reassign_modal_{pid}"] = False
-                    st.rerun()
-            with c2:
-                if st.button("Confirmar Cambio", key=f"confirm_reassign_{pid}", type="primary"):
-                    from services.patient_flow_service import reassign_patient_flow
-                    if reassign_patient_flow(pid, new_sala_atencion_code=target_code): # Usamos un param genérico o detectamos tipo
-                         st.success("Paciente reasignado correctamente.")
-                         st.session_state[f"show_reassign_modal_{pid}"] = False
-                         st.rerun()
-                    else:
-                         st.error("Error al reasignar paciente.")
-        reassign_dialog()
+        _dialog_reassign(pid, nombre)
 
     # 3. Modal Finalizar
     if st.session_state.get(f"show_finish_modal_{pid}", False):
-        @st.dialog(f"✅ Finalizar Atención: {nombre}")
-        def finish_dialog():
-            st.info("Finalizar la atención clínica y liberar el box/consulta.")
-            notas = st.text_area("Notas de cierre (opcional)", key=f"notes_finish_{pid}")
-            
-            c1, c2 = st.columns(2)
-            with c1:
-                if st.button("Cancelar", key=f"cancel_finish_{pid}"):
-                    st.session_state[f"show_finish_modal_{pid}"] = False
-                    st.rerun()
-            with c2:
-                if st.button("Confirmar Finalización", key=f"confirm_finish_{pid}", type="primary"):
-                    from services.patient_flow_service import finalizar_flujo
-                    if finalizar_flujo(pid, motivo="Atención Completada", notas=notas):
-                        st.success("Atención finalizada.")
-                        st.session_state[f"show_finish_modal_{pid}"] = False
-                        st.rerun()
-                    else:
-                        st.error("Error al finalizar atención.")
-        finish_dialog()
+        _dialog_finish(pid, nombre)
         
-    # 4. Modal Impresión (Nuevo Fase 14)
+    # 4. Modal Impresión
     if st.session_state.get(f"show_print_modal_{pid}", False):
-        @st.dialog("🖨️ Ticket de Admisión")
-        def print_dialog_card():
-            from components.admission.patient_ticket import render_ticket_modal
-            # Pasamos callback para cerrar
-            def on_close():
-                 st.session_state[f"show_print_modal_{pid}"] = False
-                 st.rerun()
-            
-            # Renderizar el componente ticket
-            # Nota: ticket necesita que le pasemos 'patient'
-            # Si render_ticket_modal dibuja todo, genial.
-            render_ticket_modal(patient)
-            
-            # Botón explicito de cerrar si el modal no tiene X clara o para UX
-            if st.button("Cerrar", key=f"close_print_{pid}"):
-                on_close()
-
-        print_dialog_card()
+        _dialog_print(patient, pid)
 
     # Etiqueta de componente
     st.markdown('<div class="debug-footer">src/ui/components/common/patient_card.py</div>', unsafe_allow_html=True)

@@ -253,3 +253,54 @@ playwright install
 # Ejecutar tests
 pytest tests/
 ```
+
+## 11. Estrategia de Optimización y Rendimiento (Phase 14.4)
+
+Para garantizar una experiencia de usuario fluida en un entorno crítico como Urgencias, se han implementado técnicas avanzadas de optimización sobre Streamlit y MongoDB.
+
+### 11.1 Fragmentos de UI (`@st.fragment`)
+Streamlit tradicionalmente recarga toda la página ante cualquier interacción. Hemos implementado **Fragments** para aislar re-renderizados en componentes de alta frecuencia:
+*   **Tablero de Espera:** Se auto-actualiza cada 30 segundos sin refrescar el resto de la app.
+*   **Modales (Dialogs):** Interacciones dentro de diálogos (ej. "Regenerar Informe de Relevo") solo actualizan el contenido del modal, evitando el cierre accidental y parpadeos globales.
+
+### 11.2 Caching Estratégico
+Uso intensivo de los decoradores de caché de Streamlit para minimizar I/O y latencia:
+*   **`@st.cache_resource`:** Para conexiones persistentes (MongoDB Client, ChromaDB RAG Service). El pool de conexiones se mantiene vivo entre ejecuciones.
+*   **`@st.cache_data`:** Para lectura de assets estáticos (CSS, Imágenes base64) y consultas de configuración que cambian poco (Configuración del Centro).
+
+### 11.3 Connection Pooling
+Configuración explícita del driver `pymongo`:
+*   `maxPoolSize=50`: Permite alta concurrencia sin saturar sockets.
+*   `serverSelectionTimeoutMS=30000`: Tolerancia a fallos de red transitorios.
+
+## 12. Arquitectura de Acceso Público
+
+El sistema implementa un patrón de "Bypass" seguro para permitir vistas públicas (sin login) dentro de la misma aplicación segura.
+
+*   **Router (`app.py`):** Intercepta el parámetro de query `?view=public_board` *antes* de la verificación de sesión.
+*   **Aislamiento:** La vista `public_board.py` no tiene acceso al `session_state` del usuario ni a datos sensibles, solo lee una proyección mínima de `patient_flow` (solo códigos de ticket y estados).
+*   **Seguridad:** No expone datos PII (Información Personal Identificable). Solo códigos alfanuméricos anónimos.
+
+## 13. Arquitectura Módulo de Segunda Opinión (Reasoning ++)
+
+Este módulo (Fase 16) introduce un patrón de diseño avanzado adaptado para modelos de razonamiento profundo (Chain-of-Thought).
+
+### 13.1 Agregación de Contexto (`SecondOpinionService`)
+A diferencia del triaje estándar que es "stateless" (episódico), este servicio construye un objeto de contexto masivo (`_build_patient_context`) agregando:
+1.  **Perfil:** Datos de filiación desde `people`.
+2.  **Historial:** Últimos 5 episodios de `triage_records`.
+3.  **Flujo:** Estado actual en `patient_flow`.
+
+Esto permite al LLM detectar patrones temporales (ej. "fiebre persistente en últimas 3 visitas").
+
+### 13.2 Ingeniería de Prompts (Chain of Thought)
+Se utiliza un prompt especializado (`second_opinion_reasoning`) diseñado para inducir razonamiento deductivo.
+*   **Prompt System:** "Actúa como Panel Médico...".
+*   **Instrucción CoT:** "Analiza paso a paso, busca inconsistencias, genera hipótesis".
+*   **Formato de Salida:** JSON estructurado con `diagnostic_hypothesis`, `red_flags` y `thought_process`.
+
+### 13.3 Proxy de Modelo Gemini 2.5
+Aunque la integración final apunta a **Gemini 2.5 Pro**, actualmente se utiliza una capa de abstracción sobre **Gemini 1.5 Pro**.
+*   El sistema inyecta instrucciones adicionales de "pensamiento profundo" en el prompt para simular la capacidad de razonamiento extendido de modelos superiores.
+*   La arquitectura está preparada para el cambio de un solo parámetro (`model_name="gemini-2.5-pro"`) en el Prompt Manager una vez la API sea pública.
+

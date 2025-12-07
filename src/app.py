@@ -34,6 +34,15 @@ st.set_page_config(
     layout="wide",
 )
 
+# ---------------------------------------------------------------------------
+# Mount Tornado Custom Routes (PDF Download / Video Upload)
+# ---------------------------------------------------------------------------
+try:
+    from utils.tornado_server import mount_video_upload_route
+    mount_video_upload_route()
+except Exception as e:
+    print(f"Warning: Could not mount Tornado routes: {e}")
+
 # Gemini client configuration
 # ---------------------------------------------------------------------------
 try:
@@ -242,6 +251,9 @@ def mostrar_app_principal():
             elif "Control de Salas" in tab_label:
                 from ui.room_orchestrator import mostrar_orquestador_salas
                 mostrar_orquestador_salas()
+            elif "Segunda Opinión" in tab_label:
+                 from ui.modules.second_opinion_view import render_second_opinion_view
+                 render_second_opinion_view()
             elif "Configuración" in tab_label:
                 mostrar_panel_configuracion()
 

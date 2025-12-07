@@ -49,3 +49,26 @@ async def transcribe_audio(file: UploadFile = File(...)):
         "transcription": "[Simulación] Paciente refiere dolor abdominal desde hace 3 horas...",
         "status": "simulated" # Marcar como simulado hasta conectar el servicio real que requiere API Keys
     }
+
+class ReasoningRequest(BaseModel):
+    patient_id: str
+    query: str
+    include_rag: bool = False
+
+@router.post("/reasoning")
+async def request_second_opinion(request: ReasoningRequest):
+    """
+    Solicita un análisis de segunda opinión (Reasoning ++).
+    """
+    try:
+        from src.services.second_opinion_service import get_second_opinion_service
+        service = get_second_opinion_service()
+        
+        result = service.request_analysis(
+            patient_code=request.patient_id, 
+            query_notes=request.query,
+            include_rag=request.include_rag
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

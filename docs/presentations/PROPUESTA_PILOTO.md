@@ -16,6 +16,7 @@ Esta propuesta detalla el plan de despliegue de un **Asistente de Triaje Intelig
 *   **Usuarios:** 5 Enfermeros de Triaje, 2 Médicos, 2 Administrativos.
 *   **Funcionalidades Incluidas (Fase 14):**
     *   Triaje Asistido por IA (Voz/Texto).
+    *   **Módulo Segunda Opinión:** Análisis profundo multimodal (Reasoning ++) con RAG.
     *   Gestión de Salas y Espera (Monitor Público).
     *   Identificación de Pacientes (Tickets QR).
     *   Relevo de Turno Automático (Informe de Guardia).

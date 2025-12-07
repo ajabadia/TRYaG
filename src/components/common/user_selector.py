@@ -64,28 +64,6 @@ def render_user_selector():
     # --- INTEGRACIÓN MENÚ DE USUARIO (Migrado desde user_menu.py) ---
     st.sidebar.divider()
     
-    # 1. Sistema / Modos
-    st.sidebar.markdown("⚙️ **Sistema**")
-    
-    # Modo Contingencia
-    from services.contingency_service import is_contingency_active, set_contingency_mode, get_unsynced_count
-    is_offline = is_contingency_active()
-    new_state = st.sidebar.toggle("Modo Manual (Sin IA)", value=is_offline, key="toggle_offline_sidebar", help="Activa este modo para guardar directamente en Base de Datos sin pasar por el análisis de Gemini.")
-    
-    if new_state != is_offline:
-        set_contingency_mode(new_state)
-        st.rerun()
-        
-    unsynced = get_unsynced_count()
-    if unsynced > 0:
-        st.sidebar.caption(f"⚠️ {unsynced} registros locales")
-
-    # Modo Formación
-    is_training = st.session_state.get('training_mode', False)
-    new_training = st.sidebar.toggle("Modo Formación", value=is_training, key="toggle_training_sidebar")
-    if new_training != is_training:
-        st.session_state.training_mode = new_training
-        st.rerun()
     # Buscador de Protocolos (Modal)
     from components.knowledge_base.protocol_search import show_protocol_search_modal
     if st.sidebar.button("🔍 Protocolos", use_container_width=True, help="Buscar en la base de conocimiento"):
@@ -111,6 +89,29 @@ def render_user_selector():
         render_feedback_button("SidebarUserMenu")
         
     st.sidebar.divider()
+    
+    # 1. Sistema / Modos
+    st.sidebar.markdown("⚙️ **Sistema**")
+    
+    # Modo Contingencia
+    from services.contingency_service import is_contingency_active, set_contingency_mode, get_unsynced_count
+    is_offline = is_contingency_active()
+    new_state = st.sidebar.toggle("Modo Manual (Sin IA)", value=is_offline, key="toggle_offline_sidebar", help="Activa este modo para guardar directamente en Base de Datos sin pasar por el análisis de Gemini.")
+    
+    if new_state != is_offline:
+        set_contingency_mode(new_state)
+        st.rerun()
+        
+    unsynced = get_unsynced_count()
+    if unsynced > 0:
+        st.sidebar.caption(f"⚠️ {unsynced} registros locales")
+
+    # Modo Formación
+    is_training = st.session_state.get('training_mode', False)
+    new_training = st.sidebar.toggle("Modo Formación", value=is_training, key="toggle_training_sidebar")
+    if new_training != is_training:
+        st.session_state.training_mode = new_training
+        st.rerun()
     
 
     st.markdown('<div class="debug-footer">src/components/common/user_selector.py</div>', unsafe_allow_html=True)

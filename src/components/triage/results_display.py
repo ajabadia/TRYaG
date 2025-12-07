@@ -62,21 +62,18 @@ def render_results_display():
                                 else:
                                     st.image(img_source, width=150, caption=f.name)
                     
-                    # Feedback Humano
+                    # Feedback Humano Reutilizable
                     st.divider()
-                    st.markdown("##### Calificación")
-                    if st.session_state.calificacion_humana is None:
-                        col_ok, col_bad = st.columns(2)
-                        with col_ok:
-                            if st.button("Correcto", use_container_width=True, icon=":material/thumb_up:"):
-                                st.session_state.calificacion_humana = "Correcto"
-                                st.rerun()
-                        with col_bad:
-                            if st.button("Incorrecto", use_container_width=True, icon=":material/thumb_down:"):
-                                st.session_state.calificacion_humana = "Incorrecto"
-                                st.rerun()
+                    from components.common.response_validator import render_response_validator
+                    
+                    # Usamos prefijo unico
+                    val_result = render_response_validator(key_prefix="triage_main_feedback", label="Calificación General")
+                    
+                    if val_result["status"] == "valid":
+                        st.session_state.calificacion_humana = "Correcto" if val_result["rating"] == "positive" else "Incorrecto"
+                        # Nota: El componente maneja su propio UI de exito/error estatico tras submit
                     else:
-                        st.success(f"Calificación: **{st.session_state.calificacion_humana}**")
+                        st.session_state.calificacion_humana = None
 
                 with c2:
                     st.markdown("### Razonamiento del Modelo")

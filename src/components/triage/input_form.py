@@ -146,7 +146,7 @@ def render_input_form():
     def import_callback():
         import time
         time.sleep(1.5)
-        st.session_state.datos_paciente['texto_medico'] += "\n\n[IMPORTADO HCE]: Paciente con antecedentes de hipertensión. Última visita por dolor lumbar crónico."
+        st.session_state.datos_paciente['texto_medico'] += "\\n\\n[IMPORTADO HCE]: Paciente con antecedentes de hipertensión. Última visita por dolor lumbar crónico."
         st.session_state.triage_input_type = "" # Resetear selector
 
     # --- END CALLBACKS ---
@@ -203,7 +203,7 @@ def render_input_form():
              render_conversational_chat()
              
              # Sincronización inversa (para que funcione el botón Analizar de abajo)
-             # El chat ya actualiza 'texto_medico', asi que no hay nada extra que hacer
+             # El chat ya actualizará 'texto_medico', asi que no hay nada extra que hacer
              # salvo mostrar los datos administrativos minimos.
              st.divider()
              # Mostramos datos admin básicos aun en modo chat
@@ -278,401 +278,405 @@ def render_input_form():
             # Obtener contador de reset
             reset_count = st.session_state.get('reset_counter', 0)
 
-        # --- ENTREVISTA GUIADA (MOVIDO ENCIMA DEL TEXT AREA) ---
-        # --- ENTREVISTA GUIADA (MOVIDO ENCIMA DEL TEXT AREA) ---
-        from components.triage.guided_interview import render_guided_interview
-        render_guided_interview(disabled=is_step1_disabled, key_suffix=str(reset_count))
+        # --- FUNCIÓN LOCAL: RENDERIZADO DE COMPONENTES COMUNES (FORMULARIO MANUAL) ---
+        def render_shared_manual_form():
+            # --- ENTREVISTA GUIADA ---
+            from components.triage.guided_interview import render_guided_interview
+            render_guided_interview(disabled=is_step1_disabled, key_suffix=str(reset_count))
 
-        widget_key = f"texto_medico_input_{reset_count}"
-        
-        # --- Voice Input Integration (Phase 13.1) ---
-        from components.triage.native_voice_input import render_native_voice_input
-        # Pasamos widget_key para que el componente pueda actualizar el textarea directamente
-        render_native_voice_input(reset_count, target_widget_key=widget_key)
-        
-        
-        widget_key = f"texto_medico_input_{reset_count}"
-        
-        # Evitar warning de Streamlit: "created with a default value but also had its value set via the Session State API"
-        # Solo pasamos 'value' si la key NO está en session_state. Si está, Streamlit usa el valor del estado.
-        ta_kwargs = {
-            "label": "Motivo de Consulta",
-            "height": 100,
-            "placeholder": "Ej: Varón de 45 años...",
-            "disabled": not is_editing or is_step1_disabled,
-            "key": widget_key,
-            "label_visibility": "collapsed"
-        }
-        
-        if widget_key not in st.session_state:
-            ta_kwargs["value"] = st.session_state.datos_paciente.get('texto_medico', '')
-
-        texto_medico = st.text_area(**ta_kwargs)
-        st.session_state.datos_paciente['texto_medico'] = texto_medico
-        is_text_valid = len(texto_medico) >= get_min_chars_motivo()
-
-
-
-        # --- HDA DETALLADA (MODULARIZADO) ---
-        from components.triage.hda_form import render_hda_form
-        render_hda_form(reset_count, disabled=is_step1_disabled)
-
-        # --- EDAD (Oculto si existe) ---
-        default_age = st.session_state.datos_paciente.get('edad', 40)
-        # Si no hay edad en datos_paciente (ej: paciente nuevo sin seleccionar), mostrar input
-        if 'edad' not in st.session_state.datos_paciente or st.session_state.datos_paciente['edad'] is None:
-             st.session_state.datos_paciente['edad'] = st.number_input("Edad", 0, 120, default_age, disabled=is_step1_disabled, key=f"edad_input_{reset_count}")
-        
-        # --- CONTEXTO CLÍNICO (MODULARIZADO) ---
-        from components.triage.clinical_context import render_clinical_context_form
-        render_clinical_context_form(reset_count, disabled=is_step1_disabled)
-
-        # --- ANTECEDENTES CLÍNICO (MODULARIZADO) ---
-        render_patient_background_form(reset_count, disabled=is_step1_disabled)
-        
-        # --- HISTORIA INTEGRAL (NUEVO) ---
-        from components.triage.extended_history import render_extended_history_form
-        render_extended_history_form(disabled=is_step1_disabled)
-
-        if not is_step1_disabled:
-            # Pasamos la edad explícitamente para que vital_signs_form pueda cargar la config correcta
-            render_vital_signs_form()
+            widget_key = f"texto_medico_input_{reset_count}"
             
-            # --- ALERTAS PREDICTIVAS (MODULARIZADO) ---
-            # Solo mostrar si hay signos vitales registrados y está habilitado en config
-            from db.repositories.general_config import get_general_config_repository
-            from components.triage.risk_analysis_panel import render_risk_analysis_panel
+            # --- Voice Input Integration (Phase 13.1) ---
+            from components.triage.native_voice_input import render_native_voice_input
+            # Pasamos widget_key para que el componente pueda actualizar el textarea directamente
+            render_native_voice_input(reset_count, target_widget_key=widget_key)
             
-            # Asegurar config cargada
-            if 'general_config' not in st.session_state:
-                st.session_state.general_config = get_general_config_repository().get_config()
             
-            enable_predictive = st.session_state.general_config.get('enable_predictive_alerts', True)
+            widget_key = f"texto_medico_input_{reset_count}"
+            
+            # Evitar warning de Streamlit: "created with a default value but also had its value set via the Session State API"
+            # Solo pasamos 'value' si la key NO está en session_state. Si está, Streamlit usa el valor del estado.
+            ta_kwargs = {
+                "label": "Motivo de Consulta",
+                "height": 100,
+                "placeholder": "Ej: Varón de 45 años...",
+                "disabled": not is_editing or is_step1_disabled,
+                "key": widget_key,
+                "label_visibility": "collapsed"
+            }
+            
+            if widget_key not in st.session_state:
+                ta_kwargs["value"] = st.session_state.datos_paciente.get('texto_medico', '')
 
-            if st.session_state.datos_paciente.get('vital_signs'):
-                render_risk_analysis_panel(st.session_state.datos_paciente, enable_predictive)
+            texto_medico = st.text_area(**ta_kwargs)
+            st.session_state.datos_paciente['texto_medico'] = texto_medico
+            is_text_valid = len(texto_medico) >= get_min_chars_motivo()
 
-        elif 'vital_signs' in st.session_state.datos_paciente:
-             st.info("Signos vitales registrados.")
+            # --- HDA DETALLADA (MODULARIZADO) ---
+            from components.triage.hda_form import render_hda_form
+            render_hda_form(reset_count, disabled=is_step1_disabled)
 
+            # --- EDAD (Oculto si existe) ---
+            default_age = st.session_state.datos_paciente.get('edad', 40)
+            # Si no hay edad en datos_paciente (ej: paciente nuevo sin seleccionar), mostrar input
+            if 'edad' not in st.session_state.datos_paciente or st.session_state.datos_paciente['edad'] is None:
+                 st.session_state.datos_paciente['edad'] = st.number_input("Edad", 0, 120, default_age, disabled=is_step1_disabled, key=f"edad_input_{reset_count}")
+            
+            # --- CONTEXTO CLÍNICO (MODULARIZADO) ---
+            from components.triage.clinical_context import render_clinical_context_form
+            render_clinical_context_form(reset_count, disabled=is_step1_disabled)
 
+            # --- ANTECEDENTES CLÍNICO (MODULARIZADO) ---
+            render_patient_background_form(reset_count, disabled=is_step1_disabled)
+            
+            # --- HISTORIA INTEGRAL (NUEVO) ---
+            from components.triage.extended_history import render_extended_history_form
+            render_extended_history_form(disabled=is_step1_disabled)
 
-
-
-        if st.session_state.datos_paciente.get('imagenes'):
-                load_css("src/assets/css/components/forms.css")
-                
-                # Marcador para CSS Scoped
-                st.markdown('<span class="media-cards-grid" style="display:none"></span>', unsafe_allow_html=True)
-
-                num_files = len(st.session_state.datos_paciente['imagenes'])
-                # Crear una columna por archivo para permitir wrapping
-                cols = st.columns(num_files)
-                
-                for i, file_obj in enumerate(st.session_state.datos_paciente['imagenes']):
-                    with cols[i]:
-                        # Contenedor para la card
-                        render_media_card(file_obj, i, disabled=is_step1_disabled)
-
-        # --- BOTONES DE CONFIRMACIÓN (MOVIDO) ---
-        if is_editing:
-            if st.button("Confirmar Datos", type="primary", disabled=is_step1_disabled, use_container_width=True):
-                if is_text_valid:
-                    st.session_state.is_editing_text = False
-                    st.session_state.show_text_error = False
-                    st.rerun()
-                else:
-                    st.session_state.show_text_error = True
-                    st.rerun()
-            if st.session_state.show_text_error:
-                c_err_icon, c_err_text = st.columns([1, 20])
-                with c_err_icon:
-                    render_icon("edit", size=20, color="red")
-                with c_err_text:
-                    st.caption(f"Por favor, ingrese al menos {get_min_chars_motivo()} caracteres.")
-        else:
-            # Botón para volver a editar si no se ha finalizado el análisis
             if not is_step1_disabled:
-                if st.button("Editar datos", icon=":material/edit:", key=f"edit_patient_data_{reset_count}", use_container_width=True):
-                    st.session_state.is_editing_text = True
-                    st.rerun()
+                # Pasamos la edad explícitamente para que vital_signs_form pueda cargar la config correcta
+                render_vital_signs_form()
+                
+                # --- ALERTAS PREDICTIVAS (MODULARIZADO) ---
+                # Solo mostrar si hay signos vitales registrados y está habilitado en config
+                from db.repositories.general_config import get_general_config_repository
+                from components.triage.risk_analysis_panel import render_risk_analysis_panel
+                
+                # Asegurar config cargada
+                if 'general_config' not in st.session_state:
+                    st.session_state.general_config = get_general_config_repository().get_config()
+                
+                enable_predictive = st.session_state.general_config.get('enable_predictive_alerts', True)
 
-        total_imagenes = len(st.session_state.datos_paciente.get('imagenes', []))
-        imagenes_seleccionadas = sum(st.session_state.modal_image_selection.values()) if total_imagenes > 0 else 0
-        button_label = f"Analizar con IA ({imagenes_seleccionadas} de {total_imagenes} archivos)" if total_imagenes > 0 else "Analizar con IA"
-        is_button_disabled = not is_text_valid or st.session_state.is_editing_text or is_step1_disabled
+                # NOTA: En modo chat, esto solo se muestra si el chat ha finalizado.
+                if st.session_state.datos_paciente.get('vital_signs'):
+                    render_risk_analysis_panel(st.session_state.datos_paciente, enable_predictive)
+
+            elif 'vital_signs' in st.session_state.datos_paciente:
+                 st.info("Signos vitales registrados.")
 
 
-        if total_imagenes > 0:
-            c_lock_icon, c_lock_text = st.columns([1, 20])
-            with c_lock_icon:
-                render_icon("lock", size=16, color="gray")
-            with c_lock_text:
-                st.caption("**Aviso de Privacidad:** Al hacer clic, consiente el envío de los archivos a Google Gemini.")
+            if st.session_state.datos_paciente.get('imagenes'):
+                    load_css("src/assets/css/components/forms.css")
+                    
+                    # Marcador para CSS Scoped
+                    st.markdown('<span class="media-cards-grid" style="display:none"></span>', unsafe_allow_html=True)
 
-        col_analisis_1, col_analisis_2 = st.columns(2)
-        with col_analisis_1:
-            if st.button("Analizar sin IA", disabled=is_button_disabled, use_container_width=True):
-                with st.spinner("Ejecutando simulación..."):
-                    st.session_state.datos_paciente['imagenes_confirmadas_ia'] = []
+                    num_files = len(st.session_state.datos_paciente['imagenes'])
+                    # Crear una columna por archivo para permitir wrapping
+                    cols = st.columns(num_files)
                     
-                    # --- CÁLCULO DE TRIAJE AUTOMÁTICO (WORST CASE) ---
-                    from components.triage.vital_signs import get_all_configs
-                    from components.triage.triage_logic import calculate_worst_case, calculate_ptr_score
-                    
-                    configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))
-                    triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
-                    
-                    # --- CÁLCULO PTR ---
-                    vs_for_ptr = st.session_state.datos_paciente.get('vital_signs', {}).copy()
-                    vs_for_ptr['dolor'] = st.session_state.datos_paciente.get('dolor', 0)
-                    
-                    ptr_result = calculate_ptr_score(
-                        vs_for_ptr,
-                        st.session_state.datos_paciente
-                    )
-                    triage_result['ptr_result'] = ptr_result
+                    for i, file_obj in enumerate(st.session_state.datos_paciente['imagenes']):
+                        with cols[i]:
+                            # Contenedor para la card
+                            render_media_card(file_obj, i, disabled=is_step1_disabled)
 
-                    # Simulación
-                    resultado_simulado = simulacion_ia(
-                        st.session_state.datos_paciente['texto_medico'], 
-                        st.session_state.datos_paciente['edad'], 
-                        st.session_state.datos_paciente['dolor']
-                    )
-                    
-                    # --- INTEGRACIÓN RAG (Retrieval Only) ---
-                    # Aunque sea "Sin IA Generativa", usamos el buscador vectorial para sugerir protocolos
-                    try:
-                        from services.rag_service import get_rag_service
-                        rag = get_rag_service()
-                        # Buscar 2 fragmentos relevantes
-                        rag_docs = rag.search_documents(st.session_state.datos_paciente['texto_medico'], n_results=2)
-                        
-                        if rag_docs:
-                            resultado_simulado['razonamiento'].append("--- 📚 PROTOCOLOS SUGERIDOS (RAG) ---")
-                            for doc in rag_docs:
-                                source = doc['metadata'].get('source', 'Desconocido')
-                                content_preview = doc['content'][:150].replace("\n", " ") + "..."
-                                resultado_simulado['razonamiento'].append(f"📄 [{source}]: {content_preview}")
-                    except Exception as e:
-                        print(f"RAG Error in Manual Mode: {e}")
-                    
-                    # Procesar igual que la IA real
-                    procesar_respuesta_ia(resultado_simulado, algo_result=triage_result)
-                    st.session_state.analysis_complete = True
-                    st.rerun()
-        
-        with col_analisis_2:
-            # Botón principal con icono
-            # Si ya hay análisis completo, mostrar opción de Regenerar
-            if st.session_state.analysis_complete:
-                if st.button("🔄 Regenerar Respuesta IA", type="secondary", disabled=is_button_disabled, use_container_width=True, help="Generar una nueva respuesta y archivar la actual"):
-                    with st.spinner("Regenerando análisis..."):
-                        # Lógica idéntica a la llamada normal, el servicio se encarga de versionar
-                        pass # Se ejecutará el bloque de abajo porque el botón retorna True
-                else:
-                    # Si no se pulsa regenerar, y ya está completo, no hacemos nada (evita re-ejecución automática al refrescar)
-                    # PERO: necesitamos que el botón original "Analizar" no se muestre o cambie de estado.
-                    # Mejor estrategia: Si analysis_complete, cambiamos el botón a "Regenerar".
-                    pass
+            # --- BOTONES DE CONFIRMACIÓN (MOVIDO) ---
+            if is_editing:
+                if st.button("Confirmar Datos", type="primary", disabled=is_step1_disabled, use_container_width=True):
+                    if is_text_valid:
+                        st.session_state.is_editing_text = False
+                        st.session_state.show_text_error = False
+                        st.rerun()
+                    else:
+                        st.session_state.show_text_error = True
+                        st.rerun()
+                if st.session_state.show_text_error:
+                    c_err_icon, c_err_text = st.columns([1, 20])
+                    with c_err_icon:
+                        render_icon("edit", size=20, color="red")
+                    with c_err_text:
+                        st.caption(f"Por favor, ingrese al menos {get_min_chars_motivo()} caracteres.")
+            else:
+                # Botón para volver a editar si no se ha finalizado el análisis
+                if not is_step1_disabled:
+                    if st.button("Editar datos", icon=":material/edit:", key=f"edit_patient_data_{reset_count}", use_container_width=True):
+                        st.session_state.is_editing_text = True
+                        st.rerun()
 
-            # Botón de Análisis (o Regeneración si se pulsa)
-            btn_text = "🔄 Regenerar Respuesta" if st.session_state.analysis_complete else button_label
-            btn_type = "secondary" if st.session_state.analysis_complete else "primary"
-            
-            if st.button(btn_text, type=btn_type, disabled=is_button_disabled, use_container_width=True, key="btn_analyze_main"):
-                with st.spinner("Contactando con la IA..."):
-                    imagenes_a_enviar = [f for f in st.session_state.datos_paciente.get('imagenes', []) if st.session_state.modal_image_selection.get(f.name)]
-                    st.session_state.datos_paciente['imagenes_confirmadas_ia'] = imagenes_a_enviar
-                    
-                    # Preparar texto enriquecido con transcripciones y entrevista
-                    texto_completo = st.session_state.datos_paciente['texto_medico']
-                    
+            total_imagenes = len(st.session_state.datos_paciente.get('imagenes', []))
+            imagenes_seleccionadas = sum(st.session_state.modal_image_selection.values()) if total_imagenes > 0 else 0
+            button_label = f"Analizar con IA ({imagenes_seleccionadas} de {total_imagenes} archivos)" if total_imagenes > 0 else "Analizar con IA"
+            is_button_disabled = not is_text_valid or st.session_state.is_editing_text or is_step1_disabled
 
-                    
-                    # Buscar transcripciones de audios seleccionados
-                    transcripciones_extra = []
-                    for f in imagenes_a_enviar:
-                        # Verificar si es audio
-                        is_audio_file = False
-                        if isinstance(f, TempFileWrapper):
-                             is_audio_file = f.name.startswith("audio_") or f.name.endswith(('.wav', '.mp3', '.ogg', '.webm', '.mp4', '.mov', '.avi'))
-                        elif hasattr(f, 'name'):
-                             is_audio_file = f.name.endswith(('.wav', '.mp3', '.ogg', '.webm', '.mp4', '.mov', '.avi'))
-                        
-                        if is_audio_file:
-                            md5 = calculate_md5(f)
-                            trans = get_transcription(md5)
-                            if trans:
-                                # Usar sended_text si existe, sino fallback
-                                text_to_send = trans.get('sended_text', '')
-                                if not text_to_send:
-                                     user_text = trans.get('spanish_user_text', '')
-                                     ia_text = trans.get('translated_ia_text', trans.get('spanish_text', ''))
-                                     text_to_send = user_text if user_text else ia_text
-                                
-                                if text_to_send:
-                                    # Formatear con metadatos extra si existen
-                                    extra_info = []
-                                    prosody = trans.get('emotional_prosody')
-                                    relevance = trans.get('relevance')
-                                    
-                                    if prosody and prosody != "No aplicable":
-                                        extra_info.append(f"Prosodia: {prosody}")
-                                    if relevance is not None:
-                                        extra_info.append(f"Relevancia: {relevance}/9")
-                                    
-                                    info_str = f" [{', '.join(extra_info)}]" if extra_info else ""
-                                    transcripciones_extra.append(f"Transcripción Audio ({f.name}): {text_to_send}{info_str}")
 
-                    if transcripciones_extra:
-                        texto_completo += "\n\n" + "\n".join(transcripciones_extra)
+            if total_imagenes > 0:
+                c_lock_icon, c_lock_text = st.columns([1, 20])
+                with c_lock_icon:
+                    render_icon("lock", size=16, color="gray")
+                with c_lock_text:
+                    st.caption("**Aviso de Privacidad:** Al hacer clic, consiente el envío de los archivos a Google Gemini.")
 
-                    # Filtrar imágenes reales para la preview/envío legacy
-                    imagenes_reales = [f for f in imagenes_a_enviar if not isinstance(f, TempFileWrapper) or (not f.name.startswith("audio_") and not f.name.endswith(('.wav', '.mp3')))]
-                    imagen_pil = Image.open(imagenes_reales[0]) if imagenes_reales else None
-                    
-                    # --- CÁLCULO DE TRIAJE AUTOMÁTICO (WORST CASE) ---
-                    from components.triage.vital_signs import get_all_configs
-                    from components.triage.triage_logic import calculate_worst_case, calculate_ptr_score
-                    
-                    configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))
-                    triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
-                    
-                    # --- CÁLCULO PTR (NUEVO) ---
-                    # Preparar signos vitales enriquecidos con dolor
-                    vs_for_ptr = st.session_state.datos_paciente.get('vital_signs', {}).copy()
-                    vs_for_ptr['dolor'] = st.session_state.datos_paciente.get('dolor', 0)
-                    
-                    ptr_result = calculate_ptr_score(
-                        vs_for_ptr,
-                        st.session_state.datos_paciente
-                    )
-                    triage_result['ptr_result'] = ptr_result
-                    
-                    # Verificar Modo Contingencia
-                    from services.contingency_service import is_contingency_active, save_triage_locally
-                    
-                    if is_contingency_active():
-                        # Lógica Manual (Directo a DB)
-                        st.info("🛠️ MODO MANUAL: Guardando directamente en Base de Datos (Sin IA).")
+            col_analisis_1, col_analisis_2 = st.columns(2)
+            with col_analisis_1:
+                if st.button("Analizar sin IA", disabled=is_button_disabled, use_container_width=True):
+                    with st.spinner("Ejecutando simulación..."):
+                        st.session_state.datos_paciente['imagenes_confirmadas_ia'] = []
                         
-                        # Construir resultado manual
-                        manual_result = {
-                            "status": "SUCCESS",
-                            "nivel_sugerido": triage_result.get('final_priority', 5),
-                            "razonamiento": [
-                                "Modo Manual Activo.",
-                                f"Clasificación basada en signos vitales: {triage_result.get('label')}",
-                                "Análisis IA omitido por usuario."
-                            ],
-                            "final_priority": triage_result.get('final_priority', 5),
-                            "final_color": triage_result.get('color', 'gray'),
-                            "nivel": {
-                                "text": triage_result.get('label', 'Nivel V'),
-                                "color": triage_result.get('color', 'gray')
-                            }
-                        }
+                        # --- CÁLCULO DE TRIAJE AUTOMÁTICO (WORST CASE) ---
+                        from components.triage.vital_signs import get_all_configs
+                        from components.triage.triage_logic import calculate_worst_case, calculate_ptr_score
                         
-                        st.session_state.resultado = manual_result
+                        configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))
+                        triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
                         
-                        # Guardar en DB (usando el servicio de flujo)
-                        from services.patient_flow_service import save_triage_data
+                        # --- CÁLCULO PTR ---
+                        vs_for_ptr = st.session_state.datos_paciente.get('vital_signs', {}).copy()
+                        vs_for_ptr['dolor'] = st.session_state.datos_paciente.get('dolor', 0)
                         
-                        # Preparar datos completos para guardado
-                        full_data = {
-                            "datos_paciente": st.session_state.datos_paciente,
-                            "resultado": manual_result,
-                            "evaluator_id": st.session_state.current_user['username'] if 'current_user' in st.session_state else 'unknown',
-                            "contingency_mode": True, # Flag para indicar que fue manual
-                            "is_training": st.session_state.get('training_mode', False)
-                        }
+                        ptr_result = calculate_ptr_score(
+                            vs_for_ptr,
+                            st.session_state.datos_paciente
+                        )
+                        triage_result['ptr_result'] = ptr_result
+
+                        # Simulación
+                        resultado_simulado = simulacion_ia(
+                            st.session_state.datos_paciente['texto_medico'], 
+                            st.session_state.datos_paciente['edad'], 
+                            st.session_state.datos_paciente['dolor']
+                        )
                         
-                        patient_code = st.session_state.datos_paciente.get('patient_code', 'unknown')
+                        # --- INTEGRACIÓN RAG (Retrieval Only) ---
+                        # Aunque sea "Sin IA Generativa", usamos el buscador vectorial para sugerir protocolos
+                        try:
+                            from services.rag_service import get_rag_service
+                            rag = get_rag_service()
+                            # Buscar 2 fragmentos relevantes
+                            rag_docs = rag.search_documents(st.session_state.datos_paciente['texto_medico'], n_results=2)
+                            
+                            if rag_docs:
+                                resultado_simulado['razonamiento'].append("--- 📚 PROTOCOLOS SUGERIDOS (RAG) ---")
+                                for doc in rag_docs:
+                                    source = doc['metadata'].get('source', 'Desconocido')
+                                    content_preview = doc['content'][:150].replace("\\n", " ") + "..."
+                                    resultado_simulado['razonamiento'].append(f"📄 [{source}]: {content_preview}")
+                        except Exception as e:
+                            print(f"RAG Error in Manual Mode: {e}")
                         
-                        if save_triage_data(patient_code, full_data):
-                            st.success("✅ Triaje guardado correctamente en Base de Datos.")
-                        else:
-                            st.error("❌ Error al guardar en Base de Datos.")
-                        
+                        # Procesar igual que la IA real
+                        procesar_respuesta_ia(resultado_simulado, algo_result=triage_result)
                         st.session_state.analysis_complete = True
                         st.rerun()
-                        
+            
+            with col_analisis_2:
+                # Botón principal con icono
+                # Si ya hay análisis completo, mostrar opción de Regenerar
+                if st.session_state.analysis_complete:
+                    if st.button("🔄 Regenerar Respuesta IA", type="secondary", disabled=is_button_disabled, use_container_width=True, help="Generar una nueva respuesta y archivar la actual"):
+                        with st.spinner("Regenerando análisis..."):
+                            # Lógica idéntica a la llamada normal, el servicio se encarga de versionar
+                            pass # Se ejecutará el bloque de abajo porque el botón retorna True
                     else:
-                        # Lógica Online (IA)
-                        # Preparar datos de alergias (Priorizar info completa)
-                        alergias_info = st.session_state.datos_paciente.get('alergias_info_completa')
-                        if not alergias_info:
-                            # Fallback a lógica antigua
-                            alergias_info = st.session_state.datos_paciente.get('alergias_selector', 'No')
+                        # Si no se pulsa regenerar, y ya está completo, no hacemos nada (evita re-ejecución automática al refrescar)
+                        # PERO: necesitamos que el botón original "Analizar" no se muestre o cambie de estado.
+                        # Mejor estrategia: Si analysis_complete, cambiamos el botón a "Regenerar".
+                        pass
 
-                        # Combinar antecedentes legacy con historia integral
-                        antecedentes_legacy = st.session_state.datos_paciente.get('antecedentes', '')
-                        historia_integral = st.session_state.datos_paciente.get('historia_integral', '')
+                # Botón de Análisis (o Regeneración si se pulsa)
+                btn_text = "🔄 Regenerar Respuesta" if st.session_state.analysis_complete else button_label
+                btn_type = "secondary" if st.session_state.analysis_complete else "primary"
+                
+                if st.button(btn_text, type=btn_type, disabled=is_button_disabled, use_container_width=True, key="btn_analyze_main"):
+                    with st.spinner("Contactando con la IA..."):
+                        imagenes_a_enviar = [f for f in st.session_state.datos_paciente.get('imagenes', []) if st.session_state.modal_image_selection.get(f.name)]
+                        st.session_state.datos_paciente['imagenes_confirmadas_ia'] = imagenes_a_enviar
                         
-                        # --- GUARDAR TRANSCRIPCIÓN DEL CHAT (Phase 11.4) ---
-                        if 'chat_history' in st.session_state and st.session_state.chat_history:
-                             st.session_state.datos_paciente['chat_transcript'] = st.session_state.chat_history
+                        # Preparar texto enriquecido con transcripciones y entrevista
+                        texto_completo = st.session_state.datos_paciente['texto_medico']
                         
-                        # Llamada a la IA
-                        try:
-                            resultado_ia, final_prompt = llamar_modelo_gemini(
-                                motivo=texto_completo,
-                                edad=st.session_state.datos_paciente.get('edad'),
-                                dolor=st.session_state.datos_paciente.get('dolor', 0),
-                                vital_signs=st.session_state.datos_paciente.get('vital_signs', {}),
-                                imagen=imagen_pil,
-                                triage_result=triage_result,
-                                antecedentes=antecedentes_legacy,
-                                alergias=alergias_info,
-                                gender=st.session_state.datos_paciente.get('gender'),
-                                criterio_geriatrico=st.session_state.datos_paciente.get('criterio_geriatrico', False),
-                                criterio_inmunodeprimido=st.session_state.datos_paciente.get('criterio_inmunodeprimido', False),
-                                criterio_inmunodeprimido_det=st.session_state.datos_paciente.get('criterio_inmunodeprimido_det', ''),
-                                extended_history=historia_integral,
-                                nursing_assessment=st.session_state.datos_paciente.get('nursing_assessment')
-                            )
+                        # Buscar transcripciones de audios seleccionados
+                        transcripciones_extra = []
+                        for f in imagenes_a_enviar:
+                            # Verificar si es audio
+                            is_audio_file = False
+                            if isinstance(f, TempFileWrapper):
+                                 is_audio_file = f.name.startswith("audio_") or f.name.endswith(('.wav', '.mp3', '.ogg', '.webm', '.mp4', '.mov', '.avi'))
+                            elif hasattr(f, 'name'):
+                                 is_audio_file = f.name.endswith(('.wav', '.mp3', '.ogg', '.webm', '.mp4', '.mov', '.avi'))
                             
-                            # Manejo de Errores de Conexión / Sugerencia de Contingencia
-                            if isinstance(resultado_ia, dict) and resultado_ia.get("suggest_contingency"):
-                                st.error(f"⚠️ {resultado_ia.get('msg')}")
-                                st.warning("Parece que hay problemas de conexión con la IA. Se recomienda activar el modo offline.")
-                                
-                                c_cont1, c_cont2 = st.columns(2)
-                                with c_cont1:
-                                    if st.button("📴 Activar Modo Contingencia", type="primary", key="btn_activate_contingency_error"):
-                                        from services.contingency_service import set_contingency_mode
-                                        set_contingency_mode(True)
-                                        st.rerun()
-                                with c_cont2:
-                                    if st.button("🔄 Reintentar", key="btn_retry_ai_error"):
-                                        st.rerun()
-                                
-                                # Detener ejecución para no guardar error como resultado
-                                st.stop()
+                            if is_audio_file:
+                                md5 = calculate_md5(f)
+                                trans = get_transcription(md5)
+                                if trans:
+                                    # Usar sended_text si existe, sino fallback
+                                    text_to_send = trans.get('sended_text', '')
+                                    if not text_to_send:
+                                         user_text = trans.get('spanish_user_text', '')
+                                         ia_text = trans.get('translated_ia_text', trans.get('spanish_text', ''))
+                                         text_to_send = user_text if user_text else ia_text
+                                    
+                                    if text_to_send:
+                                        # Formatear con metadatos extra si existen
+                                        extra_info = []
+                                        prosody = trans.get('emotional_prosody')
+                                        relevance = trans.get('relevance')
+                                        
+                                        if prosody and prosody != "No aplicable":
+                                            extra_info.append(f"Prosodia: {prosody}")
+                                        if relevance is not None:
+                                            extra_info.append(f"Relevancia: {relevance}/9")
+                                        
+                                        info_str = f" [{', '.join(extra_info)}]" if extra_info else ""
+                                        transcripciones_extra.append(f"Transcripción Audio ({f.name}): {text_to_send}{info_str}")
+
+                        if transcripciones_extra:
+                            texto_completo += "\\n\\n" + "\\n".join(transcripciones_extra)
+
+                        # Filtrar imágenes reales para la preview/envío legacy
+                        imagenes_reales = [f for f in imagenes_a_enviar if not isinstance(f, TempFileWrapper) or (not f.name.startswith("audio_") and not f.name.endswith(('.wav', '.mp3')))]
+                        imagen_pil = Image.open(imagenes_reales[0]) if imagenes_reales else None
+                        
+                        # --- CÁLCULO DE TRIAJE AUTOMÁTICO (WORST CASE) ---
+                        from components.triage.vital_signs import get_all_configs
+                        from components.triage.triage_logic import calculate_worst_case, calculate_ptr_score
+                        
+                        configs = get_all_configs(st.session_state.datos_paciente.get('edad', 40))
+                        triage_result = calculate_worst_case(st.session_state.datos_paciente.get('vital_signs', {}), configs)
+                        
+                        # --- CÁLCULO PTR (NUEVO) ---
+                        # Preparar signos vitales enriquecidos con dolor
+                        vs_for_ptr = st.session_state.datos_paciente.get('vital_signs', {}).copy()
+                        vs_for_ptr['dolor'] = st.session_state.datos_paciente.get('dolor', 0)
+                        
+                        ptr_result = calculate_ptr_score(
+                            vs_for_ptr,
+                            st.session_state.datos_paciente
+                        )
+                        triage_result['ptr_result'] = ptr_result
+                        
+                        # Verificar Modo Contingencia
+                        from services.contingency_service import is_contingency_active, save_triage_locally
+                        
+                        if is_contingency_active():
+                            # Lógica Manual (Directo a DB)
+                            st.info("🛠️ MODO MANUAL: Guardando directamente en Base de Datos (Sin IA).")
                             
-                            procesar_respuesta_ia(resultado_ia, algo_result=triage_result)
+                            # Construir resultado manual
+                            manual_result = {
+                                "status": "SUCCESS",
+                                "nivel_sugerido": triage_result.get('final_priority', 5),
+                                "razonamiento": [
+                                    "Modo Manual Activo.",
+                                    f"Clasificación basada en signos vitales: {triage_result.get('label')}",
+                                    "Análisis IA omitido por usuario."
+                                ],
+                                "final_priority": triage_result.get('final_priority', 5),
+                                "final_color": triage_result.get('color', 'gray'),
+                                "nivel": {
+                                    "text": triage_result.get('label', 'Nivel V'),
+                                    "color": triage_result.get('color', 'gray')
+                                }
+                            }
+                            
+                            st.session_state.resultado = manual_result
+                            
+                            # Guardar en DB (usando el servicio de flujo)
+                            from services.patient_flow_service import save_triage_data
+                            
+                            # Preparar datos completos para guardado
+                            full_data = {
+                                "datos_paciente": st.session_state.datos_paciente,
+                                "resultado": manual_result,
+                                "evaluator_id": st.session_state.current_user['username'] if 'current_user' in st.session_state else 'unknown',
+                                "contingency_mode": True, # Flag para indicar que fue manual
+                                "is_training": st.session_state.get('training_mode', False)
+                            }
+                            
+                            patient_code = st.session_state.datos_paciente.get('patient_code', 'unknown')
+                            
+                            if save_triage_data(patient_code, full_data):
+                                st.success("✅ Triaje guardado correctamente en Base de Datos.")
+                            else:
+                                st.error("❌ Error al guardar en Base de Datos.")
+                            
                             st.session_state.analysis_complete = True
                             st.rerun()
-
-                        except Exception as e:
-                            st.error(f"❌ Error crítico al contactar con la IA: {str(e)}")
-                            st.warning("El servicio de IA no está disponible. Puede reintentar o usar el modo manual.")
                             
-                            col_err_1, col_err_2 = st.columns(2)
-                            with col_err_1:
-                                if st.button("🔄 Reintentar Análisis", key="btn_retry_exception"):
-                                    st.rerun()
-                            with col_err_2:
-                                if st.button("📝 Continuar Manualmente (Sin IA)", key="btn_manual_fallback", type="primary"):
-                                    # Simular resultado manual/fallido para permitir avanzar
-                                    st.session_state.resultado = {
-                                        "status": "MANUAL_FALLBACK",
-                                        "nivel_sugerido": triage_result.get('final_priority', 5),
-                                        "razonamiento": ["Fallo del sistema IA.", f"Error: {str(e)}", "Clasificación basada en constantes."]
-                                    }
-                                    st.session_state.analysis_complete = True
-                                    st.rerun()
-                            st.stop()
+                        else:
+                            # Lógica Online (IA)
+                            # Preparar datos de alergias (Priorizar info completa)
+                            alergias_info = st.session_state.datos_paciente.get('alergias_info_completa')
+                            if not alergias_info:
+                                # Fallback a lógica antigua
+                                alergias_info = st.session_state.datos_paciente.get('alergias_selector', 'No')
+
+                            # Combinar antecedentes legacy con historia integral
+                            antecedentes_legacy = st.session_state.datos_paciente.get('antecedentes', '')
+                            historia_integral = st.session_state.datos_paciente.get('historia_integral', '')
+                            
+                            # --- GUARDAR TRANSCRIPCIÓN DEL CHAT (Phase 11.4) ---
+                            if 'chat_history' in st.session_state and st.session_state.chat_history:
+                                 st.session_state.datos_paciente['chat_transcript'] = st.session_state.chat_history
+                            
+                            # Llamada a la IA
+                            try:
+                                resultado_ia, final_prompt = llamar_modelo_gemini(
+                                    motivo=texto_completo,
+                                    edad=st.session_state.datos_paciente.get('edad'),
+                                    dolor=st.session_state.datos_paciente.get('dolor', 0),
+                                    vital_signs=st.session_state.datos_paciente.get('vital_signs', {}),
+                                    imagen=imagen_pil,
+                                    triage_result=triage_result,
+                                    antecedentes=antecedentes_legacy,
+                                    alergias=alergias_info,
+                                    gender=st.session_state.datos_paciente.get('gender'),
+                                    criterio_geriatrico=st.session_state.datos_paciente.get('criterio_geriatrico', False),
+                                    criterio_inmunodeprimido=st.session_state.datos_paciente.get('criterio_inmunodeprimido', False),
+                                    criterio_inmunodeprimido_det=st.session_state.datos_paciente.get('criterio_inmunodeprimido_det', ''),
+                                    extended_history=historia_integral,
+                                    nursing_assessment=st.session_state.datos_paciente.get('nursing_assessment')
+                                )
+                                
+                                # Manejo de Errores de Conexión / Sugerencia de Contingencia
+                                if isinstance(resultado_ia, dict) and resultado_ia.get("suggest_contingency"):
+                                    st.error(f"⚠️ {resultado_ia.get('msg')}")
+                                    st.warning("Parece que hay problemas de conexión con la IA. Se recomienda activar el modo offline.")
+                                    
+                                    c_cont1, c_cont2 = st.columns(2)
+                                    with c_cont1:
+                                        if st.button("📴 Activar Modo Contingencia", type="primary", key="btn_activate_contingency_error"):
+                                            from services.contingency_service import set_contingency_mode
+                                            set_contingency_mode(True)
+                                            st.rerun()
+                                    with c_cont2:
+                                        if st.button("🔄 Reintentar", key="btn_retry_ai_error"):
+                                            st.rerun()
+                                    
+                                    # Detener ejecución para no guardar error como resultado
+                                    st.stop()
+                                
+                                procesar_respuesta_ia(resultado_ia, algo_result=triage_result)
+                                st.session_state.analysis_complete = True
+                                st.rerun()
+
+                            except Exception as e:
+                                st.error(f"❌ Error crítico al contactar con la IA: {str(e)}")
+                                st.warning("El servicio de IA no está disponible. Puede reintentar o usar el modo manual.")
+                                
+                                col_err_1, col_err_2 = st.columns(2)
+                                with col_err_1:
+                                    if st.button("🔄 Reintentar Análisis", key="btn_retry_exception"):
+                                        st.rerun()
+                                with col_err_2:
+                                    if st.button("📝 Continuar Manualmente (Sin IA)", key="btn_manual_fallback", type="primary"):
+                                        # Simular resultado manual/fallido para permitir avanzar
+                                        st.session_state.resultado = {
+                                            "status": "MANUAL_FALLBACK",
+                                            "nivel_sugerido": triage_result.get('final_priority', 5),
+                                            "razonamiento": ["Fallo del sistema IA.", f"Error: {str(e)}", "Clasificación basada en signos vitales."]
+                                        }
+                                        st.session_state.analysis_complete = True
+                                        st.rerun()
+                                st.stop()
+
+
+        # --- LÓGICA DE VISUALIZACIÓN DE FORMULARIO COMÚN ---
+        if triage_mode == "Conversacional (Chat IA)":
+             if st.session_state.get('chat_completed', False):
+                 st.divider()
+                 render_shared_manual_form()
+        else:
+             render_shared_manual_form()
 
     st.markdown('<div class="debug-footer">src/components/triage/input_form.py</div>', unsafe_allow_html=True)

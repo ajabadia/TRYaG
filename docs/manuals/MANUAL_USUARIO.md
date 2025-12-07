@@ -90,37 +90,65 @@ Diseñado para practicar con casos clínicos simulados sin afectar a pacientes r
 
 ---
 
+---
+
 ## 5. Módulo de Atención (Box)
 **Perfil:** Médico
 
 Gestión de la consulta médica y resolución del caso.
 
-### 4.1 Llamada a Paciente
+### 5.1 Llamada a Paciente
 1.  Acceda a la pestaña **"🏥 Atención Box"** (o "Consulta").
 2.  Verá la lista de pacientes **"Pendientes de Atención"** (ya triados).
 3.  Seleccione un paciente y pulse **"Llamar a Consulta"**. Esto cambiará su estado a `EN_ATENCION` y lo asignará a su box.
 
-### 4.2 Acto Médico
+### 5.2 Acto Médico
 En la pantalla de atención podrá ver:
 *   **Resumen de Triaje:** Motivo, vitales, nivel de urgencia y notas de enfermería.
 *   **Archivos:** Acceso a fotos, videos o informes adjuntados en triaje.
 *   **Historial:** Consultas previas del paciente.
 
-### 4.3 Finalización
+### 5.3 Finalización
 Al terminar la consulta:
 1.  Seleccione el destino de alta (Domicilio, Ingreso, Traslado).
 2.  Pulse **"Finalizar Asistencia"**. El paciente saldrá de las listas activas.
 
 ---
 
-## 5. Sala de Espera (Pantalla Pública)
+## 6. Módulo de Segunda Opinión ("Reasoning ++")
+**Perfil:** Médico / Administrador
+
+Herramienta de soporte diseñada para casos clínicos complejos o dudosos, donde se requiere un análisis profundo más allá del triaje estándar. Utiliza modelos de IA de razonamiento avanzado (simulando capacidades de Gemini 2.5/3.0).
+
+### 6.1 Acceso
+1.  Acceda a la pestaña **"🧠 Segunda Opinión"** en el menú principal.
+2.  **Nota:** Si no ve esta pestaña, contacte con su administrador para revisar sus permisos.
+
+### 6.2 Funcionamiento
+1.  **Selección de Paciente:** Utilice el buscador unificado (similar a Admisión) para cargar un paciente.
+2.  **Revisión de Contexto:** El sistema desplegará automáticamente un "Contexto Masivo" en el panel izquierdo, agregando:
+    *   Datos demográficos.
+    *   Historial completo de triajes y vitales.
+    *   Archivos multimedia asociados.
+3.  **Consulta:** En el panel derecho ("Análisis"), escriba su duda clínica específica o solicite una revisión general.
+4.  **Ejecución:** Pulse **"Solicitar Análisis Profundo"**.
+5.  **Resultados:** La IA procesará el caso utilizando una metodología "Chain of Thought" (Cadena de Pensamiento) y le devolverá:
+    *   Diagnósticos diferenciales razonados.
+    *   Alertas de riesgo no detectadas ("Red Flags").
+    *   Sugerencias de pruebas complementarias.
+
+> **IMPORTANTE:** Esta herramienta es puramente consultiva. La IA puede alucinar o cometer errores. **Su juicio clínico prevalece siempre.**
+
+---
+
+## 7. Sala de Espera (Pantalla Pública)
 **Uso:** Monitor de TV en sala de espera.
 
 Acceda a la pestaña **"🪑 Sala de Espera"**. Esta vista está diseñada para mostrarse en pantallas públicas y permite a los pacientes saber su estado mediante códigos anonimizados (ej. `PAC-8392`).
 
 ---
 
-## 6. Notificaciones
+## 8. Notificaciones
 El sistema puede enviarle alertas importantes (ej. "Sala Inexistente", "Paciente Crítico") incluso si no está mirando la pantalla.
 
 *   **Campana (In-App):** Icono en la esquina superior derecha.
@@ -129,7 +157,7 @@ El sistema puede enviarle alertas importantes (ej. "Sala Inexistente", "Paciente
 
 ---
 
-## 7. Integración Técnica (API)
+## 9. Integración Técnica (API)
 
 El sistema dispone de una **API REST** ("Apificación") que permite la integración con otros sistemas del hospital (HIS, App Móvil).
 Aunque esta funcionalidad es transparente para el usuario final, permite que:

@@ -51,6 +51,11 @@ def render_prompt_manager():
             "title": "Informe de Relevo (Handoff)",
             "desc": "Generación del informe de cambio de turno. Variables disponibles: {hours}, {total_patients}, {level_counts}, {critical_summary}.",
             "icon": "assignment"
+        },
+        "second_opinion_reasoning": {
+            "title": "Segunda Opinión (Reasoning ++)",
+            "desc": "Prompt de razonamiento profundo (CoT). Variables: {data_aggregation}. Modelo recomendado: gemini-1.5-flash o gemini-1.5-pro.",
+            "icon": "psychology"
         }
     }
     
@@ -300,6 +305,16 @@ def _render_prompt_editor_logic(prompt_type):
                          response, _ = service.generate_content(
                             caller_id="test_prompt", user_id="admin", call_type="test",
                             prompt_type="shift_handoff", prompt_version_id="preview",
+                            model_name=new_model, prompt_content=sim_prompt
+                         )
+                    elif prompt_type == "second_opinion_reasoning":
+                         from services.gemini_client import get_gemini_service
+                         service = get_gemini_service()
+                         # Prompt simulado
+                         sim_prompt = new_content.replace("{data_aggregation}", f"DATOS SIMULADOS:\nPaciente de prueba\nMotivo: {test_input}")
+                         response, _ = service.generate_content(
+                            caller_id="test_prompt", user_id="admin", call_type="test",
+                            prompt_type="second_opinion_reasoning", prompt_version_id="preview",
                             model_name=new_model, prompt_content=sim_prompt
                          )
                     

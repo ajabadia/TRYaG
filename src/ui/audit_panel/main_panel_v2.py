@@ -25,11 +25,12 @@ def mostrar_registro_auditoria_v2():
     if "num_audit_records_to_show" not in st.session_state:
         st.session_state.num_audit_records_to_show = PAGE_SIZE
 
-    tab_datos, tab_analisis, tab_predicciones, tab_debug = st.tabs([
+    tab_datos, tab_analisis, tab_predicciones, tab_debug, tab_docs = st.tabs([
         "📉 Datos en Bruto",
         "📈 Análisis Gráfico",
         "🧠 Predicciones IA",
-        "🛠️ Debug MongoDB"
+        "🛠️ Debug MongoDB",
+        "📚 Documentación"
     ])
 
     try:
@@ -74,6 +75,34 @@ def mostrar_registro_auditoria_v2():
         # Debug panel (Modular)
         with tab_debug:
             render_debug_panel_modular(key_prefix="v2_debug_mod")
+            
+        # Documentation Panel
+        with tab_docs:
+            st.markdown("### 📚 Documentación Pública")
+            import os
+            docs_dir = "docs/public"
+            
+            if not os.path.exists(docs_dir):
+                st.warning(f"Directorio no encontrado: {docs_dir}")
+                os.makedirs(docs_dir, exist_ok=True) # Create if missing for next time
+            else:
+                files = os.listdir(docs_dir)
+                files = [f for f in files if os.path.isfile(os.path.join(docs_dir, f))]
+                
+                if not files:
+                    st.info("No hay documentos disponibles en este momento.")
+                else:
+                    st.markdown("Documentos disponibles para descarga:")
+                    for f_name in files:
+                        f_path = os.path.join(docs_dir, f_name)
+                        with open(f_path, "rb") as f_obj:
+                            btn_label = f"⬇️ Descargar {f_name}"
+                            st.download_button(
+                                label=btn_label,
+                                data=f_obj,
+                                file_name=f_name,
+                                mime="application/octet-stream"
+                            )
 
         # Procesar timestamps
         if "timestamp" in df_audit_base.columns:

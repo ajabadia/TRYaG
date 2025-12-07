@@ -31,10 +31,11 @@
     *   **Relevo de Turno (Shift Handoff):** Generación automática de informes de cambio de guardia con IA.
     *   **Gestión de Salas:** Monitor Público para sala de espera (Anonimizado) y Orquestador de Flujos.
     *   **Identificación:** Generación de Tickets/Pulseras con QR para trazabilidad.
+    *   **Segunda Opinión Experta:** Módulo "Reasoning ++" con análisis multimodal (Imágenes/Docs) y API-First.
 *   **Métricas del Piloto:**
     *   Capacidad validada para usuarios concurrentes con gestión de colas.
     *   Reducción estimada del 40% en tiempo de documentación.
-    *   Estandarización de decisiones clínicas mediante RAG.
+    *   Estandarización de decisiones clínicas mediante RAG y Análisis Estructurado.
 
 ### 5. Conclusiones y Líneas Futuras
 *   **Conclusión:** La plataforma demuestra que la IA Generativa, gobernada por reglas estrictas de contingencia y auditoría, transforma la eficiencia operativa en Urgencias.

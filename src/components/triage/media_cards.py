@@ -9,38 +9,7 @@ from utils.file_handler import TempFileWrapper, calculate_md5
 from core.transcription_handler import get_transcription, save_transcription
 from services.transcription_service import transcribir_audio
 
-def render_media_card(file_obj, index):
-    """
-    Renderiza una tarjeta para un archivo multimedia específico.
-    Detecta el tipo de archivo y delega en el renderizador específico.
-    
-    Args:
-        file_obj: Objeto del archivo (UploadedFile, TempFileWrapper, etc.)
-        index (int): Índice del archivo en la lista (para claves únicas).
-        disabled (bool): Si es True, deshabilita las interacciones.
-    """
-    # Calcular MD5 único para el archivo
-    file_md5 = calculate_md5(file_obj)
-    
-    # Contenedor principal de la card con borde
-    with st.container(border=True):
-        # 1. Determinar tipo y renderizar contenido específico
-        is_audio = _is_audio_file(file_obj)
-        
-        if is_audio:
-            _render_audio_card(file_obj, index, file_md5)
-        else:
-            _render_image_card(file_obj, index, file_md5)
-            
-        # 2. Renderizar Footer Genérico (Checkbox Analizar y Botón Borrar)
-        _render_card_footer(file_obj, index, file_md5, is_audio)
 
-def _is_audio_file(file_obj):
-    """Determina si el archivo es de audio."""
-    # Duck typing para evitar problemas de importación cruzada
-    if hasattr(file_obj, 'name'):
-        return file_obj.name.startswith("audio_") or file_obj.name.endswith(('.wav', '.mp3', '.ogg'))
-    return False
 
 def _get_file_content(file_obj):
     """
@@ -89,7 +58,7 @@ def _get_file_content(file_obj):
             
     return None
 
-def render_media_card(file_obj, index, disabled=False):
+def render_media_card(file_obj, index, disabled=False, selection_key="modal_image_selection"):
     """
     Renderiza una tarjeta para un archivo multimedia específico.
     Detecta el tipo de archivo y delega en el renderizador específico.
@@ -120,7 +89,54 @@ def render_media_card(file_obj, index, disabled=False):
         # Imágenes también, pero la lógica actual de 'is_audio' controlaba transcripción.
         # Ajustaremos para que 'is_audio' signifique 'tiene transcripción'.
         is_transcribable = file_name.endswith(('.wav', '.mp3', '.ogg', '.mp4', '.mov', '.avi')) or file_name.startswith("audio_")
-        _render_card_footer(file_obj, index, file_md5, is_transcribable, disabled)
+        _render_card_footer(file_obj, index, file_md5, is_transcribable, disabled, selection_key)
+
+# ... (omitted) ...
+
+def _render_card_footer(file_obj, index, file_md5, is_transcribable, disabled=False, selection_key="modal_image_selection"):
+    """
+    Renderiza el pie de la tarjeta con:
+    - Checkbox 'Analizar' (si aplica)
+    - Botón de borrado
+    """
+    c_check, c_del = st.columns([0.7, 0.3])
+    
+    # Asegurar que el diccionario de selección existe
+    if selection_key not in st.session_state:
+        st.session_state[selection_key] = {}
+
+    with c_check:
+        can_analyze = True
+        if is_transcribable:
+            # Solo analizar si hay transcripción válida y relevante
+            trans = get_transcription(file_md5)
+            if not trans:
+                can_analyze = False
+            elif trans.get('relevance') == 0:
+                can_analyze = False
+        
+        is_selected = st.session_state[selection_key].get(file_obj.name, False)
+        
+        if not can_analyze and is_selected:
+            st.session_state[selection_key][file_obj.name] = False
+            is_selected = False
+            
+        new_val = st.checkbox(
+            "Analizar",
+            value=is_selected,
+            disabled=not can_analyze or disabled,
+            key=f"chk_{index}_{file_md5}"
+        )
+        
+        if new_val != is_selected:
+            st.session_state[selection_key][file_obj.name] = new_val
+
+    with c_del:
+        if st.button("🗑️", key=f"del_{index}_{file_md5}", disabled=disabled):
+            if 'deleted_filenames' not in st.session_state:
+                st.session_state.deleted_filenames = set()
+            st.session_state.deleted_filenames.add(file_obj.name)
+            st.rerun()
 
 def _render_audio_card(file_obj, index, file_md5, disabled=False):
     """Renderiza tarjeta de Audio."""
@@ -283,45 +299,5 @@ def _render_transcription_actions(file_obj, index, file_md5, disabled=False):
                 save_transcription(file_md5, data, source="MANUAL", spanish_user_text=man_text)
                 st.rerun()
 
-def _render_card_footer(file_obj, index, file_md5, is_transcribable, disabled=False):
-    """
-    Renderiza el pie de la tarjeta con:
-    - Checkbox 'Analizar' (si aplica)
-    - Botón de borrado
-    """
-    c_check, c_del = st.columns([0.7, 0.3])
-    
-    with c_check:
-        can_analyze = True
-        if is_transcribable:
-            # Solo analizar si hay transcripción válida y relevante
-            trans = get_transcription(file_md5)
-            if not trans:
-                can_analyze = False
-            elif trans.get('relevance') == 0:
-                can_analyze = False
-        
-        is_selected = st.session_state.modal_image_selection.get(file_obj.name, False)
-        
-        if not can_analyze and is_selected:
-            st.session_state.modal_image_selection[file_obj.name] = False
-            is_selected = False
-            
-        new_val = st.checkbox(
-            "Analizar",
-            value=is_selected,
-            disabled=not can_analyze or disabled,
-            key=f"chk_{index}_{file_md5}"
-        )
-        
-        if new_val != is_selected:
-            st.session_state.modal_image_selection[file_obj.name] = new_val
-
-    with c_del:
-        if st.button("🗑️", key=f"del_{index}_{file_md5}", disabled=disabled):
-            if 'deleted_filenames' not in st.session_state:
-                st.session_state.deleted_filenames = set()
-            st.session_state.deleted_filenames.add(file_obj.name)
-            st.rerun()
-    
     st.markdown('<div class="debug-footer">src/components/triage/media_cards.py</div>', unsafe_allow_html=True)
+

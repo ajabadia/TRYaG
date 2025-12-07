@@ -3,7 +3,7 @@ from datetime import datetime
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepTogether
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepTogether, PageBreak
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT
 import re
@@ -417,3 +417,174 @@ def generate_triage_pdf(triage_record: dict) -> bytes:
             "motivo_consulta": f"Error generando borrador: {str(e)}",
             "is_draft": True
         })
+
+def generate_second_opinion_report(patient_info: dict, context: dict, analysis_result: dict) -> bytes:
+    """
+    Genera un informe detallado de Segunda Opinión (Reasoning ++) usando ReportLab.
+    """
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=50, leftMargin=50, topMargin=50, bottomMargin=50)
+    styles = _get_styles()
+    story = []
+    
+    # 1. HEADER
+    story.append(Paragraph("INFORME DE SEGUNDA OPINIÓN (IA AVANZADA)", styles['ReportTitle']))
+    
+    # 2. PATIENT INFO (Compact)
+    p_profile = context.get('patient_profile', {})
+    admin_data = [
+        [Paragraph(f"<b>Paciente:</b> {patient_info.get('nombre', 'Desconocido')} {patient_info.get('apellido1', '')}", styles['Normal']),
+         Paragraph(f"<b>ID:</b> {patient_info.get('patient_code', 'N/A')}", styles['Normal'])],
+        [Paragraph(f"<b>Edad/Sexo:</b> {p_profile.get('age', 'N/A')} / {p_profile.get('gender', 'N/A')}", styles['Normal']),
+         Paragraph(f"<b>Fecha Análisis:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}", styles['Normal'])]
+    ]
+    t_admin = Table(admin_data, colWidths=[3.5*inch, 3*inch])
+    t_admin.setStyle(TableStyle([
+        ('GRID', (0,0), (-1,-1), 0.5, BORDER_COLOR),
+        ('BACKGROUND', (0,0), (-1,-1), colors.aliceblue),
+        ('PADDING', (0,0), (-1,-1), 8),
+    ]))
+    story.append(t_admin)
+    story.append(Spacer(1, 15))
+
+    # 3. CONTEXTO ANALIZADO
+    story.append(Paragraph("1. Contexto Analizado", styles['SectionHeader']))
+    
+    # Antecedentes
+    hist = p_profile.get('background', 'No registrado')
+    if isinstance(hist, list): hist = ", ".join(hist)
+    story.append(Paragraph("<b>Antecedentes Clínicos:</b>", styles['SubSectionHeader']))
+    story.append(Paragraph(str(hist), styles['NormalJustified']))
+    
+    # Triage History (Summary)
+    story.append(Spacer(1, 10))
+    story.append(Paragraph("<b>Historial de Episodios Recientes (Resumen):</b>", styles['SubSectionHeader']))
+    history = context.get('triage_history', [])
+    if history:
+        for item in history:
+            date_str = item.get('date', '')[:10]
+            complaint = item.get('main_complaint', 'Sin motivo')
+            level = item.get('ai_level', '?')
+            story.append(Paragraph(f"• [{date_str}] Nivel {level}: {complaint}", styles['Normal'], bulletText="•"))
+    else:
+        story.append(Paragraph("Sin historial reciente relevante.", styles['Normal']))
+
+    story.append(Spacer(1, 15))
+
+    # Archivos Adjuntos Analizados
+    attached_files = context.get('analyzed_files', [])
+    if attached_files:
+        story.append(Paragraph("<b>Archivos de Soporte Analizados:</b>", styles['SubSectionHeader']))
+        for f_meta in attached_files:
+            # f_meta is like "[IMAGEN: filename.jpg]" or "[TEXTO: filename.txt]"
+            story.append(Paragraph(f"• {f_meta}", styles['Normal'], bulletText="•"))
+        story.append(Spacer(1, 15))
+        
+    # Protocolos RAG
+    protocols = context.get("rag_protocols", [])
+    if protocols:
+        story.append(Paragraph("<b>Protocolos Institucionales Consultados:</b>", styles['SubSectionHeader']))
+        for p in protocols:
+            snippet = p[:200] + "..." if len(p) > 200 else p
+            story.append(Paragraph(f"- {snippet}", styles['Normal']))
+        story.append(Spacer(1, 15))
+
+    # 4. ANÁLISIS DE IA (Estructurado)
+    story.append(Paragraph("2. Análisis Clínico de Inteligencia Artificial", styles['SectionHeader']))
+    
+    # Parseo de la respuesta
+    data = analysis_result
+    parsed = None
+    if isinstance(data, dict):
+        if "diagnostic_hypothesis" in data: 
+             parsed = data
+        elif "text" in data:
+            try:
+                import json
+                cleaned = data["text"].strip().replace("```json", "").replace("```", "")
+                parsed = json.loads(cleaned)
+            except:
+                parsed = None
+
+    if parsed:
+        # A. Resumen
+        if "clinical_summary" in parsed:
+            story.append(Paragraph("<b>Resumen del Caso:</b>", styles['SubSectionHeader']))
+            story.append(Paragraph(parsed["clinical_summary"], styles['NormalJustified']))
+        
+        # B. Red Flags
+        if "red_flags" in parsed and parsed["red_flags"]:
+            story.append(Spacer(1, 10))
+            story.append(Paragraph("<b>Alertas Clínicas (Red Flags):</b>", styles['SubSectionHeader']))
+            for flag in parsed["red_flags"]:
+                story.append(Paragraph(f"⚠️ {flag}", styles['WarningText']))
+                
+        # C. Diagnóstico Diferencial
+        if "diagnostic_hypothesis" in parsed and parsed["diagnostic_hypothesis"]:
+            story.append(Spacer(1, 10))
+            story.append(Paragraph("<b>Hipótesis Diagnósticas:</b>", styles['SubSectionHeader']))
+            for diag in parsed["diagnostic_hypothesis"]:
+                d_name = diag.get("diagnosis", "Unknown")
+                d_prob = diag.get("probability", "")
+                d_just = diag.get("justification", "")
+                
+                # Bold title with probability
+                story.append(Paragraph(f"<b>{d_name}</b> ({d_prob})", styles['Normal']))
+                story.append(Paragraph(f"<i>Justificación:</i> {d_just}", styles['NormalJustified']))
+                story.append(Spacer(1, 5))
+        
+        # D. Plan de Acción
+        if "recommended_actions" in parsed and parsed["recommended_actions"]:
+            story.append(Spacer(1, 10))
+            story.append(Paragraph("<b>Plan de Acción Recomendado:</b>", styles['SubSectionHeader']))
+            for act in parsed["recommended_actions"]:
+                story.append(Paragraph(f"• {act}", styles['NormalJustified'], bulletText="•"))
+                
+        # E. Chain of Thought (Opcional, en nueva página)
+        if "thought_process" in parsed:
+            story.append(PageBreak())
+            story.append(Paragraph("Anexo: Razonamiento Detallado (Chain of Thought)", styles['SectionHeader']))
+            # Use smaller font for lengthy thought process
+            styles.add(ParagraphStyle(name='CodeText', parent=styles['Normal'], fontName='Courier', fontSize=9, leading=11))
+            story.append(Paragraph(parsed["thought_process"].replace('\n', '<br/>'), styles['CodeText']))
+            
+    else:
+        # Fallback raw text
+        raw_text = data.get("text", str(data)) if isinstance(data, dict) else str(data)
+        story.append(Paragraph(raw_text.replace('\n', '<br/>'), styles['NormalJustified']))
+
+    # 5. CONTROL DE CALIDAD / FEEDBACK HUMANO (NUEVO)
+    import streamlit as st
+    feedback_data = st.session_state.get("sec_op_feedback_data")
+    
+    if feedback_data:
+        story.append(Spacer(1, 20))
+        story.append(Paragraph("VALIDACIÓN HUMANA (Feedback)", styles['SectionHeader']))
+        
+        rating = feedback_data.get("rating")
+        reason = feedback_data.get("reason")
+        
+        # Icono visual
+        icon_html = "✅ <font color='green'>CORRECTO</font>" if rating == "positive" else "❌ <font color='red'>INCORRECTO</font>"
+        
+        story.append(Paragraph(f"<b>Calificación del Profesional:</b> {icon_html}", styles['Normal']))
+        
+        if reason:
+             story.append(Spacer(1, 5))
+             story.append(Paragraph(f"<b>Observaciones / Corrección:</b>", styles['SubSectionHeader']))
+             story.append(Paragraph(f"<i>{reason}</i>", styles['Normal']))
+             
+    # 6. FOOTER / DISCLAIMER
+    story.append(Spacer(1, 30))
+    story.append(Paragraph("AVISO LEGAL: Este informe es generado por un sistema de Inteligencia Artificial (Gemini 2.5) como herramienta de soporte a la decisión clínica. NO SUSTITUYE el juicio profesional médico. El facultativo es responsable de verificar toda la información.", styles['SmallText']))
+    
+    # Build
+    try:
+        doc.build(story)
+    except Exception as e:
+        # Fallback simple
+        print(f"ReportLab Build Error: {e}")
+        return b"%PDF-Error"
+        
+    buffer.seek(0)
+    return buffer.getvalue()

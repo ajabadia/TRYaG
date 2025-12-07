@@ -64,6 +64,12 @@ class PromptManager:
             # Fallback a JSON
             return self._get_prompt_from_json(prompt_type, version)
     
+    def get_active_prompt(self, prompt_type):
+        """
+        Alias para obtener la versión activa de un prompt.
+        """
+        return self.get_prompt(prompt_type)
+    
     def _get_prompt_from_json(self, prompt_type, version=None):
         """Fallback: obtiene prompt desde archivo JSON."""
         if not os.path.exists(PROMPTS_FILE):

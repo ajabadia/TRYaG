@@ -28,7 +28,8 @@ DEFAULT_ROLES = [
                 "prompts": True,
                 "usuarios": True,
                 "roles": True
-            }
+            },
+            "segunda_opinion": {"view": True, "create": True}
         },
         "funciones_permitidas": ["administrativo", "enfermero", "medico", "analista_datos"],
         "nivel_acceso": 100,
@@ -51,7 +52,8 @@ DEFAULT_ROLES = [
                 "prompts": False,
                 "usuarios": True,
                 "roles": True
-            }
+            },
+            "segunda_opinion": {"view": True, "create": True}
         },
         "funciones_permitidas": ["administrativo", "enfermero", "medico"],
         "nivel_acceso": 80,
@@ -74,7 +76,8 @@ DEFAULT_ROLES = [
                 "prompts": True,
                 "usuarios": False,
                 "roles": False
-            }
+            },
+            "segunda_opinion": {"view": True, "create": False}
         },
         "funciones_permitidas": ["analista_datos"],
         "nivel_acceso": 20,
@@ -97,7 +100,8 @@ DEFAULT_ROLES = [
                 "prompts": False,
                 "usuarios": False,
                 "roles": False
-            }
+            },
+            "segunda_opinion": {"view": True, "create": True}
         },
         "funciones_permitidas": ["enfermero", "medico", "administrativo"],
         "nivel_acceso": 50,

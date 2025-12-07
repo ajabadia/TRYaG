@@ -76,6 +76,9 @@ def get_available_tabs() -> List[str]:
     if has_permission("consulta_ingreso", "view"):
         tabs.append("👨‍⚕️ Consulta")
 
+    if has_permission("segunda_opinion", "view"):
+        tabs.append("🧠 Segunda Opinión")
+
     # Sala de Espera visible para Triaje o Atención
     if has_permission("triaje", "view") or has_permission("atencion_box", "view"):
         tabs.append("🪑 Sala de Espera")
