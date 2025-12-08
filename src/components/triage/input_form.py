@@ -171,13 +171,15 @@ def render_input_form():
         is_step1_disabled = st.session_state.analysis_complete
         is_editing = st.session_state.is_editing_text
         
-        # --- 🔮 MAGIC CASES (LIQUID UI) ---
+        # --- 🔮 MAGIC CASES (LIQUID UI - DYNAMIC) ---
         # Evaluar el estado del paciente en tiempo real para adaptar la interfaz
-        from services.ui_rules_engine import UIRulesEngine
+        from services.dynamic_ui_rules_engine import DynamicRulesEngine
         
         # Solo ejecutar si hay datos mínimos para evitar ruido
         if st.session_state.datos_paciente.get('texto_medico') or st.session_state.datos_paciente.get('vital_signs'):
-            ui_adaptations = UIRulesEngine.evaluate(st.session_state.datos_paciente)
+            # Instanciar singleton (migra DB si es necesario la primera vez)
+            engine = DynamicRulesEngine() 
+            ui_adaptations = engine.evaluate(st.session_state.datos_paciente)
             
             # 1. Alertas Clínicas (Top Banner)
             for alert in ui_adaptations.get('alerts', []):

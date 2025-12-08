@@ -1,3 +1,4 @@
+
 import os
 from datetime import datetime, timedelta
 from cryptography import x509
@@ -6,15 +7,26 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
-def generate_self_signed_cert(cert_path="nginx/certs"):
-    if not os.path.exists(cert_path):
-        os.makedirs(cert_path)
+def generate_self_signed_cert():
+    cert_dir = os.path.join("nginx", "certs")
+    os.makedirs(cert_dir, exist_ok=True)
+    
+    cert_path = os.path.join(cert_dir, "cert.pem")
+    key_path = os.path.join(cert_dir, "key.pem")
 
+    if os.path.exists(cert_path) and os.path.exists(key_path):
+        print(f"✅ Certificates already exist in {cert_dir}")
+        return
+
+    print(f"🔑 Generating self-signed certificates in {cert_dir}...")
+
+    # Generate key
     key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048,
     )
 
+    # Generate certificate
     subject = issuer = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, u"ES"),
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"Madrid"),
@@ -40,17 +52,24 @@ def generate_self_signed_cert(cert_path="nginx/certs"):
         critical=False,
     ).sign(key, hashes.SHA256())
 
-    with open(os.path.join(cert_path, "key.pem"), "wb") as f:
+    # Write cert
+    with open(cert_path, "wb") as f:
+        f.write(cert.public_bytes(serialization.Encoding.PEM))
+
+    # Write key
+    with open(key_path, "wb") as f:
         f.write(key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.NoEncryption(),
         ))
-
-    with open(os.path.join(cert_path, "cert.pem"), "wb") as f:
-        f.write(cert.public_bytes(serialization.Encoding.PEM))
-
-    print(f"✅ Certificates generated in {cert_path}")
+    
+    print("✅ Certificates generated successfully!")
 
 if __name__ == "__main__":
-    generate_self_signed_cert()
+    try:
+        generate_self_signed_cert()
+    except ImportError:
+        print("❌ 'cryptography' library not found. Please install it: pip install cryptography")
+    except Exception as e:
+        print(f"❌ Error generating certificates: {e}")

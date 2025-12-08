@@ -32,7 +32,7 @@ def render_debug_panel_modular(key_prefix="debug_modular"):
                 "prompts", "feedback_reports"
             ],
             "⚙️ Sistema": [
-                "audit_log", "notifications", "config", "counters"
+                "audit_log", "notifications", "config", "counters", "ui_rules"
             ]
         }
 

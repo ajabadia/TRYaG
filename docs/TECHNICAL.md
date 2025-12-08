@@ -228,10 +228,12 @@ Componente bidireccional de Streamlit implementado con HTML/JS puro.
 *   **Comunicación:** `window.parent.postMessage` hacia Streamlit Component Wrapper.
 *   **Privacidad:** El procesamiento se realiza en el motor del navegador (Chrome/Edge), sin enviar audio al servidor backend de Streamlit.
 
-### 9.2 Motor de Reglas de UI (`src/services/ui_rules_engine.py`)
-Clase estática que evalúa el estado del paciente (`session_state.datos_paciente`) y devuelve un diccionario de acciones UI (`ui_actions`).
-*   **Patrón:** Decorator/Observer light. Los componentes se suscriben a las acciones devueltas por `evaluate()`.
-*   **Reglas:** Definidas en código, extensibles para soportar reglas JSON externas en el futuro.
+### 9.2 Motor de Reglas de UI (`src/services/dynamic_ui_rules_engine.py`)
+Evolución dinámica del motor de reglas, permitiendo la parametrización total desde base de datos.
+*   **Arquitectura:** Singleton que carga reglas activas desde MongoDB (`ui_rules` collection) al inicio.
+*   **Modelo de Datos:** Pydantic Models (`UIRule`, `RuleCondition`, `RuleAction`) que soportan lógica anidada (AND/OR) y operadores flexibles.
+*   **Persistencia:** Repositorio `UIRulesRepository` con soporte de versionado y estados (Draft/Active).
+*   **Migración:** Mecanismo de auto-migración que convierte los antiguos "Magic Cases" hardcoded en registros de base de datos si la colección está vacía.
 
 ### 9.3 Servicio Proactivo (`src/services/proactive_service.py`)
 ## 10. CI/CD Pipeline

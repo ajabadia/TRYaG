@@ -118,6 +118,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/db/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/db/connection.py** | Gestión de conexión a MongoDB. | Repositorios | Activo |
 | **src/db/models.py** | Modelos Pydantic de datos. | Varios | Activo |
+| **src/db/models_rules.py** | Modelos Pydantic para Reglas UI. | Repositorios | Activo |
 | **src/db/repositories/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/db/repositories/ai_audit.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/db/repositories/ai_models.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -145,6 +146,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/db/repositories/triage.py** | Repositorio de Triaje. | Servicios/UI | Activo |
 | **src/db/repositories/triage_config.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/db/repositories/turnos.py** | Repositorio de Turnos. | Servicios/UI | Activo |
+| **src/db/repositories/ui_rules_repository.py** | Repositorio de reglas de UI dinámica. | `src/services/dynamic_ui_rules_engine.py` | Activo |
 | **src/db/repositories/users.py** | Repositorio de Usuarios. | Servicios/UI | Activo |
 | **src/db/repositories/vital_signs_repo.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/scripts/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -159,6 +161,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/services/analytics_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/contingency_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/conversational_service.py** | Servicio para Chat Conversacional (Historial y Prompt Maestro). | UI | Activo |
+| **src/services/dynamic_ui_rules_engine.py** | Motor de Reglas Dinámico (Liquid UI) con migración DB. | `src/components/triage/input_form.py` | Activo |
 | **src/services/export_service.py** | Servicio de exportación de datos. | UI | Activo |
 | **src/services/feedback_service.py** | Servicio de persistencia de feedback. | UI | Activo |
 | **src/services/fhir_service.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -228,6 +231,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/config/general_tab.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/config/insurers_manager.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/config/knowledge_base_ui.py** | UI Gestión Base de Conocimiento. | `src/ui/config/ai_config_ui.py` | Activo |
+| **src/ui/config/liquid_ui_tab.py** | UI Configuración de Reglas Dinámicas. | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/notification_config_ui.py** | UI para configuración de notificaciones. | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/people_manager.py** | UI para gestión de personas (Staff). | `src/ui/config_panel.py` | Activo |
 | **src/ui/config/ptr_config_panel.py** | Pendiente de descripción. | Pendiente | Activo |

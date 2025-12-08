@@ -678,6 +678,14 @@ Garantiza la continuidad operativa ante fallos de conexión a internet o caída 
         *   **Respuesta UI:** Los campos de **Saturación O2 (SpO2)** y **Frecuencia Respiratoria (FR)** se iluminan visualmente (icono ⚡ y color destacado) para priorizar su toma.
     *   **Ictus:** Si se detectan palabras clave neurológicas (habla, fuerza), sugiere Escala Cincinnati.
 
+### 6.5.1 Configuración Dinámica de Interface Líquida (Gestión de Reglas)
+El sistema permite a los administradores definir y modificar estas reglas sin tocar el código fuente, garantizando una adaptación ágil a nuevos protocolos.
+
+*   **Motor de Reglas:** Gestionado desde `Configuración > Interface Líquida`.
+*   **Constructor Visual (No-Code):** Permite crear condiciones lógicas ("Si edad > 65 Y motivo conitene 'caída'") y definir acciones (Alertas, Sugerencias).
+*   **Versionado:** Las reglas tienen estados de 'Borrador' y 'Activo', permitiendo probar cambios antes de desplegarlos a producción.
+
+
 ### 6.6 Copiloto RAG Proactivo
 *   **Vigilancia Activa:** Mientras el usuario dicta o escribe, el sistema busca silenciosamente en la base de conocimiento.
 * **Detección Automática:** Al recuperar la conexión a internet (`window.online`), el sistema detecta automáticamente si existen registros pendientes en el dispositivo y muestra una alerta visual ("Conexión restaurada").

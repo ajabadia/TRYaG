@@ -32,6 +32,7 @@
     *   **Gestión de Salas:** Monitor Público para sala de espera (Anonimizado) y Orquestador de Flujos.
     *   **Identificación:** Generación de Tickets/Pulseras con QR para trazabilidad.
     *   **Segunda Opinión Experta:** Módulo "Reasoning ++" con análisis multimodal (Imágenes/Docs) y API-First.
+    *   **Interface Líquida Dinámica (Parametrizada):** Motor de reglas No-Code que adapta la UI (alertas, campos, colores) según datos del paciente (Edad, Motivo, Vitales).
 *   **Métricas del Piloto:**
     *   Capacidad validada para usuarios concurrentes con gestión de colas.
     *   Reducción estimada del 40% en tiempo de documentación.
@@ -40,7 +41,7 @@
 ### 5. Conclusiones y Líneas Futuras
 *   **Conclusión:** La plataforma demuestra que la IA Generativa, gobernada por reglas estrictas de contingencia y auditoría, transforma la eficiencia operativa en Urgencias.
 *   **Roadmap (Próximos Pasos):**
-    *   **Fase 11 (UX Avanzada):** Interfaz conversacional pura y "Liquid UI" contextual.
+    *   **Fase 11 y 18 (UX Avanzada):** Interfaz conversacional y "Liquid UI" parametrizada (Completado).
     *   **Fase 12 (API First):** Desacople total del backend mediante FastAPI para integración con Apps móviles y HIS de terceros.
     *   **Fase 13 (IoT):** Integración directa con monitores de constantes vitales.
 

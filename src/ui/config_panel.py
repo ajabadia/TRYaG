@@ -13,6 +13,8 @@ from ui.config.centro_tab import render_centro_tab
 from ui.config.ai_config_ui import render_ai_config_ui
 from services.permissions_service import has_permission
 
+from ui.config.liquid_ui_tab import render_liquid_ui_tab
+
 def mostrar_panel_configuracion():
     """Muestra el panel de configuración con pestañas modulares."""
     
@@ -39,6 +41,10 @@ def mostrar_panel_configuracion():
     if has_permission("configuracion", "prompts"):
         tabs_map["IA"] = "🧠 Inteligencia Artificial"
 
+    # Nueva pestaña: Interface Líquida (Advanced)
+    if has_permission("configuracion", "prompts"): # Usamos el mismo nivel avanzado por ahora
+        tabs_map["LiquidUI"] = "🎨 Interface Líquida"
+
     selected_tabs = st.tabs(list(tabs_map.values()))
     
     # Asignar variables a las tabs creadas
@@ -59,5 +65,10 @@ def mostrar_panel_configuracion():
         tab_ia = selected_tabs[list(tabs_map.keys()).index("IA")]
         with tab_ia:
             render_ai_config_ui()
+            
+    if "LiquidUI" in tabs_map:
+        tab_liquid = selected_tabs[list(tabs_map.keys()).index("LiquidUI")]
+        with tab_liquid:
+            render_liquid_ui_tab()
 
     st.markdown('<div class="debug-footer">src/ui/config_panel.py</div>', unsafe_allow_html=True)

@@ -62,6 +62,9 @@ La pantalla se adapta a lo que usted escribe para ahorrar tiempo.
     1.  Los campos de **Saturación O2** y **Frecuencia Respiratoria** se iluminarán con un rayo (⚡) y color rosa.
     2.  El sistema le invitará visualmente a priorizar esa toma antes de seguir.
 
+> **Configuración (Solo Admin):** Ahora es posible personalizar estas reglas desde el panel de `Configuración > Interface Líquida`, creando nuevas alertas o modificando los umbrales sin programación.
+
+
 #### 3.5.3 Copiloto Proactivo
 Mientras usted trabaja, el sistema "escucha" y busca en la base de conocimientos.
 *   **Alerta Inteligente:** Si detecta un patrón grave (ej. "Dolor torácico irradiado"), le mostrará una notificación flotante (Toast) sugiriendo un protocolo específico (ej. "Protocolo SCA Activado").

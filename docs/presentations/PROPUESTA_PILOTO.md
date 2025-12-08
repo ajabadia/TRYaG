@@ -11,21 +11,6 @@ Esta propuesta detalla el plan de despliegue de un **Asistente de Triaje Intelig
 *   **Gestión Basada en Datos:** Dashboard en tiempo real para la dirección médica (Ocupación, Tiempos medios, Predicción de demanda).
 
 ### 3. Alcance del Piloto
-*   **Área:** Urgencias de Traumatología.
-*   **Duración:** 4 semanas.
-*   **Usuarios:** 5 Enfermeros de Triaje, 2 Médicos, 2 Administrativos.
-*   **Funcionalidades Incluidas (Fase 14):**
-    *   Triaje Asistido por IA (Voz/Texto).
-    *   **Módulo Segunda Opinión:** Análisis profundo multimodal (Reasoning ++) con RAG.
-    *   Gestión de Salas y Espera (Monitor Público).
-    *   Identificación de Pacientes (Tickets QR).
-    *   Relevo de Turno Automático (Informe de Guardia).
-*   **Objetivo:** Validar la usabilidad en entorno real y medir el impacto en los tiempos de atención.
-
-### 4. Plan de Implementación
-1.  **Semana 1: Configuración e Integración**
-    *   Carga de protocolos del hospital en la "Memoria Institucional".
-    *   Configuración de usuarios, roles y salas.
     *   Instalación en puestos de trabajo (Web App / PWA).
 2.  **Semana 2: Formación y Simulacro**
     *   Sesiones de capacitación con el "Modo Formación" (Casos pre-cargados).
