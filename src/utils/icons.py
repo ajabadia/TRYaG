@@ -33,10 +33,14 @@ def render_icon(icon_name, size=24, color="currentColor", class_name=""):
     """
     svg_content = load_icon(icon_name)
     if svg_content:
-        # Inyectar estilos básicos si es necesario o envolver en un div
-        # Nota: Para cambiar color dinámicamente, el SVG debe usar 'currentColor' o no tener fill/stroke definidos
+        # Forzar que el SVG se adapte al contenedor ignorando sus dimensiones intrínsecas
+        import re
+        # Inyectar estilo directamente en la etiqueta svg
+        svg_content = re.sub(r'<svg', '<svg style="width: 100%; height: 100%;"', svg_content, count=1)
+        
+        # Inyectar estilos básicos y envolver en un div con tamaño fijo
         st.markdown(
-            f'<div class="{class_name}" style="display: inline-flex; align-items: center; justify-content: center; width: {size}px; height: {size}px; color: {color};">{svg_content}</div>',
+            f'<div class="{class_name}" style="display: inline-flex; align-items: center; justify-content: center; width: {size}px; height: {size}px; color: {color}; overflow: hidden;">{svg_content}</div>',
             unsafe_allow_html=True
         )
     else:
