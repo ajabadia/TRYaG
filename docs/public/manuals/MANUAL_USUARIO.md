@@ -169,4 +169,20 @@ Aunque esta funcionalidad es transparente para el usuario final, permite que:
 2.  Los resultados se vuelquen automáticamente en la Historia Clínica.
 3.  Se puedan realizar auditorías externas.
 
-> Para más detalles técnicos, consulte el **Manual de Mantenimiento**.
+## 10. Soporte y Feedback
+El sistema cuenta con un centro de soporte integrado para resolver dudas o incidencias.
+
+### 10.1 Enviando un Reporte (Usuario)
+1.  Pulse el botón **"📢 Feedback"** en la cabecera superior.
+2.  **Nuevo Reporte:** Seleccione el tipo (Error, Mejora), describa lo sucedido y adjunte capturas si es necesario.
+3.  **Mis Reportes:** En la segunda pestaña podrá ver sus tickets anteriores.
+    *   **Estados:** 🔴 Nuevo, 🟠 En Progreso, 🟢 Resuelto.
+    *   **Chat:** Pulse sobre un ticket para chatear con soporte ("Responder") si le piden más datos.
+
+### 10.2 Gestión de Tickets (Administrador)
+1.  Acceda al panel de **"🔍 Auditoría"** -> **"📢 Gestión de Feedback"**.
+2.  Use los filtros para buscar tickets pendientes.
+3.  Abra el detalle para:
+    *   Cambiar el estado (ej. marcar como Resuelto).
+    *   Responder al usuario (esto le generará una notificación).
+    *   Archivar el ticket (Eliminar).

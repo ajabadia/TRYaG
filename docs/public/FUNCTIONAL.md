@@ -420,13 +420,24 @@ Al pulsar "Analizar con IA", el sistema compila toda la información (texto, vit
   * *Log de Prompts:* Inspección de las instrucciones enviadas a la IA (para depuración).
   * *Log de Archivos:* Histórico de ficheros procesados (con gráficos interactivos).
 
-### 5.7 Reporte de Errores y Feedback
+### 5.7 Gestión de Feedback y Soporte (Actualizado Fase 19)
 
-**Objetivo:** Canal de comunicación directo para mejora continua.
+**Objetivo:** Canal bidireccional de comunicación para reporte de errores, sugerencias y resolución de incidencias.
 
-* **Reporte Contextual:** Los usuarios pueden reportar errores o sugerencias desde cualquier punto de la aplicación.
-* **Captura de Contexto:** El sistema adjunta automáticamente información relevante (módulo, usuario, timestamp) al reporte.
-* **Gestión:** Los administradores pueden revisar, clasificar y gestionar estos reportes desde el panel de auditoría.
+El sistema ha evolucionado de un simple formulario de reporte a un sistema completo de **Gestión de Tickets** integrado en la aplicación.
+
+#### A. Experiencia del Usuario (Frontend)
+*   **Centro de Feedback:** Accesible desde el botón "📢 Feedback" en la cabecera.
+    *   *Nuevo Reporte:* Formulario para enviar errores o mejoras, con capacidad de adjuntar múltiples archivos (capturas, logs).
+    *   *Mis Reportes:* Dashboard personal donde el usuario puede ver el estado de sus tickets ("New", "In Progress", "Resolved", "Rejected").
+*   **Conversación:** Hilo de chat integrado en cada reporte que permite al usuario y al equipo de soporte intercambiar mensajes y adjuntos adicionales.
+*   **Notificaciones:** Alerta visual ("Toast") al iniciar sesión si existen actualizaciones o respuestas no leídas en sus reportes.
+
+#### B. Gestión Administrativa (Audit Panel)
+*   **Master View:** Tabla filtrable por estado, módulo y fecha para triage de tickets.
+*   **Soft Deletion:** Capacidad de archivar tickets (estado `Deleted`) sin borrarlos físicamente para mantener trazabilidad.
+*   **Gestión de Estados:** Flujo de trabajo completo: `New` -> `In Progress` -> `Resolved`.
+*   **Respuesta Rápida:** Los administradores pueden responder directamente desde el panel de detalle, generando notificaciones automáticas para el usuario.
 
 ### 5.8 Configuración
 

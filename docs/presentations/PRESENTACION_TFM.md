@@ -33,6 +33,7 @@
     *   **Identificación:** Generación de Tickets/Pulseras con QR para trazabilidad.
     *   **Segunda Opinión Experta:** Módulo "Reasoning ++" con análisis multimodal (Imágenes/Docs) y API-First.
     *   **Interface Líquida Dinámica (Parametrizada):** Motor de reglas No-Code que adapta la UI (alertas, campos, colores) según datos del paciente (Edad, Motivo, Vitales).
+    *   **Ciclo de Mejora Continua:** Sistema integral de Feedback y Soporte (Admin/User) con trazabilidad y notificaciones para reporte de incidencias.
 *   **Métricas del Piloto:**
     *   Capacidad validada para usuarios concurrentes con gestión de colas.
     *   Reducción estimada del 40% en tiempo de documentación.

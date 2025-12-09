@@ -48,32 +48,33 @@ def render_footer(centro_config):
 
     # 2. Branding TRY-a-G
     st.markdown("---")
-    col_b1, col_b2, col_b3 = st.columns([1, 1, 1])
     
-    with col_b2:
-        # Contenedor centrado para el logo y la versión
-        st.markdown(
-            """
-            <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 15px;">
-            """,
-            unsafe_allow_html=True
-        )
-        
-        # Logo
-        # Ruta relativa desde la raíz de ejecución (donde se corre streamlit run src/app.py)
-        # Asumiendo que se corre desde 'web/'
-        logo_path = os.path.join("src", "assets", "logos", "tryag.svg")
-        
-        if os.path.exists(logo_path):
-            st.image(logo_path, width=80)
+    # Contenedor flex para Logo y Texto en una sola línea
+    # Ruta relativa desde la raíz de ejecución
+    logo_path = os.path.join("src", "assets", "logos", "tryag.svg")
+    from utils.ui_utils import get_image_base64
+    
+    logo_html = ""
+    if os.path.exists(logo_path):
+        b64_logo = get_image_base64(logo_path)
+        if b64_logo:
+             logo_html = f'<img src="data:image/svg+xml;base64,{b64_logo}" style="height: 40px; w: auto; margin-right: 15px;">'
         else:
-            # Fallback si no encuentra el svg
-            st.markdown("### TRY-a-G")
+             logo_html = "<strong>TRY-a-G</strong> "
+    else:
+         logo_html = "<strong>TRY-a-G</strong> "
 
-        # Versión y Fecha
-        version = "v0.1 beta"
-        fecha = date.today().strftime("%d/%m/%Y")
-        
-        st.markdown(f"<span style='color: gray; font-size: 0.8em;'>{version} | {fecha}</span>", unsafe_allow_html=True)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
+    version = "v0.1 beta"
+    fecha = date.today().strftime("%d/%m/%Y")
+    
+    st.markdown(
+        f"""
+        <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; width: 100%; margin-top: 10px; color: gray;">
+            {logo_html}
+            <span style="font-size: 0.9em; border-left: 1px solid #ccc; padding-left: 15px;">
+                Asistente de Triaje Inteligente &copy; {date.today().year} | {version} ({fecha})
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )

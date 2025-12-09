@@ -8,6 +8,7 @@ import streamlit as st
 import pandas as pd
 from .raw_data_panel_v2 import mostrar_panel_datos_brutos_v2
 from .analysis_panel_modular import mostrar_panel_analisis_modular
+from .feedback_management import render_feedback_management
 from .debug_panel_modular import render_debug_panel_modular
 from db.repositories.audit import get_audit_repository
 from db.repositories.files import get_file_imports_repository
@@ -16,8 +17,6 @@ from db.repositories.transcriptions import get_transcriptions_repository
 # Constantes
 PAGE_SIZE = 25
 
-
-
 def mostrar_registro_auditoria_v2():
     """Muestra el panel de auditoría V2."""
     st.header("📋 Panel de Auditoría y Supervisión")
@@ -25,11 +24,12 @@ def mostrar_registro_auditoria_v2():
     if "num_audit_records_to_show" not in st.session_state:
         st.session_state.num_audit_records_to_show = PAGE_SIZE
 
-    tab_datos, tab_analisis, tab_predicciones, tab_debug, tab_docs = st.tabs([
+    tab_datos, tab_analisis, tab_predicciones, tab_debug, tab_feedback, tab_docs = st.tabs([
         "📉 Datos en Bruto",
         "📈 Análisis Gráfico",
         "🧠 Predicciones IA",
         "🛠️ Debug MongoDB",
+        "📢 Gestión de Feedback",
         "📚 Documentación"
     ])
 
@@ -76,6 +76,10 @@ def mostrar_registro_auditoria_v2():
         with tab_debug:
             render_debug_panel_modular(key_prefix="v2_debug_mod")
             
+        # Feedback Management
+        with tab_feedback:
+            render_feedback_management()
+            
         # Documentation Panel
         with tab_docs:
             st.markdown("### 📚 Documentación Pública")
@@ -86,22 +90,29 @@ def mostrar_registro_auditoria_v2():
                 st.warning(f"Directorio no encontrado: {docs_dir}")
                 os.makedirs(docs_dir, exist_ok=True) # Create if missing for next time
             else:
-                files = os.listdir(docs_dir)
-                files = [f for f in files if os.path.isfile(os.path.join(docs_dir, f))]
+                all_files = []
+                for root, dirs, files in os.walk(docs_dir):
+                    for file in files:
+                        full_path = os.path.join(root, file)
+                        rel_path = os.path.relpath(full_path, docs_dir)
+                        all_files.append((rel_path, full_path, file))
                 
-                if not files:
+                if not all_files:
                     st.info("No hay documentos disponibles en este momento.")
                 else:
                     st.markdown("Documentos disponibles para descarga:")
-                    for f_name in files:
-                        f_path = os.path.join(docs_dir, f_name)
-                        with open(f_path, "rb") as f_obj:
-                            btn_label = f"⬇️ Descargar {f_name}"
+                    # Sort by relative path for better organization
+                    all_files.sort(key=lambda x: x[0])
+                    
+                    for rel_path, full_path, filename in all_files:
+                        with open(full_path, "rb") as f_obj:
+                            btn_label = f"⬇️ Descargar {rel_path}"
                             st.download_button(
                                 label=btn_label,
                                 data=f_obj,
-                                file_name=f_name,
-                                mime="application/octet-stream"
+                                file_name=filename,
+                                mime="application/octet-stream",
+                                key=f"dl_doc_{rel_path}"
                             )
 
         # Procesar timestamps

@@ -306,3 +306,26 @@ Aunque la integración final apunta a **Gemini 2.5 Pro**, actualmente se utiliza
 *   El sistema inyecta instrucciones adicionales de "pensamiento profundo" en el prompt para simular la capacidad de razonamiento extendido de modelos superiores.
 *   La arquitectura está preparada para el cambio de un solo parámetro (`model_name="gemini-2.5-pro"`) en el Prompt Manager una vez la API sea pública.
 
+## 14. Arquitectura de Feedback (Gestión de Soportes)
+
+El sistema de feedback (Fase 19) implementa un modelo de datos orientado a conversaciones asíncronas y trazabilidad de estados.
+
+### 14.1 Modelo de Datos (`feedback_reports`)
+
+* `_id`: ObjectId.
+* `user_id`: Username del reportador.
+* `module`: Contexto donde se generó (ej: "Admisión").
+* `type`: "Error", "Mejora", "Comentario".
+* `title`/`description`: Detalle inicial.
+* `status`: `New` | `In Progress` | `Resolved` | `Rejected` | `Deleted`.
+* `timestamp`: Fecha de creación.
+* `attachments`: Array de metadatos de archivos adjuntos (Path, MD5, Name).
+* `history`: Log de auditoría de cambios de estado `{old_status, new_status, user, timestamp}`.
+* `conversation`: Hilo de mensajes `{message, user_id, timestamp, is_admin_reply, attachments}`.
+* `unread_by_user`: Bool. Flag para notificar al usuario (cambio de estado o respuesta admin).
+* `unread_by_admin`: Bool. Flag para dashboard de admin (respuesta de usuario).
+
+### 14.2 Notificaciones en App
+Se utiliza un patrón de **Polling on Login** (comprobación al iniciar sesión) para las notificaciones de usuario, evitando websockets complejos. Al entrar, `app.py` consulta `check_unread_updates` y muestra un Toast si hay novedades.
+
+

@@ -163,7 +163,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/services/conversational_service.py** | Servicio para Chat Conversacional (Historial y Prompt Maestro). | UI | Activo |
 | **src/services/dynamic_ui_rules_engine.py** | Motor de Reglas Dinámico (Liquid UI) con migración DB. | `src/components/triage/input_form.py` | Activo |
 | **src/services/export_service.py** | Servicio de exportación de datos. | UI | Activo |
-| **src/services/feedback_service.py** | Servicio de persistencia de feedback. | UI | Activo |
+| **src/services/feedback_service.py** | Servicio de Feedback (Status, Conversación, Adjuntos). | UI | Activo |
 | **src/services/fhir_service.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/flow_manager.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/gemini_client.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -205,6 +205,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/ui/audit_panel/components.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/audit_panel/debug_modules/collection_inspector.py** | Inspector genérico de colecciones. | `src/ui/audit_panel/debug_panel_modular.py` | Activo |
 | **src/ui/audit_panel/debug_panel_modular.py** | Orquestador modular de Debug MongoDB. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
+| **src/ui/audit_panel/feedback_management.py** | UI Administración de Feedback. | `src/ui/audit_panel/main_panel_v2.py` | Activo |
 | **src/ui/audit_panel/main_panel_v2.py** | Versión 2 de panel principal. | `src/app.py` | Activo |
 | **src/ui/audit_panel/raw_data_panel_v2.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/ui/boxes_view.py** | Vista de Gestión de Boxes (Atención). | `src/app.py` | Activo |

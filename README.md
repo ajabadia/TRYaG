@@ -10,49 +10,53 @@
 
 ## 📋 Descripción
 
-Este proyecto es un **Asistente de Triaje Inteligente** diseñado para optimizar el flujo de pacientes en servicios de urgencias de Traumatología. Utiliza **Inteligencia Artificial Generativa (Google Gemini)** y **Machine Learning (Scikit-learn)** para analizar síntomas, transcribir dictados médicos, predecir la demanda asistencial y sugerir niveles de prioridad, sirviendo como herramienta de apoyo a la decisión clínica.
-
-> **⚠️ Aviso Legal:** Esta herramienta es un sistema de apoyo y **NO sustituye el juicio clínico** de un profesional sanitario cualificado.
-
-## ✨ Características Principales
-
-### 🏥 Gestión Clínica
-*   **Triaje Estructurado:** Clasificación basada en signos vitales y síntomas con algoritmo de "peor caso" y escala Manchester/SET.
-*   **Entrevista Guiada:** Asistente inteligente para la toma de datos (anamnesis) estructurada.
-*   **Mapa Corporal Interactivo:** Selección visual de zonas de dolor.
-*   **Gestión de Pacientes:** Flujo completo desde Admisión -> Triaje -> Sala de Espera -> Atención (Box) -> Alta.
-
-### 🧠 Inteligencia Artificial
-*   **Análisis Multimodal:** Procesa texto, audio (transcripción en tiempo real) e imágenes de lesiones.
-*   **Alertas Predictivas:** Detección temprana de riesgos (Sepsis, Caídas, Violencia) mediante análisis de patrones con Gemini.
-*   **Machine Learning Real:** Modelos **Random Forest** para predecir:
-    *   Demanda de pacientes por hora.
-    *   Tiempos de espera estimados.
-    *   Recomendaciones de personal (Staffing).
-
-### ⚙️ Operativa y Gestión
-*   **Orquestador de Salas:** Gestión visual de ubicaciones y movimiento de pacientes (Drag & Drop).
-*   **Gestión de Turnos:** Planificación de personal y detección de conflictos.
-*   **Auditoría Completa:** Registro detallado de acciones, validación científica y análisis de concordancia IA-Humano.
-*   **Modos Avanzados:**
-    *   *Modo Formación:* Simulación con casos clínicos para entrenamiento.
-    *   *Modo Contingencia:* Operativa offline ante fallos de red.
-
-### 📱 PWA & Offline-First
-*   **Instalable:** Funciona como app nativa en iOS, Android y Desktop.
-*   **Sincronización Automática:** Detecta recuperación de red y sube datos locales (`IndexedDB`).
-*   **Video Nativo:** Grabación de evidencias sin dependencias externas.
-
-## 📚 Documentación
-
-La documentación del proyecto está organizada en las siguientes secciones:
-
-*   **[📖 Documentación Funcional](docs/FUNCTIONAL.md):** Descripción detallada de roles, flujos de trabajo, módulos de IA y anexos clínicos.
-*   **[🛠️ Documentación Técnica](docs/TECHNICAL.md):** Arquitectura del software, stack tecnológico, estructura de carpetas y detalles de implementación.
-*   **[📱 Guía PWA](docs/PWA_SETUP.md):** Configuración y uso de la Progressive Web App.
-*   **[🚀 Guía de Despliegue](docs/DEPLOYMENT.md):** Instrucciones para desplegar la aplicación en producción.
-*   **[🗺️ Roadmap](ROADMAP.md):** Plan de desarrollo y estado de las tareas.
-*   **[✅ Proyecto Completado](docs/PROJECT_COMPLETION.md):** Resumen de finalización y entrega.
+12: 
+13: Este proyecto es un **Asistente de Triaje Inteligente** diseñado para optimizar el flujo de pacientes en servicios de urgencias de Traumatología. Utiliza **Inteligencia Artificial Generativa de Última Generación (Google Gemini 2.5 Flash & 2.0 Pro)** y **Machine Learning (Scikit-learn)** para analizar síntomas, transcribir dictados médicos, predecir la demanda asistencial y sugerir niveles de prioridad, sirviendo como herramienta de apoyo a la decisión clínica.
+14: 
+15: > **⚠️ Aviso Legal:** Esta herramienta es un sistema de apoyo y **NO sustituye el juicio clínico** de un profesional sanitario cualificado.
+16: 
+17: ## ✨ Características Principales
+18: 
+19: ### 🏥 Gestión Clínica
+20: *   **Triaje Estructurado:** Clasificación basada en signos vitales y síntomas con algoritmo de "peor caso" y escala Manchester/SET.
+21: *   **Entrevista Guiada:** Asistente inteligente para la toma de datos (anamnesis) estructurada.
+22: *   **Mapa Corporal Interactivo:** Selección visual de zonas de dolor.
+23: *   **Gestión de Pacientes:** Flujo completo desde Admisión -> Triaje -> Sala de Espera -> Atención (Box) -> Alta.
+24: 
+25: ### 🧠 Inteligencia Artificial
+26: *   **Análisis Multimodal:** Procesa texto, audio (transcripción en tiempo real) e imágenes de lesiones.
+27: *   **Segunda Opinión Experta:** Módulo "Reasoning" con **Gemini 2.0 Pro** para casos complejos.
+28: *   **Alertas Predictivas:** Detección temprana de riesgos (Sepsis, Caídas, Violencia) mediante análisis de patrones.
+29: *   **Machine Learning Real:** Modelos **Random Forest** para predecir:
+30:     *   Demanda de pacientes por hora.
+31:     *   Tiempos de espera estimados.
+32:     *   Recomendaciones de personal (Staffing).
+33: 
+34: ### ⚙️ Operativa y Gestión
+35: *   **Orquestador de Salas:** Gestión visual de ubicaciones y movimiento de pacientes (Drag & Drop).
+36: *   **Gestión de Turnos:** Planificación de personal y detección de conflictos.
+37: *   **Auditoría Completa:** Registro detallado de acciones, validación científica y análisis de concordancia IA-Humano.
+38: *   **Feedback Integral:** Sistema de gestión de incidencias y tickets para mejora continua.
+39: *   **Modos Avanzados:**
+40:     *   *Modo Formación:* Simulación con casos clínicos para entrenamiento.
+41:     *   *Modo Contingencia:* Operativa offline ante fallos de red.
+42: 
+43: ### 📱 PWA & Offline-First
+44: *   **Instalable:** Funciona como app nativa en iOS, Android y Desktop.
+45: *   **Sincronización Automática:** Detecta recuperación de red y sube datos locales (`IndexedDB`).
+46: *   **Video Nativo:** Grabación de evidencias sin dependencias externas.
+47: 
+48: ## 📚 Documentación
+49: 
+50: La documentación del proyecto está organizada en las siguientes secciones:
+51: 
+52: *   **[🤖 Fundamentos IA](docs/FUNDAMENTOS_IA.md):** (NUEVO) Explicación no técnica de la estrategia de Inteligencia Artificial (Triaje vs Segunda Opinión).
+53: *   **[📖 Documentación Funcional](docs/FUNCTIONAL.md):** Descripción detallada de roles, flujos de trabajo, módulos de IA y anexos clínicos.
+54: *   **[🛠️ Documentación Técnica](docs/TECHNICAL.md):** Arquitectura del software, stack tecnológico, estructura de carpetas y detalles de implementación.
+55: *   **[🐳 Guía Docker](docs/DOCKER_GUIDE.md):** Instrucciones para desplegar la aplicación con contenedores.
+56: *   **[🚀 Guía GitHub](docs/GITHUB_SETUP.md):** Pasos para el control de versiones.
+57: *   **[📱 Guía PWA](docs/PWA_SETUP.md):** Configuración y uso de la Progressive Web App.
+58: *   **[🗺️ Roadmap](ROADMAP.md):** Plan de desarrollo y estado de las tareas.
 
 ## 🚀 Inicio Rápido
 

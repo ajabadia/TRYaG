@@ -52,7 +52,7 @@ Ejecución en **10 Sprints de 2 semanas**:
 *   **Sprint 1-2:** Infraestructura, Autenticación y Gestión de Usuarios (RBAC).
 *   **Sprint 3-4:** Módulo de Admisión, Identificación y Sala de Espera.
 *   **Sprint 5-6:** Motor de Triaje Core (Algoritmos SET/Manchester) y Trazabilidad.
-*   **Sprint 7-8:** **Integración IA:** Conexión Gemini, RAG (Protocolos) y Transcripción de Voz.
+*   **Sprint 7-8:** **Integración IA:** Conexión Gemini 2.5, RAG (Protocolos) y Transcripción de Voz.
 *   **Sprint 9:** Módulo de Gestión de Salas (Orquestador) y Dashboards.
 *   **Sprint 10:** Auditoría, Reportes PDF e Integraciones finales (Webhooks/Tickets).
 
@@ -177,7 +177,7 @@ Se presentan dos escenarios de despliegue para la infraestructura base (Servidor
 
 ### 7.3 Consumo de IA (Gemini API) - Simulación de Costes
 
-Coste variable basado en el uso real ("Pay-as-you-go"). Se realizan estimaciones proyectando el uso de modelos de nueva generación (**Gemini 2.5** y **Gemini 3.0**), asumiendo una política de precios competitiva similar a la actual para modelos "Flash" y "Pro".
+Coste variable basado en el uso real ("Pay-as-you-go"). Se realizan estimaciones proyectando el uso de modelos de nueva generación (**Gemini 2.5 Flash** y **Gemini 2.0 Pro**), asumiendo una política de precios competitiva y a la baja.
 
 #### Perfil de Uso Diario (Estimación)
 Considerando una carga de **100 Triajes/día** completos, con uso intensivo de capacidades multimodales:
@@ -196,17 +196,17 @@ Considerando una carga de **100 Triajes/día** completos, con uso intensivo de c
 
 #### Escenarios de Coste (Comparativa Generacional)
 
-Se comparan los costes actuales (**1.5**) con las proyecciones para la próxima generación (**2.5** y **3.0**), permitiendo visualizar diferentes estrategias de adopción.
+Se comparan los modelos actuales de última generación (**2.5/2.0**) con proyecciones futuras.
 
 | Modelo | Generación | Perfil | Precio Input (/1M) | Precio Output (/1M) | Coste Mensual |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Gemini 1.5 Flash** | Actual | Velocidad/Coste | 0,075 $ | 0,30 $ | **~2,40 $** |
-| **Gemini 1.5 Pro** | Actual | Razonamiento | 3,50 $ | 10,50 $ | **~96,00 $** |
-| **Gemini 2.5 Flash** | Futuro (Est) | Velocidad+ | 0,075 $ | 0,30 $ | **~2,40 $** |
-| **Gemini 3.0 Pro** | Futuro (Est) | Razonamiento++ | 3,50 $ | 10,50 $ | **~96,00 $** |
+| **Gemini 2.5 Flash** | Actual | Velocidad/Coste | 0,075 $ | 0,30 $ | **~2,40 $** |
+| **Gemini 2.0 Pro** | Actual | Razonamiento | 3,50 $ | 10,50 $ | **~96,00 $** |
+| **Gemini 3.0 Flash** | Futuro (Est) | Velocidad+ | 0,050 $ | 0,20 $ | **~1,80 $** |
+| **Gemini 3.0 Pro** | Futuro (Est) | Razonamiento++ | 3,00 $ | 9,00 $ | **~85,00 $** |
 
 > [!TIP]
-> **Estrategia Recomendada (Híbrida):** Utilizar modelos **Flash (1.5/2.5)** para el 95% de los casos (Triaje rutinario, transcripción) por su coste residual (<3€/mes). Reservar modelos **Pro (1.5/3.0)** exclusivamente para casos complejos o de "Segunda Opinión", manteniendo el coste total del servicio por debajo de los 15€/mes.
+> **Estrategia Recomendada (Híbrida):** Utilizar modelos **Flash (2.5)** para el 95% de los casos (Triaje rutinario, transcripción) por su coste residual (<3€/mes). Reservar modelos **Pro (2.0)** exclusivamente para casos complejos o de "Segunda Opinión", manteniendo el coste total del servicio por debajo de los 15€/mes.
 
 ---
 
@@ -228,7 +228,7 @@ Se comparan los costes actuales (**1.5**) con las proyecciones para la próxima 
 
 # ANEXO I: Módulo "Segunda Opinión Experta" (Add-on)
 
-Este anexo detalla la valoración económica para la incorporación del módulo de **"Razonamiento Clínico Avanzado"**, diseñado para casos complejos que requieren un análisis profundo mediante IA de última generación (Gemini 2.5/3.0 Pro).
+Este anexo detalla la valoración económica para la incorporación del módulo de **"Razonamiento Clínico Avanzado"**, diseñado para casos complejos que requieren un análisis profundo mediante IA de última generación (Gemini 2.0 Pro / Reasoning).
 
 ## A. Descripción del Módulo
 Herramienta independiente que permite al facultativo solicitar una revisión exhaustiva de un caso. El sistema agrega toda la información disponible (Historia, Triajes, Imagen, Audio, Constantes) y utiliza un modelo "Reasoning ++" para ofrecer diagnósticos diferenciales y recomendaciones fundamentadas.
@@ -275,10 +275,10 @@ Se incluye una partida específica para el aseguramiento normativo y documental 
 
 ## C. Costes Operativos Específicos (IA)
 
-Dado el uso de modelos de razonamiento (Gemini 2.5/3.0 Pro), el coste por consulta es superior al estándar, pero el volumen esperado es bajo (solo casos complejos).
+Dado el uso de modelos de razonamiento (Gemini 2.0 Pro), el coste por consulta es superior al estándar, pero el volumen esperado es bajo (solo casos complejos).
 
 *   **Tokens por Consulta:** ~50k Input (Contexto masivo) / 2k Output.
-*   **Coste Unitario (Gemini 2.5 Pro):** ~0,20 € / consulta.
+*   **Coste Unitario (Gemini 2.0 Pro):** ~0,20 € / consulta.
 *   **Estimación Mensual:** 5 consultas/día x 30 días = **30 €/mes**.
 
 > [!IMPORTANT]

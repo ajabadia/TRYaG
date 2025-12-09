@@ -119,6 +119,19 @@ def mostrar_app_principal():
         render_login_view()
         st.stop()
     
+    # Check for Feedback Updates (Once per session)
+    if "feedback_notified" not in st.session_state:
+        try:
+            from services.feedback_service import check_unread_updates
+            username = st.session_state.current_user.get("username")
+            if username:
+                unread = check_unread_updates(username)
+                if unread > 0:
+                    st.toast(f"📢 Tienes {unread} actualizaciones en tus reportes de feedback.", icon="🔔")
+            st.session_state.feedback_notified = True
+        except Exception:
+            pass
+    
     # PWA Installer (Injects manifest and SW)
     from components.common.pwa_installer import render_pwa_installer
     render_pwa_installer()
