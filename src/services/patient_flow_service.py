@@ -14,6 +14,7 @@ from typing import Optional, Dict, Any, List
 # Imports internos
 from db import get_database
 from db.models import PatientFlow
+from db.repositories.salas import update_sala_plazas # IMPORT FIX
 from ui.config.config_loader import load_centro_config, save_centro_config
 
 
@@ -22,30 +23,11 @@ def get_db():
     return get_database()
 
 
-# ---------------------------------------------------------------------------
-# Gestión de Plazas (Helper)
-# ---------------------------------------------------------------------------
 
-def actualizar_plazas_sala(codigo_sala: str, delta: int) -> None:
-    """Actualiza el número de plazas disponibles de una sala.
-    Args:
-        codigo_sala: Código identificador de la sala.
-        delta: Cambio de plazas (negativo = ocupa, positivo = libera).
-    """
-    config = load_centro_config()
-    salas = config.get('salas', [])
-    found = False
-    for sala in salas:
-        if sala.get('codigo') == codigo_sala:
-            total = sala.get('plazas', 0)
-            disponibles = sala.get('plazas_disponibles', total)
-            # Permitir overbooking: plazas disponibles pueden ser negativas
-            nuevas = disponibles + delta
-            sala['plazas_disponibles'] = nuevas
-            found = True
-            break
-    if found:
-        save_centro_config(config)
+# ---------------------------------------------------------------------------
+# Gestión de Plazas (Helper) -> DEPRECATED
+# Se usa directamente db.repositories.salas.update_sala_plazas
+# ---------------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------------
@@ -79,7 +61,7 @@ def crear_flujo_paciente(
             {"_id": active["_id"]},
             {"$set": {"activo": False, "salida": datetime.now(), "notas": "Cierre forzoso por nuevo flujo"}}
         )
-        actualizar_plazas_sala(active["sala_code"], 1) # Liberar plaza anterior
+        update_sala_plazas(active["sala_code"], 1) # Liberar plaza anterior
 
     # Generar ID de flujo único (ej: FLOW_YYYYMMDD_CODE)
     flow_id = f"FLOW_{datetime.now().strftime('%Y%m%d')}_{patient_code}"
@@ -104,7 +86,7 @@ def crear_flujo_paciente(
     collection.insert_one(nuevo_paso.dict(by_alias=True, exclude={"id"}))
     
     if not motivo_rechazo:
-        actualizar_plazas_sala(sala_admision_code, -1) # Ocupar plaza
+        update_sala_plazas(sala_admision_code, -1) # Ocupar plaza
         
     return nuevo_paso
 
@@ -142,7 +124,7 @@ def mover_paciente(
     )
     
     # Liberar plaza de sala anterior
-    actualizar_plazas_sala(paso_actual["sala_code"], 1)
+    update_sala_plazas(paso_actual["sala_code"], 1)
     
     # 3. Crear nuevo paso
     sala_info = _get_sala_info(nueva_sala_code)
@@ -163,7 +145,7 @@ def mover_paciente(
     collection.insert_one(nuevo_paso.dict(by_alias=True, exclude={"id"}))
     
     # Ocupar plaza de nueva sala
-    actualizar_plazas_sala(nueva_sala_code, -1)
+    update_sala_plazas(nueva_sala_code, -1)
     
     return True
 
@@ -196,7 +178,7 @@ def finalizar_flujo(patient_code: str, motivo: str, notas: str = "") -> bool:
         }
     )
     
-    actualizar_plazas_sala(paso_actual["sala_code"], 1)
+    update_sala_plazas(paso_actual["sala_code"], 1)
     return True
 
 
@@ -209,13 +191,10 @@ def asignar_sala_triaje(patient_code: str, sala_triaje_code: str) -> bool:
     # Normalmente se asigna a espera de triaje primero
     return mover_paciente(patient_code, sala_triaje_code, "EN_ESPERA_TRIAJE", "Asignado a triaje")
 
-def admitir_a_triaje(patient_code: str) -> bool:
-    """Mueve de Sala Espera Triaje -> Sala Atención Triaje."""
-    # Requiere saber cuál es la sala de atención asociada o pasarla.
-    # Como simplificación, asumimos que se pasa la sala destino en la llamada.
-    # Esta función queda algo ambigua sin el destino explícito.
-    # Se recomienda usar mover_paciente directamente desde la UI.
-    pass 
+
+# def admitir_a_triaje(patient_code: str) -> bool:
+#    """DEPRECATED: Use mover_paciente directamente."""
+#    pass 
 
 def completar_triaje(patient_code: str, sala_destino_code: str) -> bool:
     """Mueve de Triaje -> Sala Destino (Espera Box, etc)."""

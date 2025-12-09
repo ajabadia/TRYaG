@@ -16,6 +16,7 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
 import certifi
 import streamlit as st
+from core.logger_config import logger
 
 # Cargar variables de entorno
 load_dotenv()
@@ -45,10 +46,10 @@ def retry_on_connection_error(max_retries: int = 3, delay: float = 1.0):
                     last_exception = e
                     if attempt < max_retries - 1:
                         wait_time = delay * (attempt + 1)
-                        print(f"⚠️ Error de conexión (intento {attempt + 1}/{max_retries}). Reintentando en {wait_time}s...")
+                        logger.warning(f"⚠️ Error de conexión (intento {attempt + 1}/{max_retries}). Reintentando en {wait_time}s...")
                         time.sleep(wait_time)
                     else:
-                        print(f"❌ Error de conexión después de {max_retries} intentos.")
+                        logger.error(f"❌ Error de conexión después de {max_retries} intentos.")
             
             raise last_exception
         return wrapper
@@ -94,7 +95,7 @@ def get_client() -> MongoClient:
     
     # Debug: Mostrar URI enmascarada para verificar que se carga correctamente
     masked_uri = mongodb_uri.replace(mongodb_uri.split("@")[0].split("//")[1].split(":")[1], "****") if "@" in mongodb_uri else "URI_SIN_CREDENCIALES"
-    print(f"🔌 Intentando conectar a MongoDB con URI: {masked_uri}")
+    logger.info(f"🔌 Intentando conectar a MongoDB con URI: {masked_uri}")
     
     # Crear cliente con configuración optimizada
     _client = MongoClient(
@@ -192,7 +193,7 @@ def close_connection():
         _client.close()
         _client = None
         _database = None
-        print("🔒 Conexión a MongoDB cerrada correctamente")
+        logger.info("🔒 Conexión a MongoDB cerrada correctamente")
 
 
 # Context manager para operaciones transaccionales

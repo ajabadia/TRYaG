@@ -73,8 +73,36 @@ def get_usuarios_asignados_sala(codigo: str) -> List[Dict[str, Any]]:
     return [u for u in all_users if u.get("sala_asignada") == codigo]
 
 
+
 def get_salas_by_centro(centro_id: str) -> List[Dict[str, Any]]:
     """Obtiene todas las salas de un centro específico."""
     collection = get_collection()
     return list(collection.find({"centro_id": centro_id}))
+
+
+def update_sala_plazas(codigo: str, delta: int) -> bool:
+    """
+    Actualiza atómicamente el número de plazas disponibles de una sala.
+    
+    Args:
+        codigo: Código de la sala
+        delta: Cambio en plazas (negativo para ocupar, positivo para liberar)
+        
+    Returns:
+        bool: True si se actualizó correctamente
+    """
+    collection = get_collection()
+    try:
+        # Usamos $inc para operación atómica y thread-safe
+        result = collection.update_one(
+            {"codigo": codigo},
+            {
+                "$inc": {"plazas_disponibles": delta},
+                "$set": {"updated_at": datetime.now()}
+            }
+        )
+        return result.modified_count > 0
+    except Exception as e:
+        print(f"Error actualizando plazas sala {codigo}: {e}")
+        return False
 

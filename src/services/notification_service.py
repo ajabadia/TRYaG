@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Optional, Callable
 from enum import Enum
 from db import get_database
 import streamlit as st
+from core.logger_config import logger
 
 
 class NotificationChannel(Enum):
@@ -98,14 +99,18 @@ def create_notification(
         }
     }
     
-    result = collection.insert_one(notification_doc)
-    notification_id = str(result.inserted_id)
-    
-    # Procesar envío por cada canal
-    for channel in channels:
-        _send_via_channel(channel, notification_doc, notification_id)
-    
-    return notification_id
+    try:
+        result = collection.insert_one(notification_doc)
+        notification_id = str(result.inserted_id)
+        
+        # Procesar envío por cada canal
+        for channel in channels:
+            _send_via_channel(channel, notification_doc, notification_id)
+        
+        return notification_id
+    except Exception as e:
+        logger.error(f"Error creando notificación: {e}")
+        return None
 
 
 def _send_via_channel(
@@ -150,7 +155,7 @@ def _send_via_channel(
         
     except Exception as e:
         # Log error pero no fallar
-        print(f"Error sending via {channel.value}: {e}")
+        logger.error(f"Error sending via {channel.value}: {e}")
 
 
 def _send_email(notification: Dict[str, Any]) -> bool:
@@ -173,14 +178,14 @@ def _send_email(notification: Dict[str, Any]) -> bool:
     smtp_config = get_smtp_config()
     
     if not smtp_config.get('enabled', False):
-        print("SMTP no está habilitado")
+        logger.warning("SMTP no está habilitado")
         return False
     
     # Validar campos requeridos
     required_fields = ['host', 'port', 'username', 'password', 'from_email']
     for field in required_fields:
         if not smtp_config.get(field):
-            print(f"Campo SMTP requerido faltante: {field}")
+            logger.error(f"Campo SMTP requerido faltante: {field}")
             return False
     
     try:
@@ -188,7 +193,7 @@ def _send_email(notification: Dict[str, Any]) -> bool:
         recipient_emails = get_recipient_emails(notification.get('recipients', []))
         
         if not recipient_emails:
-            print("No hay destinatarios de email")
+            logger.info("No hay destinatarios de email para esta notificación.")
             return False
         
         # Crear mensaje
@@ -214,17 +219,17 @@ def _send_email(notification: Dict[str, Any]) -> bool:
         server.send_message(msg)
         server.quit()
         
-        print(f"Email enviado exitosamente a {len(recipient_emails)} destinatario(s)")
+        logger.info(f"Email enviado exitosamente a {len(recipient_emails)} destinatario(s)")
         return True
         
     except smtplib.SMTPAuthenticationError as e:
-        print(f"Error de autenticación SMTP: {e}")
+        logger.error(f"Error de autenticación SMTP: {e}")
         return False
     except smtplib.SMTPException as e:
-        print(f"Error SMTP: {e}")
+        logger.error(f"Error SMTP: {e}")
         return False
     except Exception as e:
-        print(f"Error enviando email: {e}")
+        logger.error(f"Error enviando email: {e}")
         return False
 
 
@@ -399,20 +404,20 @@ def _send_webhook(notification: Dict[str, Any]) -> bool:
         )
         
         if response.status_code == 200:
-            print(f"Webhook enviado exitosamente ({webhook_type})")
+            logger.info(f"Webhook enviado exitosamente ({webhook_type})")
             return True
         else:
-            print(f"Error en webhook: HTTP {response.status_code} - {response.text[:100]}")
+            logger.error(f"Error en webhook: HTTP {response.status_code} - {response.text[:100]}")
             return False
     
     except requests.exceptions.Timeout:
-        print("Timeout al enviar webhook")
+        logger.error("Timeout al enviar webhook")
         return False
     except requests.exceptions.ConnectionError:
-        print("Error de conexión al enviar webhook")
+        logger.error("Error de conexión al enviar webhook")
         return False
     except Exception as e:
-        print(f"Error enviando webhook: {e}")
+        logger.error(f"Error enviando webhook: {e}")
         return False
 
 
@@ -426,17 +431,19 @@ def _send_push(notification: Dict[str, Any]) -> bool:
     Returns:
         bool: True si al menos un envío fue exitoso
     """
+    import json
     from pywebpush import webpush, WebPushException
     from db.repositories.people import get_people_repository
+    from db.repositories.notification_config import get_vapid_config
     
-    # Obtener claves VAPID de secrets o env
-    # TODO: Mover a config repository
-    private_key = st.secrets.get("vapid", {}).get("private_key") or os.getenv("VAPID_PRIVATE_KEY")
-    public_key = st.secrets.get("vapid", {}).get("public_key") or os.getenv("VAPID_PUBLIC_KEY")
-    subject = st.secrets.get("vapid", {}).get("subject") or os.getenv("VAPID_SUBJECT", "mailto:admin@tryag.com")
+    # Obtener claves VAPID de configuración centralizada
+    vapid_config = get_vapid_config()
+    private_key = vapid_config.get("private_key")
+    # public_key = vapid_config.get("public_key") # Not strictly needed for sending
+    subject = vapid_config.get("subject")
     
     if not private_key:
-        print("❌ VAPID keys not configured in _send_push")
+        logger.error("❌ VAPID keys not configured in _send_push")
         return False
 
     repo = get_people_repository()
@@ -448,7 +455,7 @@ def _send_push(notification: Dict[str, Any]) -> bool:
         # Buscar usuario y sus suscripciones
         user = repo.get_by_id(user_id)
         if not user:
-            print(f"⚠️ Usuario {user_id} no encontrado")
+            logger.warning(f"⚠️ Usuario {user_id} no encontrado")
             continue
             
         subs = user.get('push_subscriptions', [])

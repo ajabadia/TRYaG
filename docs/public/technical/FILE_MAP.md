@@ -113,6 +113,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/core/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/core/config.py** | Configuraciones globales y constantes. | Varios | Activo |
 | **src/core/data_handler.py** | Manejador de datos core. | Varios | Activo |
+| **src/core/logger_config.py** | Configuración centralizada de logging. | App | Activo |
 | **src/core/prompt_manager.py** | Gestor de prompts. | Varios | Activo |
 | **src/core/transcription_handler.py** | Manejador de transcripciones. | Varios | Activo |
 | **src/db/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
@@ -156,6 +157,7 @@ Este documento lista los archivos principales del proyecto, su propósito y su e
 | **src/scripts/restore_employee_ids.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/scripts/setup_test_user.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/scripts/update_cie10_prompt.py** | Pendiente de descripción. | Pendiente | Activo |
+| **src/scripts/verify_remediation.py** | Script de verificación de correcciones (Review). | Manual | Activo |
 | **src/services/__init__.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/ai_model_discovery.py** | Pendiente de descripción. | Pendiente | Activo |
 | **src/services/analytics_service.py** | Pendiente de descripción. | Pendiente | Activo |

@@ -239,5 +239,65 @@ def test_webhook(url: str, webhook_type: str = 'slack') -> Tuple[bool, str]:
         return False, "❌ Timeout al enviar webhook. Verifica la URL."
     except requests.exceptions.ConnectionError:
         return False, "❌ Error de conexión. Verifica que la URL sea válida."
-    except Exception as e:
         return False, f"❌ Error: {str(e)}"
+
+
+def save_vapid_config(config: Dict[str, Any]) -> bool:
+    """
+    Guarda configuración VAPID en MongoDB.
+    
+    Args:
+        config: Dict con configuración VAPID
+            - private_key: str
+            - public_key: str
+            - subject: str (mailto:...)
+    """
+    db = get_database()
+    collection = db["system_config"]
+    
+    try:
+        config['updated_at'] = datetime.now()
+        
+        result = collection.update_one(
+            {"type": "vapid_config"},
+            {"$set": {
+                "type": "vapid_config",
+                "config": config,
+                "updated_at": config['updated_at']
+            }},
+            upsert=True
+        )
+        return result.acknowledged
+    except Exception as e:
+        print(f"Error guardando config VAPID: {e}")
+        return False
+
+
+def get_vapid_config() -> Dict[str, Any]:
+    """
+    Obtiene configuración VAPID desde MongoDB.
+    
+    Returns:
+        Dict con configuración, o valores por defecto/env si no existe
+    """
+    import os
+    import streamlit as st
+    
+    db = get_database()
+    collection = db["system_config"]
+    
+    try:
+        doc = collection.find_one({"type": "vapid_config"})
+        
+        if doc and 'config' in doc:
+            return doc['config']
+        
+        # Fallback a Environment / Secrets (Legacy Support)
+        return {
+            "private_key": st.secrets.get("vapid", {}).get("private_key") or os.getenv("VAPID_PRIVATE_KEY"),
+            "public_key": st.secrets.get("vapid", {}).get("public_key") or os.getenv("VAPID_PUBLIC_KEY"),
+            "subject": st.secrets.get("vapid", {}).get("subject") or os.getenv("VAPID_SUBJECT", "mailto:admin@tryag.com")
+        }
+    except Exception as e:
+        print(f"Error obteniendo config VAPID: {e}")
+        return {}
