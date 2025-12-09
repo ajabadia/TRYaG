@@ -3,7 +3,7 @@ import google.generativeai as genai
 import json
 import os
 from datetime import datetime
-from typing import Optional, Dict, Any, Union, Tuple
+from typing import Optional, Dict, Any, Union, Tuple, List
 import streamlit as st
 try:
     from ..db.models import AIAuditLog
@@ -52,6 +52,7 @@ class GeminiService:
         model_name: str,
         prompt_content: Union[str, list],
         generation_config: Optional[Dict[str, Any]] = None,
+        safety_settings: Optional[List[Dict[str, Any]]] = None, # New argument
         metadata: Optional[Dict[str, Any]] = None
     ) -> Tuple[Dict[str, Any], str]:
         """
@@ -66,6 +67,7 @@ class GeminiService:
             model_name: Nombre del modelo (gemini-2.5-flash, etc.).
             prompt_content: String o lista (para multimodal) con el contenido.
             generation_config: Configuración específica (temp, tokens).
+            safety_settings: Configuración de seguridad opcional.
             metadata: Datos extra para el log.
 
         Returns:
@@ -105,13 +107,15 @@ class GeminiService:
         error_msg = None
 
         try:
-            # Configuración de seguridad permisiva para evitar bloqueos en contexto médico
-            safety_settings = [
-                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-            ]
+            # Configuración de seguridad
+            if safety_settings is None:
+                # Default permisivo para contexto médico
+                safety_settings = [
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+                ]
             
             model = genai.GenerativeModel(
                 model_name=model_name, 

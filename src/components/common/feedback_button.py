@@ -149,8 +149,13 @@ def render_feedback_button(module_name="General", location="header"):
     if unread_count > 0:
         label = f"📢 Feedback ({unread_count})"
     
+    def _reset_sidebar_modals():
+        """Cierra otros modales laterales para evitar conflictos de Streamlit."""
+        if "show_handoff_modal" in st.session_state:
+            st.session_state["show_handoff_modal"] = False
+
     # Botón normal
-    if st.button(label, key=f"feedback_btn_{module_name}", help="Reportar error o ver mis tickets", use_container_width=True):
+    if st.button(label, key=f"feedback_btn_{module_name}", help="Reportar error o ver mis tickets", use_container_width=True, on_click=_reset_sidebar_modals):
         feedback_dashboard(module_name)
     
 

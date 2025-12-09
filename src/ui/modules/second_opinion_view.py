@@ -16,6 +16,8 @@ def render_second_opinion_view():
 
     st.divider()
     
+    analysis_context = {}
+
     # 2. Área de Trabajo
     col_context, col_analysis = st.columns([1, 1])
     
@@ -331,7 +333,7 @@ def render_second_opinion_view():
         # --- RENDER RESULT FROM STATE ---
         if "sec_op_result" in st.session_state:
              response_data = st.session_state["sec_op_result"]
-             analysis_context = st.session_state.get("sec_op_context", {})
+             result_context = st.session_state.get("sec_op_context", {})
              
              st.success("Análisis Completado")
              res_text = response_data.get("text", "")

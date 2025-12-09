@@ -16,7 +16,13 @@ def render_knowledge_base_ui():
     st.info("El buscador ahora está disponible como una herramienta global en la barra lateral.")
     
     from components.knowledge_base.protocol_search import show_protocol_search_modal
-    if st.button("Abrir Buscador de Protocolos", icon="🔍", use_container_width=True):
+    
+    def _reset_modals():
+        """Callback para cerrar otros modales antes de abrir este."""
+        if "show_handoff_modal" in st.session_state:
+            st.session_state["show_handoff_modal"] = False
+
+    if st.button("Abrir Buscador de Protocolos", icon="🔍", use_container_width=True, on_click=_reset_modals):
         show_protocol_search_modal()
             
     st.divider()
