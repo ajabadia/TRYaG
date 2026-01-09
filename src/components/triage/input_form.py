@@ -101,55 +101,95 @@ def render_input_form():
     """
     reset_count = st.session_state.get('reset_count', 0)
 
-    # --- CALLBACKS DE INTEGRACIÓN ---
+# --- CALLBACKS DE INTEGRACIÓN (MOVIDOS A NIVEL DE MÓDULO) ---
+
+def on_audio_confirmed(audio_wrappers):
+    if audio_wrappers:
+        if 'imagenes' not in st.session_state.datos_paciente:
+            st.session_state.datos_paciente['imagenes'] = []
+        
+        # Manejar tanto lista como item único por compatibilidad
+        if isinstance(audio_wrappers, list):
+            st.session_state.datos_paciente['imagenes'].extend(audio_wrappers)
+        else:
+            st.session_state.datos_paciente['imagenes'].append(audio_wrappers)
+            
+    st.session_state.triage_input_type = "" # Resetear selector
+
+def on_webcam_close(photos):
+    if photos:
+        if 'imagenes' not in st.session_state.datos_paciente:
+            st.session_state.datos_paciente['imagenes'] = []
+        st.session_state.datos_paciente['imagenes'].extend(photos)
+    st.session_state.triage_input_type = "" # Resetear selector
+
+def on_video_confirmed(video_wrappers):
+    if video_wrappers:
+        if 'imagenes' not in st.session_state.datos_paciente:
+            st.session_state.datos_paciente['imagenes'] = []
+        st.session_state.datos_paciente['imagenes'].extend(video_wrappers)
+    st.session_state.triage_input_type = "" # Resetear selector
+
+def on_files_confirmed(files_list):
+    if files_list:
+        if 'imagenes' not in st.session_state.datos_paciente:
+            st.session_state.datos_paciente['imagenes'] = []
+        
+        # Evitar duplicados por nombre
+        current_names = {f.name for f in st.session_state.datos_paciente['imagenes']}
+        for f in files_list:
+            if f.name not in current_names:
+                st.session_state.datos_paciente['imagenes'].append(f)
+        
+        st.session_state.triage_input_type = "" # Resetear selector
+
+def import_callback():
+    import time
+    time.sleep(1.5)
+    st.session_state.datos_paciente['texto_medico'] += "\n\n[IMPORTADO HCE]: Paciente con antecedentes de hipertensión. Última visita por dolor lumbar crónico."
+    st.session_state.triage_input_type = "" # Resetear selector
+
+# --- DEFINICIÓN DE DIÁLOGOS (NIVEL DE MÓDULO) ---
+# NOTA: dismissible=False evita que se cierre al hacer click fuera (requiere Streamlit reciente)
+
+@st.dialog("🎤 Grabar Audio", width="large")
+def dialog_audio():
+    render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed)
     
-    def on_audio_confirmed(audio_wrappers):
-        if audio_wrappers:
-            if 'imagenes' not in st.session_state.datos_paciente:
-                st.session_state.datos_paciente['imagenes'] = []
-            
-            # Manejar tanto lista como item único por compatibilidad
-            if isinstance(audio_wrappers, list):
-                st.session_state.datos_paciente['imagenes'].extend(audio_wrappers)
-            else:
-                st.session_state.datos_paciente['imagenes'].append(audio_wrappers)
-                
-        st.session_state.triage_input_type = "" # Resetear selector
+@st.dialog("📷 Tomar Foto", width="large")
+def dialog_photo():
+    render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close)
+    
+@st.dialog("🎥 Grabar Video", width="large")
+def dialog_video():
+    render_video_recorder(key_prefix="triage_video", on_video_ready=on_video_confirmed)
+    
+@st.dialog("📁 Subir Archivo", width="large")
+def dialog_file():
+    render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed)
+    
+@st.dialog("🏥 Importar Historial", width="large")
+def dialog_history():
+    st.markdown("##### 🏥 Importación de Historia Clínica")
+    st.info("Simulación de conexión con HCE (Historia Clínica Electrónica).")
+    
+    c_imp, c_cls = st.columns(2)
+    with c_imp:
+        if st.button("⬇️ Importar Últimos Informes", key="sim_import_btn", use_container_width=True):
+            import_callback()
+            st.rerun()
+    with c_cls:
+        if st.button("❌ Cerrar", key="hist_close_btn", use_container_width=True):
+            st.rerun()
+    
+    st.markdown('<div class="debug-footer">src/components/triage/input_form.py</div>', unsafe_allow_html=True)
 
-    def on_webcam_close(photos):
-        if photos:
-            if 'imagenes' not in st.session_state.datos_paciente:
-                st.session_state.datos_paciente['imagenes'] = []
-            st.session_state.datos_paciente['imagenes'].extend(photos)
-        st.session_state.triage_input_type = "" # Resetear selector
 
-    def on_video_confirmed(video_wrappers):
-        if video_wrappers:
-            if 'imagenes' not in st.session_state.datos_paciente:
-                st.session_state.datos_paciente['imagenes'] = []
-            st.session_state.datos_paciente['imagenes'].extend(video_wrappers)
-        st.session_state.triage_input_type = "" # Resetear selector
-
-    def on_files_confirmed(files_list):
-        if files_list:
-            if 'imagenes' not in st.session_state.datos_paciente:
-                st.session_state.datos_paciente['imagenes'] = []
-            
-            # Evitar duplicados por nombre
-            current_names = {f.name for f in st.session_state.datos_paciente['imagenes']}
-            for f in files_list:
-                if f.name not in current_names:
-                    st.session_state.datos_paciente['imagenes'].append(f)
-            
-            st.session_state.triage_input_type = "" # Resetear selector
-
-    def import_callback():
-        import time
-        time.sleep(1.5)
-        st.session_state.datos_paciente['texto_medico'] += "\\n\\n[IMPORTADO HCE]: Paciente con antecedentes de hipertensión. Última visita por dolor lumbar crónico."
-        st.session_state.triage_input_type = "" # Resetear selector
-
-    # --- END CALLBACKS ---
+def render_input_form():
+    """
+    Renderiza el formulario de entrada de datos del paciente.
+    """
+    reset_count = st.session_state.get('reset_count', 0)
 
     with st.container(border=True):
         # Cabecera de sección con icono
@@ -226,39 +266,7 @@ def render_input_form():
             
             col_btns = st.columns(5)
             
-            # Definir diálogos
-            # NOTA: dismissible=False evita que se cierre al hacer click fuera (requiere Streamlit reciente)
-            @st.dialog("🎤 Grabar Audio", width="large", dismissible=False)
-            def dialog_audio():
-                render_audio_recorder(key_prefix="triage_audio", on_audio_ready=on_audio_confirmed)
-                
-            @st.dialog("📷 Tomar Foto", width="large", dismissible=False)
-            def dialog_photo():
-                render_webcam_manager(key_prefix="triage_cam", on_close=on_webcam_close)
-                
-            @st.dialog("🎥 Grabar Video", width="large", dismissible=False)
-            def dialog_video():
-                render_video_recorder(key_prefix="triage_video", on_video_ready=on_video_confirmed)
-                
-            @st.dialog("📁 Subir Archivo", width="large", dismissible=False)
-            def dialog_file():
-                render_file_importer(key_prefix="triage_files", on_files_ready=on_files_confirmed)
-                
-            @st.dialog("🏥 Importar Historial", width="large", dismissible=False)
-            def dialog_history():
-                st.markdown("##### 🏥 Importación de Historia Clínica")
-                st.info("Simulación de conexión con HCE (Historia Clínica Electrónica).")
-                
-                c_imp, c_cls = st.columns(2)
-                with c_imp:
-                    if st.button("⬇️ Importar Últimos Informes", key="sim_import_btn", use_container_width=True):
-                        import_callback()
-                        st.rerun()
-                with c_cls:
-                    if st.button("❌ Cerrar", key="hist_close_btn", use_container_width=True):
-                        st.rerun()
-                
-                st.markdown('<div class="debug-footer">src/components/triage/input_form.py</div>', unsafe_allow_html=True)
+            # (Diálogos movidos fuera)
     
             # Botones de acción
             with col_btns[0]:
